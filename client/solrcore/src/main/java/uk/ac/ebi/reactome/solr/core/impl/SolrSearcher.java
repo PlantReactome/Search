@@ -165,9 +165,9 @@ public class SolrSearcher {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRequestHandler(SPELLCHECK_REQUEST_HANDLER);
         solrQuery.set(SOLR_SPELLCHECK_QUERY, query);
-        if (query.toLowerCase().matches("^uniprot:[a-z0-9]+$") || query.toLowerCase().matches("^[a-z]+:[0-9]+$") ){
-            solrQuery.set("spellcheck.collate", false);
-        }
+//        if (query.toLowerCase().matches("^uniprot:[a-z0-9]+$") || query.toLowerCase().matches("^[a-z]+:[0-9]+$") ){
+//            solrQuery.set("spellcheck.collate", false);
+//        }
         return querySolrServer(solrQuery);
     }
 

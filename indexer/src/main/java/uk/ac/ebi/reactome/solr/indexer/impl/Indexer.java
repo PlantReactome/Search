@@ -81,8 +81,8 @@ public class Indexer {
             cleanSolrIndex();
 //            marshaller.writeHeader();
             int entriesCount = 0;
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
             entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
 //            marshaller.writeFooter(entriesCount);
             closeSolrServer();

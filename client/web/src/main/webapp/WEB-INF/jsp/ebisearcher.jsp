@@ -77,7 +77,7 @@
                         <c:when test="${maxpage>1}">
                             <c:choose>
                                 <c:when test="${1 == page}">
-                                    <span class="search-page active">first</span>
+                                    <span class="page active">first</span>
                                 </c:when>
                                 <c:otherwise>
                                     <c:url var="url" value="">
@@ -90,7 +90,7 @@
                                 <c:if test="${val > page-3 && val < page+3}">
                                     <c:choose>
                                         <c:when test="${val == page}">
-                                            <span class="search-page active">${val}</span>
+                                            <span class="page active">${val}</span>
                                         </c:when>
                                         <c:otherwise>
                                             <c:url var="url" value="">
@@ -103,7 +103,7 @@
                             </c:forEach>
                             <c:choose>
                                 <c:when test="${maxpage == page}">
-                                    <span class="search-page active">last</span>
+                                    <span class="page active">last</span>
                                 </c:when>
                                 <c:otherwise>
                                     <c:url var="url" value="">

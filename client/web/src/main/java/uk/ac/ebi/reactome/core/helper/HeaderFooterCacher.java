@@ -22,7 +22,7 @@ import java.net.URL;
 public class HeaderFooterCacher extends Thread {
     private static final String TITLE_OPEM = "<title>";
     private static final String TITLE_CLOSE = "</title>";
-    private static final String TITLE_REPLACE = "<title>Reactome | ${title}</title>";
+    private static final String TITLE_REPLACE = "<title>Reactome | Search for ${q}</title>";
 
     private static final String SEARCH_OPEN = "<!--SearchForm-->";
     private static final String SEARCH_CLOSE = "<!--/SearchForm-->";
@@ -77,8 +77,17 @@ public class HeaderFooterCacher extends Thread {
         try {
             URL url = new URL(this.server + "common/header.php");
             String rtn = IOUtils.toString(url.openConnection().getInputStream());
+
             rtn = getReplaced(rtn, TITLE_OPEM, TITLE_CLOSE, TITLE_REPLACE);
             rtn = getReplaced(rtn, SEARCH_OPEN, SEARCH_CLOSE, SEARCH_REPLACE);
+
+//            String titlePre = rtn.substring(0, rtn.indexOf(TITLE_OPEM));
+//            String titleSuf = rtn.substring(rtn.indexOf(TITLE_CLOSE) + TITLE_CLOSE.length(), rtn.length());
+//            rtn = titlePre + TITLE_REPLACE + titleSuf;
+
+//            String pre = rtn.substring(0, rtn.indexOf(SEARCH_OPEN));
+//            String suf = rtn.substring(rtn.indexOf(SEARCH_CLOSE) + SEARCH_CLOSE.length(), rtn.length());
+//            return pre + SEARCH_REPLACE + suf;
             return  rtn;
         } catch (IOException e) {
             e.printStackTrace();
@@ -87,6 +96,9 @@ public class HeaderFooterCacher extends Thread {
     }
 
     private String getReplaced(String target, String open, String close, String replace){
+        String pre = target.substring(0, target.indexOf(open));
+        String suf = target.substring(target.indexOf(close) + close.length(), target.length());
+        return pre + replace + suf;
         try {
             String pre = target.substring(0, target.indexOf(open));
             String suf = target.substring(target.indexOf(close) + close.length(), target.length());

@@ -19,7 +19,7 @@
             <version>1.2.1</version>
         </dependency>
 
-        <!--&lt;!&ndash; Log4j &ndash;&gt;-->
+        <!-- Log4j -->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -51,13 +51,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.5</version>
-        </dependency>
-
-        <!-- JSAP command line parameters parser -->
-        <dependency>
-            <groupId>com.martiansoftware</groupId>
-            <artifactId>jsap</artifactId>
-            <version>2.1</version>
         </dependency>
 
         <!-- JUnit -->
@@ -106,26 +99,16 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>uk.ac.ebi.reactome.solr.indexer.IndexerTool</mainClass>
+                            <mainClass>uk.ac.ebi.reactome.solr.indexer.impl.Main</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
 

@@ -27,15 +27,15 @@
             </c:forEach>
         </div>
     </c:if>
-    <c:if test="${not empty entry.locationsPathwayBrowser}">
+    <c:if test="${not empty entry.root}">
         <h5>Locations in the PathwayBrowser</h5>
         <div class="paddingleft">
-            <c:forEach var="topLvl" items="${entry.locationsPathwayBrowser}">
-                <div class="plus" title="click here to expand or collapse the tree"><img class="image" src="../resources/images/plus.png" title="${entry.exactType}" width="14" height="13" alt=""/> ${topLvl.name}(${topLvl.species})</div>
+            <c:forEach var="root" items="${entry.root.children}">
+                <div class="plus" title="click here to expand or collapse the tree"><img class="image" src="../resources/images/plus.png" title="${entry.exactType}" width="14" height="13" alt=""/> ${root.key}</div>
                 <div class="treeContent">
                     <ul class="tree">
-                        <li><a href="${topLvl.url}" class=""   title="goto Reactome Pathway Browser" rel="nofollow">${topLvl.name}(${topLvl.species})</a></li>
-                        <c:set var="node" value="${topLvl}" scope="request"/>
+                        <li><a href="${root.value.url}" class=""   title="goto Reactome ${root.value.dbId} " rel="nofollow">${root.key}</a></li>
+                        <c:set var="node" value="${root.value}" scope="request"/>
                         <li> <c:import url="/WEB-INF/jsp/node.jsp"/></li>
                     </ul>
                 </div>

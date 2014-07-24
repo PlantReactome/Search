@@ -1,10 +1,11 @@
 package uk.ac.ebi.reactome.solr.indexer.impl;
 
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
-import uk.ac.ebi.reactome.solr.indexer.model.CrossReference;
 import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 
 import java.io.*;
@@ -21,18 +22,16 @@ import java.util.List;
 
 public class Converter {
 
-    private static final Logger logger = Logger.getLogger(Converter.class);
+    private static final Logger logger = Logger.getRootLogger();
     private final List<String> keywords;
     /**
      * Constructor
      */
-    public Converter(File controlledVocabulary) {
+    public Converter() {
         logger.setLevel(Level.ERROR);
-//        logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
-        keywords = loadFile(controlledVocabulary);
-        if (keywords==null) {
-            logger.error("No keywords available");
-        }
+        logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
+
+        keywords = loadFile("controlledvocabulary.csv");
     }
 
     /**
@@ -74,6 +73,7 @@ public class Converter {
                 } else {
                     document.setRegulatedEntity(regulatedEntity.getDisplayName());
                 }
+
             }
             if (hasValues(instance, ReactomeJavaConstants.regulator)) {
                 GKInstance regulator = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.regulator);
@@ -84,26 +84,30 @@ public class Converter {
                     document.setRegulator(regulator.getDisplayName());
                 }
             }
+
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
     }
-    private List<String> loadFile(File file) {
+    private List<String> loadFile(String fileName) {
         try {
-            List<String> list = new ArrayList<>();
-            FileInputStream fileStream = new FileInputStream(file);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileStream));
-            String line;
+            List<String> list = new ArrayList<String>();
+            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(fileName);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String line = "";
             while ((line = bufferedReader.readLine()) != null) {
                 list.add(line);
             }
             bufferedReader.close();
             return list;
+        } catch (FileNotFoundException e) {
+            logger.error("" , e);
         } catch (IOException e) {
-            logger.error("An error occurred when loading the controlled vocabulary file", e);
+            logger.error("" , e);
         }
         return null;
     }
+
 
     /**
      * Sets all general attributes (attributes that should occur in events and physical entities
@@ -114,13 +118,14 @@ public class Converter {
 
         document.setDbId(instance.getDBID());
         setNameAndSynonyms(document, instance);
-        if (keywords!=null) {
-            document.setKeywords(getKeywordsFromName(document.getName()));
-        }
+        document.setKeywords(getKeywordsFromName(document.getName()));
+
+
+
         if (hasValues(instance, ReactomeJavaConstants.summation)){
 
             String summation = (concatenateSummations(instance));
-            if (!summation.contains("computationally inferred ")){
+            if (!summation.contains("This event has been computationally inferred from an event that has been demonstrated in another species")){
                 document.setSummation(summation);
             } else {
                 document.setInferredSummation(summation);
@@ -128,36 +133,10 @@ public class Converter {
         }
         if(hasValues(instance, ReactomeJavaConstants.disease)){
             document.setIsDisease(true);
-            try {
-                List<?> diseases = instance.getAttributeValuesList(ReactomeJavaConstants.disease);
-                List<String> diseasesId = new LinkedList<>();
-                List<String> diseasesName = new LinkedList<>();
-                List<String> diseasesSynonym = new LinkedList<>();
-                for (Object disease : diseases) {
-                    GKInstance d = (GKInstance) disease;
-                    if(hasValue(d, ReactomeJavaConstants.identifier)){
-                        String identifier = (String) d.getAttributeValue(ReactomeJavaConstants.identifier);
-                        diseasesId.add(identifier);diseasesId.add("doid:" + identifier);
-                    }
-                    if(hasValue(d, ReactomeJavaConstants.name)){
-                        diseasesName.add((String) d.getAttributeValue(ReactomeJavaConstants.name));
-                    }
-                    if(hasValues(d, ReactomeJavaConstants.synonym)){
-                        List<?> synonyms = d.getAttributeValuesList(ReactomeJavaConstants.synonym);
-                        for (Object synonym : synonyms) {
-                            diseasesSynonym.add((String) synonym);
-                        }
-                    }
-                }
-                document.setDiseaseId(diseasesId);
-                document.setDiseaseName(diseasesName);
-                document.setDiseaseSynonyms(diseasesSynonym);
-            } catch (Exception e) {
-                logger.error("Error retrieving disease information", e);
-            }
         } else {
             document.setIsDisease(false);
         }
+
 
         if (hasValue(instance, ReactomeJavaConstants.compartment)){
             setCompartmentAttributes(document, instance);
@@ -169,30 +148,13 @@ public class Converter {
 
         try {
             if (hasValues(instance, ReactomeJavaConstants.stableIdentifier)){
-                document.setStId((String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier));
+                document.setStId(((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getDisplayName());
             }
 
             if (hasValue(instance, ReactomeJavaConstants.species)){
-//                document.setSpecies(((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species)).getDisplayName());
-                GKInstance species = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species);
-                document.setSpecies(species.getDisplayName());
-                if (hasValue(species, ReactomeJavaConstants.crossReference)) {
-                    GKInstance taxon = (GKInstance) species.getAttributeValue(ReactomeJavaConstants.crossReference);
-                    if (hasValue(taxon, ReactomeJavaConstants.identifier)){
-                        document.setTaxId((String) taxon.getAttributeValue(ReactomeJavaConstants.identifier));
-                    }
-                }
+                document.setSpecies(((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species)).getDisplayName());
             } else {
                 document.setSpecies("Entries without species");
-            }
-
-            if(hasValues(instance, "relatedSpecies")){ //TODO: use the ReactomeJavaConstants.relatedSpecies when available
-                List<String> relatedSpeciess = new LinkedList<>();
-                for (Object aux : instance.getAttributeValuesList("relatedSpecies")) { //TODO: use the ReactomeJavaConstants.relatedSpecies when available
-                    GKInstance relatedSpecies = (GKInstance) aux;
-                    relatedSpeciess.add(relatedSpecies.getDisplayName());
-                }
-                document.setRelatedSpecies(relatedSpeciess);
             }
 
             if (hasValues(instance, ReactomeJavaConstants.literatureReference)){
@@ -201,41 +163,40 @@ public class Converter {
                 document.setLiteratureReferenceTitle(getLiteratureAttributes(literature, ReactomeJavaConstants.title));
                 document.setLiteratureReferencePubMedId(getLiteratureAttributes(literature, ReactomeJavaConstants.pubMedIdentifier));
                 document.setLiteratureReferenceIsbn(getLiteratureAttributes(literature, ReactomeJavaConstants.ISBN));
+
                 document.setLiteratureReferenceAuthor(getLiteratureAuthors(literature));
             }
         } catch (Exception e) {
             logger.error(e.getMessage(),e);
         }
+
+
     }
 
     private List<String> getKeywordsFromName(String name) {
-            List<String> list = new ArrayList<>();
-            for (String keyword : keywords) {
-                if (name.toLowerCase().contains(keyword.toLowerCase())) {
-                    list.add(keyword);
-                }
+        List<String> list = new ArrayList<>();
+        for (String keyword : keywords) {
+            if (name.toLowerCase().contains(keyword.toLowerCase())) {
+                list.add(keyword);
             }
-            return list;
+        }
+        return list;
     }
 
     public void setCrossReference(IndexDocument document, GKInstance instance)  {
         try {
-            List<?> crossReferenceInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.crossReference);
+            List<GKInstance> crossReferenceInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.crossReference);
             List<String> identifiers = new ArrayList<>();
-            List<CrossReference> crossReferences = new ArrayList<>();
-            for (Object object : crossReferenceInstanceList) {
-                GKInstance crossReferenceInstance = (GKInstance) object;
+            List<String> databases = new ArrayList<>();
+            for (GKInstance crossReferenceInstance : crossReferenceInstanceList) {
                 String id = (String) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.identifier);
                 String db = ((GKInstance) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDisplayName();
                 identifiers.add(id);
                 identifiers.add(db + ":" + id);
-                CrossReference crossReference = new CrossReference();
-                crossReference.setDbName(db);
-                crossReference.setId(id);
-                crossReferences.add(crossReference);
+                databases.add(db);
             }
             document.setCrossReferences(identifiers);
-            document.setAllCrossReferences(crossReferences);
+            document.setCrossReferenceDatabase(databases);
         }catch (Exception e) {
             e.printStackTrace();  // rework
         }
@@ -301,16 +262,19 @@ public class Converter {
     private String concatenateSummations(GKInstance instance) {
         String summation = "";
         try {
-            List<?> summationsList = instance.getAttributeValuesList(ReactomeJavaConstants.summation);
+            List<GKInstance> summationsList = instance.getAttributeValuesList(ReactomeJavaConstants.summation);
             boolean first = true;
-            for (Object object : summationsList) {
-                GKInstance summationInstance = (GKInstance) object;
+            for (GKInstance summationInstance : summationsList) {
                 if (first) {
                     summation = summationInstance.getAttributeValue(ReactomeJavaConstants.text).toString();
-                    first = false;
                 } else {
                     summation = summation + "<br>" + summationInstance.getAttributeValue(ReactomeJavaConstants.text).toString();
                 }
+//                buffer = buffer.replaceAll("(?i)(\\<p\\>)|(\\</p\\>)|(\\<br\\>)", " ");
+//                buffer = buffer.replaceAll("(?i)(\\<ul\\>)|(\\</ul\\>)", " ");
+//                buffer = buffer.replaceAll("(?i)(\\<li\\>)|(\\</li\\>)", ", ");
+
+
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -353,11 +317,10 @@ public class Converter {
      */
     private void setCompartmentAttributes (IndexDocument document, GKInstance instance) {
         try {
-            List<?> compartments =  instance.getAttributeValuesList(ReactomeJavaConstants.compartment);
+            List<GKInstance> compartments = (List<GKInstance>) instance.getAttributeValuesList(ReactomeJavaConstants.compartment);
             List<String> compartmentAccession = new ArrayList<>();
             List<String> compartmentName = new ArrayList<>();
-            for (Object object : compartments) {
-                GKInstance compartment = (GKInstance) object;
+            for (GKInstance compartment : compartments) {
                 compartmentAccession.add(compartment.getAttributeValue(ReactomeJavaConstants.accession).toString());
                 compartmentName.add(compartment.getDisplayName());
             }
@@ -379,9 +342,8 @@ public class Converter {
         for (GKInstance gkInstance : literature) {
             if (hasValues(gkInstance, ReactomeJavaConstants.author)) {
                 try {
-                    List<?> authors =  gkInstance.getAttributeValuesList(ReactomeJavaConstants.author);
-                    for (Object object : authors) {
-                        GKInstance author = (GKInstance) object;
+                    List<GKInstance> authors = (List<GKInstance>) gkInstance.getAttributeValuesList(ReactomeJavaConstants.author);
+                    for (GKInstance author : authors) {
                         list.add(author.getDisplayName());
                     }
                 } catch (Exception e) {
@@ -448,7 +410,7 @@ public class Converter {
                 id = (String) referenceEntity.getAttributeValue(ReactomeJavaConstants.identifier);
             }
             if(id!=null) {
-                List<String> referenceIdentifiers = new LinkedList<>();
+                List<String> referenceIdentifiers = new LinkedList<String>();
                 referenceIdentifiers.add(id);
                 referenceIdentifiers.add(db + ":" + id);
                 document.setReferenceIdentifiers(referenceIdentifiers);
@@ -472,20 +434,15 @@ public class Converter {
 
     private void setReferenceCrossReference(IndexDocument document, GKInstance instance) {
         try {
-            List<?> crossReferenceInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.crossReference);
+            List<GKInstance> crossReferenceInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.crossReference);
             List<String> identifier = new ArrayList<>();
-            List<CrossReference> crossReferences = new ArrayList<>();
-            for (Object object : crossReferenceInstanceList) {
-                GKInstance crossReferenceInstance = (GKInstance) object;
-                String id = (String) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.identifier);
-                identifier.add(id);
-                CrossReference crossReference = new CrossReference();
-                crossReference.setDbName(((GKInstance) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDisplayName());
-                crossReference.setId(id);
-                crossReferences.add(crossReference);
+            List<String> database = new ArrayList<>();
+            for (GKInstance crossReferenceInstance : crossReferenceInstanceList) {
+                identifier.add((String) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.identifier));
+                database.add(((GKInstance) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDisplayName());
             }
             document.setReferenceCrossReferences(identifier);
-            document.setAllCrossReferences(crossReferences);
+            document.setReferenceCrossReferenceDatabase(database);
         }catch (Exception e) {
             e.printStackTrace();  // rework
         }
@@ -518,11 +475,10 @@ public class Converter {
     private void setCatalystActivityAttributes (IndexDocument document, GKInstance instance) {
         try {
 
-            List<?> catalystActivity = instance.getAttributeValuesList(ReactomeJavaConstants.catalystActivity);
+            List<GKInstance> catalystActivity = (List<GKInstance>) instance.getAttributeValuesList(ReactomeJavaConstants.catalystActivity);
             List<String> goMolecularFunctionAccession = new ArrayList<>();
             List<String> goMolecularFunctionName = new ArrayList<>();
-            for (Object object : catalystActivity) {
-                GKInstance gkInstance = (GKInstance) object;
+            for (GKInstance gkInstance : catalystActivity) {
                 goMolecularFunctionAccession.addAll(getGoTermAccession(gkInstance, ReactomeJavaConstants.activity));
                 goMolecularFunctionName.add(getGoTermName(gkInstance, ReactomeJavaConstants.activity));
             }
@@ -552,6 +508,10 @@ public class Converter {
                     }
                 }
             }
+//            Does not make sense after testing :/
+//            else {
+//                document.setReferenceName(instance.getDisplayName());
+//            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -565,7 +525,7 @@ public class Converter {
      */
     private List<String> getGoTermAccession(GKInstance instance, String fieldName) {
         try {
-            List<String> rtn = new LinkedList<>();
+            List<String> rtn = new LinkedList<String>();
             GKInstance goTerm = (GKInstance) instance.getAttributeValue(fieldName);
             if (hasValue(goTerm, ReactomeJavaConstants.accession)){
                 String go = goTerm.getAttributeValue(ReactomeJavaConstants.accession).toString();

@@ -1,3 +1,7 @@
+#Templates not to be included (are generated in every execution)
+footer.jsp
+header.jsp
+
 # intelliJ idea git ignore
 *.iml
 .idea

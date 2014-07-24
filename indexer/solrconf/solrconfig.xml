@@ -417,13 +417,12 @@
             <str name="spellcheck.dictionary">suggest</str>  <!--The name of the spellchecker to use-->
             <str name="spellcheck.onlyMorePopular">false</str>  <!--disable showing only more popular results-->
             <str name="spellcheck.count">10</str>   <!-- maximum number of suggestions allowed-->
-            <str name="spellcheck.collate">true</str>
-            <str name="spellcheck.maxCollations">6</str>
-            <str name="spellcheck.maxCollationTries">1000</str>
-            <str name="spellcheck.extendedResults">true</str>
-            <str name="spellcheck.collateParam.mm">100%</str>
-            <str name="spellcheck.collateParam.op">AND</str>
-            <str name="spellcheck.collateParam.q.op">AND</str></lst>
+            <str name="spellcheck.collate">true</str>   <!-- a spellchecker provides suggestions to each word, collate tries to construct a new query out of those suggestions-->
+            <str name="spellcheck.maxCollations">10</str>  <!-- maximum number of collations returned -->
+            <str name="spellcheck.collateMaxCollectDocs">100</str>
+            <str name="spellcheck.maxCollationTries">10</str>
+            <str name="spellcheck.maxResultsForSuggest">10</str>  <!-- The maximum number of results the query can return while still triggering spelling suggestions-->
+        </lst>
         <arr name="components">
             <str>suggest</str>
         </arr>
@@ -495,7 +494,7 @@
         <lst name="spellchecker">
             <str name="name">default</str>  <!-- name of the spellcheck component-->
             <str name="field">spellcheck</str>  <!--  field that the spellchecker applies to -->
-            <str name="classname">solr.IndexBasedSpellChecker</str>  <!-- the spellcheck distance measure used, the default is the internal levenshtein -->
+            <str name="classname">solr.DirectSolrSpellChecker</str>  <!-- the spellcheck distance measure used, the default is the internal levenshtein -->
             <str name="distanceMeasure">internal</str>  <!-- minimum accuracy needed to be considered a valid spellcheck suggestion -->
             <float name="accuracy">0.5</float>  <!-- the maximum #edits we consider when enumerating terms: can be 1 or 2 -->
             <int name="maxEdits">2</int>  <!-- the minimum shared prefix when enumerating terms -->

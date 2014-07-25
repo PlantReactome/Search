@@ -9,6 +9,7 @@ import uk.ac.ebi.reactome.core.businesslogic.service.SearchService;
 import uk.ac.ebi.reactome.core.enhancer.exception.EnricherException;
 import uk.ac.ebi.reactome.core.model.facetting.FacetMap;
 import uk.ac.ebi.reactome.core.model.query.Query;
+import uk.ac.ebi.reactome.core.model.result.EnrichedEntry;
 import uk.ac.ebi.reactome.core.model.result.GroupedResult;
 import uk.ac.ebi.reactome.core.model.result.Result;
 import uk.ac.ebi.reactome.solr.core.exception.SolrSearcherException;
@@ -49,6 +50,8 @@ class WebController {
     private static final String MAX_PAGE        =  "maxpage";
     private static final String CLUSTER         =  "cluster";
 
+    private static final String TITEL         =  "title";
+
     // Autowired annotation not necessary for Constructor injection
     public WebController(SearchService searchService) {
         this.searchService = searchService;
@@ -87,6 +90,7 @@ class WebController {
         model.addAttribute(TYPES_FACET,           facetMap.getTypeFacet());
         model.addAttribute(KEYWORDS_FACET,        facetMap.getKeywordFacet());
         model.addAttribute(COMPARTMENTS_FACET,    facetMap.getCompartmentFacet());
+        model.addAttribute(TITEL,    "advanced Search");
         return "ebiadvanced";
     }
 
@@ -114,7 +118,9 @@ class WebController {
 //        model.addAttribute(TYPES, checkOutputIntegrity(types));
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
-        model.addAttribute(ENTRY, searchService.getEntryById(version, id));
+        EnrichedEntry entry = searchService.getEntryById(version, id);
+        model.addAttribute(ENTRY, entry);
+        model.addAttribute(TITEL, entry.getName() );
         return "detail";
     }
 
@@ -140,7 +146,9 @@ class WebController {
 //        model.addAttribute(TYPES, checkOutputIntegrity(types));
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
-        model.addAttribute(ENTRY, searchService.getEntryById(id));
+        EnrichedEntry entry = searchService.getEntryById(id);
+        model.addAttribute(ENTRY, entry);
+        model.addAttribute(TITEL, entry.getName() );
         return "detail";
     }
 
@@ -168,7 +176,9 @@ class WebController {
             if (page==null || page == 0) {
                 page = 1;
             }
+
             model.addAttribute(Q, checkOutputIntegrity(q));
+            model.addAttribute(TITEL, "Search results for:" + q);
             model.addAttribute(SPECIES, checkOutputListIntegrity(species));
             model.addAttribute(TYPES, checkOutputListIntegrity(types));
             model.addAttribute(COMPARTMENTS, checkOutputListIntegrity(compartments));

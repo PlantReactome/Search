@@ -22,7 +22,7 @@ import java.net.URL;
 public class HeaderFooterCacher extends Thread {
     private static final String TITLE_OPEM = "<title>";
     private static final String TITLE_CLOSE = "</title>";
-    private static final String TITLE_REPLACE = "<title>Reactome | Search for ${q}</title>";
+    private static final String TITLE_REPLACE = "<title>Reactome | ${title}</title>";
 
     private static final String SEARCH_OPEN = "<!--SearchForm-->";
     private static final String SEARCH_CLOSE = "<!--/SearchForm-->";
@@ -95,9 +95,13 @@ public class HeaderFooterCacher extends Thread {
     }
 
     private String getReplaced(String target, String open, String close, String replace){
-        String pre = target.substring(0, target.indexOf(open));
-        String suf = target.substring(target.indexOf(close) + close.length(), target.length());
-        return pre + replace + suf;
+        try {
+            String pre = target.substring(0, target.indexOf(open));
+            String suf = target.substring(target.indexOf(close) + close.length(), target.length());
+            return pre + replace + suf;
+        }catch (StringIndexOutOfBoundsException e){
+            return target;
+        }
     }
 
     private String getFooter() {

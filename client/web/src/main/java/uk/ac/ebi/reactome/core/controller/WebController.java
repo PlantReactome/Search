@@ -178,7 +178,7 @@ class WebController {
             }
 
             model.addAttribute(Q, checkOutputIntegrity(q));
-            model.addAttribute(TITEL, "Search results for:" + q);
+            model.addAttribute(TITEL, "Search results for " + q);
             model.addAttribute(SPECIES, checkOutputListIntegrity(species));
             model.addAttribute(TYPES, checkOutputListIntegrity(types));
             model.addAttribute(COMPARTMENTS, checkOutputListIntegrity(compartments));

@@ -1,5 +1,8 @@
 package uk.ac.ebi.reactome.solr.core.impl;
 
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -60,12 +63,20 @@ public class SolrSearcher {
      * since Solr 4.2 Solr is using by default a poolingClientConnectionManager
      * @param url solr URL
      */
-    public SolrSearcher(String url) {
+    public SolrSearcher(String url, String user, String password) {
 
         logger.setLevel(Level.INFO);
         logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
 
-        solrServer = new HttpSolrServer(url);
+        if(user!=null && !user.isEmpty() && password!=null && !password.isEmpty()) {
+            DefaultHttpClient httpclient = new DefaultHttpClient();
+            UsernamePasswordCredentials upc = new UsernamePasswordCredentials(user, password);
+            httpclient.getCredentialsProvider().setCredentials(AuthScope.ANY, upc);
+            solrServer = new HttpSolrServer(url, httpclient);
+        }else{
+            solrServer = new HttpSolrServer(url);
+        }
+
         logger.info("SolrServer initialized");
     }
 

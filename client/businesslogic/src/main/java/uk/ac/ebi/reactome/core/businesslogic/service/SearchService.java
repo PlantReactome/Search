@@ -51,12 +51,12 @@ public class SearchService {
         try {
             Properties databaseProperties = new Properties();
             databaseProperties.load(getClass().getResourceAsStream("/web.properties"));
-            host = databaseProperties.getProperty("host");
-            database = databaseProperties.getProperty("database");
-            currentDatabase = databaseProperties.getProperty("currentDatabase");
-            user = databaseProperties.getProperty("user");
-            password = databaseProperties.getProperty("password");
-            port = Integer.valueOf(databaseProperties.getProperty("port"));
+            host = databaseProperties.getProperty("database_host");
+            database = databaseProperties.getProperty("database_name");
+            currentDatabase = databaseProperties.getProperty("database_currentDatabase");
+            user = databaseProperties.getProperty("database_user");
+            password = databaseProperties.getProperty("database_password");
+            port = Integer.valueOf(databaseProperties.getProperty("database_port"));
         } catch (IOException e) {
             logger.error("Error when loading Database Properties ", e);
             throw new SearchServiceException("Error when loading Database Properties ", e);

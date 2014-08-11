@@ -7,11 +7,14 @@
         <field name="stId" 		    				type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="false" 	multiValued="false"/>
         <field name="name" 	    					type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"   required="true" 	multiValued="false"/>
         <field name="name_exact" 		        	type="text_field_exact" indexed="true" 	stored="false" 	omitNorms="false"   required="true"  	multiValued="false"/>
-        <field name="keywords"			     		type="text_field" 	    indexed="true" 	stored="false"  	omitNorms="true"    required="false" 	multiValued="true"/>
+        <field name="keywords"			     		type="text_field" 	    indexed="true" 	stored="false"  omitNorms="true"    required="false" 	multiValued="true"/>
         <field name="type" 			    			type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
         <field name="exactType"     				type="facet_field"	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
         <field name="species" 			    		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="isDisease"   	    			type="boolean_field"    indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
+        <field name="diseaseId"      			    type="id" 	            indexed="true"  stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
+        <field name="diseaseName"      				type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false"	multiValued="true"/>
+        <field name="diseaseSynonyms"  				type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false"	multiValued="true"/>
         <field name="regulator"      				type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="false"	multiValued="false"/>
         <field name="regulatedEntity"   	    	type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="false"	multiValued="false"/>
         <field name="regulatorId"      			    type="id" 	            indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
@@ -72,6 +75,9 @@
     <copyField source="referenceSynonyms" 		        dest="spellcheck"/>
     <copyField source="referenceOtherIdentifier"        dest="spellcheck"/>
     <copyField source="referenceGeneNames" 		        dest="spellcheck"/>
+    <copyField source="diseaseId"      			        dest="spellcheck"/>
+    <copyField source="diseaseName"      				dest="spellcheck"/>
+    <copyField source="diseaseSynonyms"  				dest="spellcheck"/>
 
     <solrQueryParser defaultOperator="OR"/>
     <uniqueKey>dbId</uniqueKey>

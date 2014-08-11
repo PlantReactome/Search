@@ -23,6 +23,14 @@ public class IndexDocument {
     private String exactType;
     @Field
     private Boolean isDisease;
+
+    @Field
+    private List<String> diseaseId;
+    @Field
+    private List<String> diseaseName;
+    @Field
+    private List<String> diseaseSynonyms;
+
     @Field
     private String species;
 
@@ -144,6 +152,30 @@ public class IndexDocument {
 
     public void setIsDisease(Boolean isDisease) {
         this.isDisease = isDisease;
+    }
+
+    public List<String> getDiseaseId() {
+        return diseaseId;
+    }
+
+    public void setDiseaseId(List<String> diseaseId) {
+        this.diseaseId = diseaseId;
+    }
+
+    public List<String> getDiseaseName() {
+        return diseaseName;
+    }
+
+    public void setDiseaseName(List<String> diseaseName) {
+        this.diseaseName = diseaseName;
+    }
+
+    public List<String> getDiseaseSynonyms() {
+        return diseaseSynonyms;
+    }
+
+    public void setDiseaseSynonyms(List<String> diseaseSynonyms) {
+        this.diseaseSynonyms = diseaseSynonyms;
     }
 
     public String getExactType() {

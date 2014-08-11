@@ -102,7 +102,7 @@ public class Converter {
             bufferedReader.close();
             return list;
         } catch (IOException e) {
-            logger.error("" , e);
+            logger.error("", e); //TODO!!
         }
         return null;
     }
@@ -132,10 +132,36 @@ public class Converter {
         }
         if(hasValues(instance, ReactomeJavaConstants.disease)){
             document.setIsDisease(true);
+            try {
+                List<?> diseases = instance.getAttributeValuesList(ReactomeJavaConstants.disease);
+                List<String> diseasesId = new LinkedList<>();
+                List<String> diseasesName = new LinkedList<>();
+                List<String> diseasesSynonym = new LinkedList<>();
+                for (Object disease : diseases) {
+                    GKInstance d = (GKInstance) disease;
+                    if(hasValue(d, ReactomeJavaConstants.identifier)){
+                        String identifier = (String) d.getAttributeValue(ReactomeJavaConstants.identifier);
+                        diseasesId.add(identifier);diseasesId.add("DOID:" + identifier);
+                    }
+                    if(hasValue(d, ReactomeJavaConstants.name)){
+                        diseasesName.add((String) d.getAttributeValue(ReactomeJavaConstants.name));
+                    }
+                    if(hasValues(d, ReactomeJavaConstants.synonym)){
+                        List<?> synonyms = d.getAttributeValuesList(ReactomeJavaConstants.synonym);
+                        for (Object synonym : synonyms) {
+                            diseasesSynonym.add((String) synonym);
+                        }
+                    }
+                }
+                document.setDiseaseId(diseasesId);
+                document.setDiseaseName(diseasesName);
+                document.setDiseaseSynonyms(diseasesSynonym);
+            } catch (Exception e) {
+                logger.error("Error retrieving disease information", e);
+            }
         } else {
             document.setIsDisease(false);
         }
-
 
         if (hasValue(instance, ReactomeJavaConstants.compartment)){
             setCompartmentAttributes(document, instance);

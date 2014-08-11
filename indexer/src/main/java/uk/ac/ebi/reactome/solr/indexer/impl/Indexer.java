@@ -1,18 +1,5 @@
 package uk.ac.ebi.reactome.solr.indexer.impl;
 
-/**
- *
- * This class is responsible for establishing connection to Solr
- * and the MySQL adapter. It iterates through the collection of
- * GkInstances returned by the MySQL adapter for a given SchemaClass
- * and adds IndexDocuments in batches to the Solr Server
- *
- *
- * @author Florian Korninger (fkorn@ebi.ac.uk)
- * @version 1.0
- *
- */
-
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -35,7 +22,16 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Created by flo on 3/27/14.
+ *
+ * This class is responsible for establishing connection to Solr
+ * and the MySQL adapter. It iterates through the collection of
+ * GkInstances returned by the MySQL adapter for a given SchemaClass
+ * and adds IndexDocuments in batches to the Solr Server
+ *
+ *
+ * @author Florian Korninger (fkorn@ebi.ac.uk)
+ * @version 1.0
+ *
  */
 public class Indexer {
 

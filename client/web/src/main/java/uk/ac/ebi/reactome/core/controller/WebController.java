@@ -2,6 +2,7 @@ package uk.ac.ebi.reactome.core.controller;
 
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -119,9 +120,13 @@ class WebController {
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
         EnrichedEntry entry = searchService.getEntryById(version, id);
+        if (entry!= null) {
         model.addAttribute(ENTRY, entry);
         model.addAttribute(TITEL, entry.getName() );
         return "detail";
+    } else {
+        return "noresultsfound";
+    }
     }
 
     /**
@@ -147,9 +152,20 @@ class WebController {
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
         EnrichedEntry entry = searchService.getEntryById(id);
-        model.addAttribute(ENTRY, entry);
-        model.addAttribute(TITEL, entry.getName() );
-        return "detail";
+        if (entry!= null) {
+            model.addAttribute(ENTRY, entry);
+            model.addAttribute(TITEL, entry.getName());
+            return "detail";
+        } else {
+            return "noresultsfound";
+        }
+    }
+
+//    quick and ugly fix
+@ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
+    @RequestMapping(value = "/query/", method = RequestMethod.GET)
+    public void error () {
+//        return "../../resources/404.jas";
     }
 
     /**

@@ -26,10 +26,6 @@ b, strong {
     margin-left: 0;
 }
 
-
-
-
-
 /*search results*/
 
 .summation
@@ -38,25 +34,16 @@ b, strong {
     text-align: justify;
     display: block;
     overflow: hidden;
-
-
-
     -moz-transition: all 0.5s ease-in-out 0.5s;
     -ms-transition: all 0.5s ease-in-out 0.5s;
     -o-transition: all 0.5s ease-in 1s;
     -webkit-transition: all 0.5s ease-in-out 0.5s;
-    transition: all 0.5s ease-in-out 0.5s;
-
-
-
 }
 
 .summation:hover
 {
     max-height:999px;
 }
-
-
 
 .highlighting
 {
@@ -76,11 +63,7 @@ div.result {
     padding-right: 10px;
     border-bottom: 1px dotted #CCC;
 }
-/*.stID {*/
-    /*float: right;*/
 
-    /*font-size: 80%;*/
-/*}*/
 div#search-results {
     padding-top: 2px;
 }
@@ -92,36 +75,18 @@ div#search-results h3 a:hover {
 }
 div#search-results h3 {
     padding: 5px 0 2px 5px;
-
-
-
     font-size: 138.5%;
-
-
-
     margin-bottom: 0;
     color: #666;
     border-bottom: 0 none;
-
     text-shadow: 1px 1px 3px #ffffff;
-
     background-color: #eeeeee;
-    background-image: -moz-linear-gradient(top, #eeeeee, #d8d8d8);
-    background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #eeeeee),color-stop(1, #d8d8d8));
-    background-image: -webkit-linear-gradient(#eeeeee, #d8d8d8);
-    background-image: linear-gradient(top, #eeeeee, #d8d8d8);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#eeeeee', EndColorStr='#d8d8d8');
-
-
-    -moz-border-radius-topleft: 5px;
-    -moz-border-radius-topright: 5px;
-    -khtml-border-radius-topleft: 5px;
-    -khtml-border-radius-topright: 5px;
-    -webkit-border-top-left-radius: 5px;
-    -webkit-border-top-right-radius: 5px;
+    background: -moz-linear-gradient(top, #eeeeee, #d8d8d8);
+    background: -o-linear-gradient(top, #eeeeee, #d8d8d8);
+    background: -webkit-linear-gradient(top, #eeeeee, #d8d8d8);
+    background: linear-gradient(top, #eeeeee, #d8d8d8);
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-
     margin-top: 0;
 }
 
@@ -139,12 +104,9 @@ div#search-results h4 a:link {
     text-decoration: underline;
 }
 
-
-
 div#search-results h4 a:visited {
     text-decoration: underline;
 }
-
 
 div#search-results h4 a:active
 {
@@ -155,34 +117,18 @@ div#search-results h4 a:active
     color: #111111;
 }
 
-
-
-
-/*detail page table */
-
 .tableHead
 {
     font-weight: bold;
-    /*background-color: #70BDBD;*/
 }
-
-/*.detailTable*/
-/*{*/
-
-    /*text-overflow: ellipsis;*/
-    /*overflow: hidden;*/
-    /*max-height: 110px;*/
-/*}*/
 
 .paddingleft
 {
     padding-left: 12px;
-
-
 }
+
 .padding {
     padding-left: 15px;
-    /*padding-right: 30px;*/
 }
 
 .inline
@@ -192,8 +138,6 @@ div#search-results h4 a:active
 
 }
 
-
-
 .result-detail {
     padding-left: 23px;
     padding-top: 0;
@@ -202,17 +146,12 @@ div#search-results h4 a:active
     margin-bottom: 10px;
 }
 
-
-
-
 /*detail page list */
 
 .list {
     list-style-type: none;
     padding-bottom: 0;
     margin-bottom: 0;
-
-
 }
 
 .list li {
@@ -223,7 +162,6 @@ div#search-results h4 a:active
 .errorList {
     font-size: 90%;
 }
-
 
 .list li a {
 
@@ -239,12 +177,10 @@ div#search-results h4 a:active
     background: #f6f6f6;
 }
 
-
 /*prune tree*/
 .block{
     display: block;
 }
-
 
 .plus {
     font-size: 108%;
@@ -253,7 +189,6 @@ div#search-results h4 a:active
     margin: 0 3px;
     padding: 0;
     }
-
 
 .treeContent {
     padding-left: 20px;
@@ -274,7 +209,7 @@ ul.tree ul {
     padding:0;
 }
 ul.tree ul {
-    margin-left:10px; /* indentation */
+    margin-left:10px;
     position:relative;
 }
 ul.tree ul:before {
@@ -289,9 +224,9 @@ ul.tree ul:before {
 }
 ul.tree li {
     margin:0;
-    padding:0 12px; /* indentation + 2 */
+    padding:0 12px;
     font-size:14px;
-    line-height:20px; /* default list item `line-height` */
+    line-height:20px;
     color:#369;
     font-weight:bold;
     position:relative;
@@ -299,7 +234,7 @@ ul.tree li {
 ul.tree ul li:before {
     content:"";
     display:block;
-    width:10px; /* same with indentation */
+    width:10px;
     height:0;
     border-top:1px solid;
     position:absolute;
@@ -307,9 +242,9 @@ ul.tree ul li:before {
     left:0;
 }
 ul.tree ul li:last-child:before {
-    background:white; /* same with body background */
+    background:white;
     height:auto;
-    top:10px; /* (line-height/2) */
+    top:10px;
     bottom:0;
 }
 ul.tree li a {
@@ -325,18 +260,7 @@ ul.tree li a:hover {
     background: #f6f6f6;
 }
 
-/*.firstElement{*/
-    /*width: 20em;*/
-/*}*/
-
-/*advanced View */
-
-
-
-/*result pagination*/
-
-
-
+/*pagination*/
 .pagination {
     padding: 20px 0;
     margin-bottom: 20px;

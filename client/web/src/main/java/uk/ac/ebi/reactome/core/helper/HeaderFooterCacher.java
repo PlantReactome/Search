@@ -53,6 +53,7 @@ public class HeaderFooterCacher extends Thread {
 
     private synchronized void writeFile(String fileName, String content){
         try {
+            //noinspection ConstantConditions
             String path = getClass().getClassLoader().getResource("").getPath();
             //HACK!
             if(path.contains("WEB-INF")) {
@@ -76,17 +77,8 @@ public class HeaderFooterCacher extends Thread {
         try {
             URL url = new URL(this.server + "common/header.php");
             String rtn = IOUtils.toString(url.openConnection().getInputStream());
-
             rtn = getReplaced(rtn, TITLE_OPEM, TITLE_CLOSE, TITLE_REPLACE);
             rtn = getReplaced(rtn, SEARCH_OPEN, SEARCH_CLOSE, SEARCH_REPLACE);
-
-//            String titlePre = rtn.substring(0, rtn.indexOf(TITLE_OPEM));
-//            String titleSuf = rtn.substring(rtn.indexOf(TITLE_CLOSE) + TITLE_CLOSE.length(), rtn.length());
-//            rtn = titlePre + TITLE_REPLACE + titleSuf;
-
-//            String pre = rtn.substring(0, rtn.indexOf(SEARCH_OPEN));
-//            String suf = rtn.substring(rtn.indexOf(SEARCH_CLOSE) + SEARCH_CLOSE.length(), rtn.length());
-//            return pre + SEARCH_REPLACE + suf;
             return  rtn;
         } catch (IOException e) {
             e.printStackTrace();
@@ -106,8 +98,8 @@ public class HeaderFooterCacher extends Thread {
 
     private String getFooter() {
         try {
-            URL url = new URL("http://dev2.reactome.org/common/footer.php");
-            return IOUtils.toString(url);
+            URL url = new URL(this.server + "common/footer.php");
+            return IOUtils.toString(url.openConnection().getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
             return String.format("<span style='color:red'>%s</span>", e.getMessage());

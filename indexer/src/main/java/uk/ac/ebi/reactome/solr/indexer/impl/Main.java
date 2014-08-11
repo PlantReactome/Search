@@ -10,16 +10,17 @@ public class Main {
     public static void main(String[] args)  {
 
         try {
-            Indexer i = new Indexer();
+            Indexer indexer = new Indexer();
             long startTime = System.currentTimeMillis();
-
-            i.index();
-
+            indexer.index();
             long stopTime = System.currentTimeMillis();
-            System.out.println("Time elapsed :" + (stopTime-startTime));
+            long ms =  stopTime-startTime;
+            long seconds = ms / 1000;
+            long minutes =  seconds / 60;
+            long hours =  minutes / 60;
+            System.out.println("Indexing was successful within: " + hours +"hours " + minutes + "minutes " + seconds + "seconds " );
         } catch (IndexerException e) {
             e.printStackTrace();
         }
-
     }
 }

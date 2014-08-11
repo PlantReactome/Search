@@ -51,7 +51,7 @@ class WebController {
     private static final String MAX_PAGE        =  "maxpage";
     private static final String CLUSTER         =  "cluster";
 
-    private static final String TITEL         =  "title";
+    private static final String TITLE =  "title";
 
     // Autowired annotation not necessary for Constructor injection
     public WebController(SearchService searchService) {
@@ -91,7 +91,7 @@ class WebController {
         model.addAttribute(TYPES_FACET,           facetMap.getTypeFacet());
         model.addAttribute(KEYWORDS_FACET,        facetMap.getKeywordFacet());
         model.addAttribute(COMPARTMENTS_FACET,    facetMap.getCompartmentFacet());
-        model.addAttribute(TITEL,    "advanced Search");
+        model.addAttribute(TITLE,    "advanced Search");
         return "ebiadvanced";
     }
 
@@ -122,7 +122,7 @@ class WebController {
         EnrichedEntry entry = searchService.getEntryById(version, id);
         if (entry!= null) {
         model.addAttribute(ENTRY, entry);
-        model.addAttribute(TITEL, entry.getName() );
+        model.addAttribute(TITLE, entry.getName() + " (" + entry.getSpecies() + ")" );
         return "detail";
     } else {
         return "noresultsfound";
@@ -154,7 +154,7 @@ class WebController {
         EnrichedEntry entry = searchService.getEntryById(id);
         if (entry!= null) {
             model.addAttribute(ENTRY, entry);
-            model.addAttribute(TITEL, entry.getName());
+            model.addAttribute(TITLE, entry.getName());
             return "detail";
         } else {
             return "noresultsfound";
@@ -194,7 +194,7 @@ class WebController {
             }
 
             model.addAttribute(Q, checkOutputIntegrity(q));
-            model.addAttribute(TITEL, "Search results for " + q);
+            model.addAttribute(TITLE, "Search results for " + q);
             model.addAttribute(SPECIES, checkOutputListIntegrity(species));
             model.addAttribute(TYPES, checkOutputListIntegrity(types));
             model.addAttribute(COMPARTMENTS, checkOutputListIntegrity(compartments));

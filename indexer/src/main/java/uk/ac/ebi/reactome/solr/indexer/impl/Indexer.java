@@ -1,7 +1,16 @@
 package uk.ac.ebi.reactome.solr.indexer.impl;
 
 /**
- * Created by flo on 4/29/14.
+ *
+ * This class is responsible for establishing connection to Solr
+ * and the MySQL adapter. It iterates through the collection of
+ * GkInstances returned by the MySQL adapter for a given SchemaClass
+ * and adds IndexDocuments in batches to the Solr Server
+ *
+ *
+ * @author Florian Korninger (fkorn@ebi.ac.uk)
+ * @version 1.0
+ *
  */
 
 import org.apache.log4j.ConsoleAppender;
@@ -20,7 +29,9 @@ import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -38,18 +49,18 @@ public class Indexer {
     private Properties databaseProperties;
     private Properties marshallerProperties;
 
-    private final int commitInterval ;
+    private final int addInterval;
     private final int numberOfTries;
 
 
     private void loadProperties() {
         solrProperties = new Properties();
         databaseProperties = new Properties();
-//        marshallerProperties = new Properties();
+        marshallerProperties = new Properties();
         try {
             solrProperties.load(getClass().getResourceAsStream("/solr.properties"));
             databaseProperties.load(getClass().getResourceAsStream("/database.properties"));
-//            marshallerProperties.load(getClass().getResourceAsStream("/marshaller.properties"));
+            marshallerProperties.load(getClass().getResourceAsStream("/marshaller.properties"));
         } catch (FileNotFoundException e) {
             logger.error("no property file found", e);
         } catch (IOException e) {
@@ -63,13 +74,13 @@ public class Indexer {
         logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
 
         loadProperties();
-        commitInterval = Integer.parseInt(solrProperties.getProperty("commitInterval"));
+        addInterval = Integer.parseInt(solrProperties.getProperty("addInterval"));
         numberOfTries = Integer.parseInt(solrProperties.getProperty("numberOfTries"));
 
 
         initializeMysql();
         initializeSolrServer();
-//        initializeMarshaller();
+        initializeMarshaller();
 
 
         converter = new Converter();
@@ -79,12 +90,15 @@ public class Indexer {
 
         try {
             cleanSolrIndex();
-//            marshaller.writeHeader();
+            commitSolrServer();
+            marshaller.writeHeader();
             int entriesCount = 0;
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
             entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
-//            marshaller.writeFooter(entriesCount);
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
+            marshaller.writeFooter(entriesCount);
+
+            commitSolrServer();
             closeSolrServer();
         } catch (Exception e) {
             logger.error(e.getMessage(),e);
@@ -92,27 +106,37 @@ public class Indexer {
     }
 
     /**
-     * Takes all Entries of a Reactome Class (Event or Physical Entity), converts and indexes it
-     * @param className
+     * Iterates of a Collection of GkInstances, each Instance will be converted
+     * to a IndexDocument by the Converter, The IndexDocuments will be added to
+     * Solr and marshaled to a xml file.
+     * @param className Name of the SchemaClass that should be indexed
+     * @return number of Documents processed
      * @throws Exception
      */
     private int indexSchemaClass(String className) throws Exception {
 
-        Collection<GKInstance> instances = dba.fetchInstancesByClass(className);
+        Collection<?> instances = dba.fetchInstancesByClass(className);
 
         int numberOfDocuments = 0;
-        for (GKInstance instance : instances) {
+        List<IndexDocument> collection = new ArrayList<>();
+        for (Object object : instances) {
+            GKInstance instance = (GKInstance) object;
             IndexDocument document = converter.buildDocumentFromGkInstance(instance);
-            addDocumentToSolrServer(document);
-//            marshaller.writeEntry(document);
+            collection.add(document);
+            marshaller.writeEntry(document);
             numberOfDocuments ++;
-            if (numberOfDocuments % commitInterval == 0) {
-                commitSolrServer();
-//                optimizeSolrServer(); overkill
+            if (numberOfDocuments % addInterval == 0 && !collection.isEmpty()) {
+                addDocumentsToSolrServer(collection);
+                collection.clear();
             }
-
+            if (numberOfDocuments==250) {
+                break;
+            }
         }
-        commitSolrServer();
+        if (!collection.isEmpty()){
+            addDocumentsToSolrServer(collection);
+        }
+
         return numberOfDocuments;
     }
 
@@ -121,21 +145,21 @@ public class Indexer {
 
     /**
      * Safely adding Document Bean to Solr Server
-     * @param document
+     * @param documents List of Documents that will be added to Solr
      * @throws IndexerException
      */
-    private void addDocumentToSolrServer (IndexDocument document) throws IndexerException {
+    private void addDocumentsToSolrServer (List<IndexDocument> documents) throws IndexerException {
 
-        if (solrServer != null && document != null) {
+        if (solrServer != null && documents != null && !documents.isEmpty()) {
             try {
-                solrServer.addBean(document);
+                solrServer.addBeans(documents);
             } catch (Exception e) {
                 int numberOfTries = 3;
                 boolean unsuccessfulAdd = true;
 
                 while (numberOfTries <= this.numberOfTries && unsuccessfulAdd){
                     try {
-                        solrServer.addBean(document);
+                        solrServer.addBeans(documents);
                         unsuccessfulAdd = false;
                     } catch (Exception e2) {
                         numberOfTries++;
@@ -154,8 +178,6 @@ public class Indexer {
 
     /**
      * Cleaning Solr Server (removes all current Data)
-     * @throws IOException
-     * @throws SolrServerException
      * @throws IndexerException
      */
     private void cleanSolrIndex() throws IndexerException {
@@ -163,15 +185,13 @@ public class Indexer {
         if (solrServer != null ){
             try {
                 solrServer.deleteByQuery("*:*");
+
             } catch (SolrServerException e) {
                 logger.error("could not Delete Solr Data solr Exception", e);
 
             } catch (IOException e) {
                 logger.error("could not Delete Solr Data IO Exception", e);
             }
-            commitSolrServer();
-            optimizeSolrServer();
-            logger.info("SolrServer cleaned");
         }
         else {
             logger.error("SolrServer Should not be Null");
@@ -185,8 +205,8 @@ public class Indexer {
     private void closeSolrServer() throws IndexerException {
 
         if (solrServer != null ){
-            commitSolrServer();
-            optimizeSolrServer(); // Important (used for creating the dictionaries - spell checking and suggestions)
+
+//            optimizeSolrServer(); // Important (used for creating the dictionaries - spell checking and suggestions)
             solrServer.shutdown();
             logger.info("SolrServer shutdown");
         }
@@ -212,6 +232,7 @@ public class Indexer {
                         solrServer.commit();
                         unsuccessfulCommit = false;
                     } catch (Exception e2) {
+                        System.out.println("error commiting");
                         numberOfTries++;
                     }
                 }
@@ -223,34 +244,34 @@ public class Indexer {
         }
     }
 
-    /**
-     * Optimizes the Solr Server (deletes unused and outdated Data)
-     * throws no Exception Solr should work fine without optimization
-     */
-    private void optimizeSolrServer() throws IndexerException {
-
-        if (solrServer != null){
-            try {
-                solrServer.optimize();
-            } catch (Exception e) {
-                int numberOfTries = 1;
-                boolean unsuccessfulOptimize = true;
-                while (numberOfTries <= this.numberOfTries && unsuccessfulOptimize){
-                    try {
-                        solrServer.optimize();
-                        unsuccessfulOptimize = false;
-                    } catch (Exception e2) {
-                        numberOfTries++;
-                    }
-                }
-                if (unsuccessfulOptimize){
-                    logger.error("Could not Optimize SolrServer");
-                    throw new IndexerException("Could not optimize", e);
-                }
-            }
-        }
-
-    }
+//    /**
+//     * Optimizes the Solr Server (deletes unused and outdated Data)
+//     * throws no Exception Solr should work fine without optimization
+//     */
+//    private void optimizeSolrServer() throws IndexerException {
+//
+//        if (solrServer != null){
+//            try {
+//                solrServer.optimize();
+//            } catch (Exception e) {
+//                int numberOfTries = 1;
+//                boolean unsuccessfulOptimize = true;
+//                while (numberOfTries <= this.numberOfTries && unsuccessfulOptimize){
+//                    try {
+//                        solrServer.optimize();
+//                        unsuccessfulOptimize = false;
+//                    } catch (Exception e2) {
+//                        numberOfTries++;
+//                    }
+//                }
+//                if (unsuccessfulOptimize){
+//                    logger.error("Could not Optimize SolrServer");
+//                    throw new IndexerException("Could not optimize", e);
+//                }
+//            }
+//        }
+//
+//    }
 
     /**
      * InitializesSolrServer
@@ -262,7 +283,8 @@ public class Indexer {
      */
     private void initializeSolrServer()  {
 
-        HttpSolrServer server = new HttpSolrServer(solrProperties.getProperty("url"));
+        solrServer = new HttpSolrServer(solrProperties.getProperty("url"));
+//        HttpSolrServer server = new HttpSolrServer(solrProperties.getProperty("url"));
 //        keep Default values do only alter if necessary!
 //        server.setMaxRetries                    (Integer.parseInt(solrProperties.getProperty("maxRetries")));
 //        server.setConnectionTimeout             (Integer.parseInt(solrProperties.getProperty("connectionTimeout")));
@@ -270,7 +292,7 @@ public class Indexer {
 //        server.setDefaultMaxConnectionsPerHost  (Integer.parseInt(solrProperties.getProperty("maxConnectionsPerHost")));
 //        server.setMaxTotalConnections           (Integer.parseInt(solrProperties.getProperty("maxConnectionsTotal")));
 //        server.setFollowRedirects               (Boolean.parseBoolean(solrProperties.getProperty("followRedirects")));
-        solrServer = server;
+//        solrServer = server;
     }
 
     /**

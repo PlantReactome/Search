@@ -25,6 +25,9 @@ public class IndexDocument {
     private Boolean isDisease;
     @Field
     private String species;
+
+    private String taxId;
+
     @Field
     private List<String> synonyms;
     @Field
@@ -76,12 +79,11 @@ public class IndexDocument {
     @Field
     private List<String> crossReferences;
 
-    private List<String> crossReferenceDatabase;
 
     @Field
     private List<String> referenceCrossReferences;
 
-    private List<String> referenceCrossReferenceDatabase;
+    private List<CrossReference> allCrossReferences;
 
     @Field
     private String referenceName;
@@ -103,6 +105,22 @@ public class IndexDocument {
 
     // Auto Generated Getters Setters
 
+
+    public String getTaxId() {
+        return taxId;
+    }
+
+    public void setTaxId(String taxId) {
+        this.taxId = taxId;
+    }
+
+    public List<String> getGoBiologicalProcessAccessions() {
+        return goBiologicalProcessAccessions;
+    }
+
+    public List<String> getGoCellularComponentAccessions() {
+        return goCellularComponentAccessions;
+    }
 
     public String getRegulatorId() {
         return regulatorId;
@@ -152,13 +170,7 @@ public class IndexDocument {
         this.keywords = keywords;
     }
 
-    public List<String> getReferenceCrossReferenceDatabase() {
-        return referenceCrossReferenceDatabase;
-    }
 
-    public void setReferenceCrossReferenceDatabase(List<String> referenceCrossReferenceDatabase) {
-        this.referenceCrossReferenceDatabase = referenceCrossReferenceDatabase;
-    }
 
     public List<String> getReferenceCrossReferences() {
         return referenceCrossReferences;
@@ -176,12 +188,17 @@ public class IndexDocument {
         this.crossReferences = crossReferences;
     }
 
-    public List<String> getCrossReferenceDatabase() {
-        return crossReferenceDatabase;
+    public List<CrossReference> getAllCrossReferences() {
+        return allCrossReferences;
     }
 
-    public void setCrossReferenceDatabase(List<String> crossReferenceDatabase) {
-        this.crossReferenceDatabase = crossReferenceDatabase;
+    public void setAllCrossReferences(List<CrossReference> allCrossReferences) {
+        if (this.allCrossReferences == null) {
+            this.allCrossReferences = allCrossReferences;
+        } else {
+            this.allCrossReferences.addAll(allCrossReferences);
+        }
+
     }
 
     public String getRegulatedEntity() {

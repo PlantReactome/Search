@@ -6,21 +6,21 @@
         <field name="dbId" 			    			type="id" 			    indexed="true" 	stored="true"	omitNorms="true"	required="true" 	multiValued="false"/>
         <field name="stId" 		    				type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="false" 	multiValued="false"/>
         <field name="name" 	    					type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"   required="true" 	multiValued="false"/>
-        <field name="name_exact" 		        	type="text_field_exact" indexed="true" 	stored="false" 	omitNorms="false"   required="true" 	multiValued="false"/>
-        <field name="keywords"			     		type="text_field" 	    indexed="true" 	stored="true"  	omitNorms="true"    required="false" 	multiValued="true"/>
-        <field name="type" 			    			type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="true" 	multiValued="false"/>
-        <field name="exactType"     				type="facet_field"	    indexed="true" 	stored="true" 	omitNorms="true"	required="true" 	multiValued="false"/>
-        <field name="species" 			    		type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
+        <field name="name_exact" 		        	type="text_field_exact" indexed="true" 	stored="false" 	omitNorms="false"   required="true"  	multiValued="false"/>
+        <field name="keywords"			     		type="text_field" 	    indexed="true" 	stored="false"  	omitNorms="true"    required="false" 	multiValued="true"/>
+        <field name="type" 			    			type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
+        <field name="exactType"     				type="facet_field"	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
+        <field name="species" 			    		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="isDisease"   	    			type="boolean_field"    indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="regulator"      				type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="false"	multiValued="false"/>
         <field name="regulatedEntity"   	    	type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="false"	multiValued="false"/>
         <field name="regulatorId"      			    type="id" 	            indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="regulatedEntityId"   	    	type="id" 	            indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
-        <field name="type_facet" 		    		type="facet_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="true" 	multiValued="false"/>
-        <field name="species_facet"     			type="facet_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
-        <field name="compartment_facet" 		    type="facet_field" 	    indexed="true" 	stored="true"  	omitNorms="true"    required="false" 	multiValued="true"/>
-        <field name="keywords_facet"		    	type="facet_field" 	    indexed="true" 	stored="true"  	omitNorms="true"    required="false" 	multiValued="true"/>
-        <field name="synonyms" 			    		type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"   required="false" 	multiValued="true"/>
+        <field name="type_facet" 		    		type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
+        <field name="species_facet"     			type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="false"/>
+        <field name="compartment_facet" 		    type="facet_field" 	    indexed="true" 	stored="false"  	omitNorms="true"    required="false" 	multiValued="true"/>
+        <field name="keywords_facet"		    	type="facet_field" 	    indexed="true" 	stored="false"  	omitNorms="true"    required="false" 	multiValued="true"/>
+        <field name="synonyms" 			    		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
         <field name="summation" 				    type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"   required="false" 	multiValued="false"/>
         <field name="inferredSummation" 		    type="stored_value"     indexed="false" stored="true" 	omitNorms="true"    required="false" 	multiValued="false"/>
         <field name="literatureReferenceTitle" 		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
@@ -87,13 +87,6 @@
                 <filter class="solr.LowerCaseFilterFactory"/>
             </analyzer>
         </fieldType>
-        <!--<fieldType name="keyword_field" class="solr.TextField">-->
-        <!--<analyzer>-->
-        <!--<tokenizer class="solr.PatternTokenizerFactory"  pattern=":"/>-->
-        <!--<filter class="solr.LowerCaseFilterFactory"/>-->
-        <!--<filter class="solr.StopFilterFactory" ignoreCase="true" words="prefixstopwords.txt"/>-->
-        <!--</analyzer>-->
-        <!--</fieldType>-->
         <fieldType name="facet_field" class="solr.TextField">
             <analyzer>
                 <tokenizer class="solr.KeywordTokenizerFactory"/>
@@ -120,6 +113,7 @@
             </analyzer>
             <analyzer type="query">
                 <tokenizer class="solr.PatternTokenizerFactory"  pattern="[^a-zA-Z0-9-/._:]"/>
+					 <!--<filter class="solr.EdgeNGramFilterFactory" minGramSize="3" maxGramSize="15" side="front"/>-->
                 <filter class="solr.PatternReplaceFilterFactory" pattern="^[-/._:]+" replacement=""/>
                 <filter class="solr.PatternReplaceFilterFactory" pattern="[-/._:]+$" replacement=""/>
                 <filter class="solr.LengthFilterFactory" min="2" max="20"/>
@@ -137,18 +131,4 @@
         </fieldType>
     </types>
 </schema>
-        <!--<filter class="solr.PorterStemFilterFactory"/>-->
-        <!-- <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
-        <filter class="solr.EdgeNGramFilterFactory" minGramSize="3" maxGramSize="15" side="front"/>-->
 
-        <!--  <analyzer type="query">
-      <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-
-      <filter class="solr.ClassicFilterFactory"/>
-      <filter class="solr.LowerCaseFilterFactory"/>
-
-      <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
-      -<filter class="solr.KStemFilterFactory"/>
-           <filter class="solr.PorterStemFilterFactory"/>
-       <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
-  </analyzer>-->

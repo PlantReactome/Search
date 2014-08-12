@@ -12,13 +12,13 @@
         <field name="exactType"     				type="facet_field"	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
         <field name="species" 			    		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="isDisease"   	    			type="boolean_field"    indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
-        <field name="diseaseId"      			    type="id" 	            indexed="true"  stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
+        <field name="diseaseId"      			    type="keyword_field" 	indexed="true"  stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
         <field name="diseaseName"      				type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false"	multiValued="true"/>
         <field name="diseaseSynonyms"  				type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false"	multiValued="true"/>
         <field name="regulator"      				type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="false"	multiValued="false"/>
         <field name="regulatedEntity"   	    	type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"	required="false"	multiValued="false"/>
-        <field name="regulatorId"      			    type="id" 	            indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
-        <field name="regulatedEntityId"   	    	type="id" 	            indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
+        <field name="regulatorId"      			    type="stored_value"     indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
+        <field name="regulatedEntityId"   	    	type="stored_value" 	indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="type_facet" 		    		type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
         <field name="species_facet"     			type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="compartment_facet" 		    type="facet_field" 	    indexed="true" 	stored="false"  	omitNorms="true"    required="false" 	multiValued="true"/>
@@ -85,17 +85,13 @@
     <types>
         <fieldType name="version" 	    class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0"/>
         <fieldType name="id" 		    class="solr.StrField" />
-        <fieldType name="stored_value" 	class="solr.TextField" />
+        <fieldType name="facet_field"   class="solr.StrField" />
+        <fieldType name="stored_value" 	class="solr.StrField" />
         <fieldType name="boolean_field" class="solr.BoolField"/>
         <fieldType name="keyword_field" class="solr.TextField">
             <analyzer>
                 <tokenizer class="solr.KeywordTokenizerFactory"/>
                 <filter class="solr.LowerCaseFilterFactory"/>
-            </analyzer>
-        </fieldType>
-        <fieldType name="facet_field" class="solr.TextField">
-            <analyzer>
-                <tokenizer class="solr.KeywordTokenizerFactory"/>
             </analyzer>
         </fieldType>
         <fieldType name="suggest_field" class="solr.TextField">

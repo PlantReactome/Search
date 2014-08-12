@@ -25,13 +25,10 @@ public class Marshaller {
     private Writer writer;
 
 
-    public Marshaller( String fileName, String name, String description, String release ) {
-        File output = new File(fileName); // changed to file then check below makes sense
-
+    public Marshaller( File output, String name, String description, String release ) {
         this.name = name;
         this.description = description;
         this.release = release;
-
 
         if ( output == null ) {
             throw new IllegalArgumentException( "output file must not be null." );

@@ -1,21 +1,17 @@
 package uk.ac.ebi.reactome.solr.indexer.impl;
 
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
 import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,64 +36,50 @@ public class Indexer {
     private Converter converter;
     private Marshaller marshaller;
 
-    private static final Logger logger = Logger.getRootLogger();
-    private Properties solrProperties;
-    private Properties databaseProperties;
-    private Properties marshallerProperties;
+    private static final Logger logger = Logger.getLogger(Indexer.class);
 
-    private final int addInterval;
-    private final int numberOfTries;
+    private int addInterval;
+    private int numberOfTries;
+    private Boolean verbose;
 
+    public Indexer(MySQLAdaptor dba, SolrServer solrServer, File controlledVocabulary, File ebeye, String release, Boolean verbose){
 
-    private void loadProperties() {
-        solrProperties = new Properties();
-        databaseProperties = new Properties();
-        marshallerProperties = new Properties();
+        logger.setLevel(Level.INFO);
+        Indexer.dba = dba;
+        Indexer.solrServer = solrServer;
+        converter = new Converter(controlledVocabulary);
+
+        Properties indexerProperties = new Properties();
+        String name = "";
+        String description = "";
         try {
-            solrProperties.load(getClass().getResourceAsStream("/solr.properties"));
-            databaseProperties.load(getClass().getResourceAsStream("/database.properties"));
-            marshallerProperties.load(getClass().getResourceAsStream("/marshaller.properties"));
-        } catch (FileNotFoundException e) {
-            logger.error("no property file found", e);
+            indexerProperties.load(getClass().getResourceAsStream("/indexer.properties"));
+            addInterval = Integer.parseInt(indexerProperties.getProperty("addInterval"));
+            numberOfTries = Integer.parseInt(indexerProperties.getProperty("numberOfTries"));
+            name = indexerProperties.getProperty("name");
+            description = indexerProperties.getProperty("description");
         } catch (IOException e) {
-            logger.error(e.getMessage(), e);
+            logger.error("Error occurred when loading properties file", e);
         }
+        marshaller = new Marshaller(ebeye,name ,description , release);
+        this.verbose = verbose;
     }
 
-    public Indexer() throws IndexerException {
-
-        logger.setLevel(Level.WARN);
-        logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
-
-        loadProperties();
-        addInterval = Integer.parseInt(solrProperties.getProperty("addInterval"));
-        numberOfTries = Integer.parseInt(solrProperties.getProperty("numberOfTries"));
-
-
-        initializeMysql();
-        initializeSolrServer();
-        initializeMarshaller();
-
-
-        converter = new Converter();
-    }
-
-    public void index()  {
+    public void index() throws IndexerException {
 
         try {
             cleanSolrIndex();
-            commitSolrServer();
             marshaller.writeHeader();
             int entriesCount = 0;
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
             entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
             marshaller.writeFooter(entriesCount);
-
             commitSolrServer();
             closeSolrServer();
         } catch (Exception e) {
-            logger.error(e.getMessage(),e);
+            logger.error(e);
+            throw new IndexerException(e);
         }
     }
 
@@ -112,7 +94,6 @@ public class Indexer {
     private int indexSchemaClass(String className) throws Exception {
 
         Collection<?> instances = dba.fetchInstancesByClass(className);
-
         int numberOfDocuments = 0;
         List<IndexDocument> collection = new ArrayList<>();
         for (Object object : instances) {
@@ -124,20 +105,25 @@ public class Indexer {
             if (numberOfDocuments % addInterval == 0 && !collection.isEmpty()) {
                 addDocumentsToSolrServer(collection);
                 collection.clear();
+                logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
+                if (verbose){
+                    System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
+                    marshaller.flush();
+                }
             }
-            if (numberOfDocuments==250) {
-                break;
-            }
+//            if (numberOfDocuments==250) {
+//                break;
+//            }
         }
         if (!collection.isEmpty()){
             addDocumentsToSolrServer(collection);
+            logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
+            if (verbose){
+                System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
+            }
         }
-
         return numberOfDocuments;
     }
-
-
-
 
     /**
      * Safely adding Document Bean to Solr Server
@@ -162,7 +148,7 @@ public class Indexer {
                     }
                 }
                 if (unsuccessfulAdd){
-                    logger.error("Could not add document");
+                    logger.error("Could not add document", e);
                     throw new IndexerException("Could not add document", e);
                 }
             }
@@ -181,10 +167,9 @@ public class Indexer {
         if (solrServer != null ){
             try {
                 solrServer.deleteByQuery("*:*");
-
+                logger.info("Solr index has been cleaned");
             } catch (SolrServerException e) {
                 logger.error("could not Delete Solr Data solr Exception", e);
-
             } catch (IOException e) {
                 logger.error("could not Delete Solr Data IO Exception", e);
             }
@@ -201,8 +186,6 @@ public class Indexer {
     private void closeSolrServer() throws IndexerException {
 
         if (solrServer != null ){
-
-//            optimizeSolrServer(); // Important (used for creating the dictionaries - spell checking and suggestions)
             solrServer.shutdown();
             logger.info("SolrServer shutdown");
         }
@@ -219,7 +202,9 @@ public class Indexer {
         if (solrServer != null ){
             try {
                 solrServer.commit();
+                    logger.info("Solr index has been committed and flushed to disk");
             } catch (Exception e) {
+                logger.error("Error occurred while committing, " + (this.numberOfTries - numberOfTries) + "more tries");
                 int numberOfTries = 1;
                 boolean unsuccessfulCommit = true;
 
@@ -227,8 +212,9 @@ public class Indexer {
                     try {
                         solrServer.commit();
                         unsuccessfulCommit = false;
+                            logger.info("Solr index has been committed and flushed to disk");
                     } catch (Exception e2) {
-                        System.out.println("error commiting");
+                        logger.error("Error occurred while committing, " + (this.numberOfTries - numberOfTries) + "more tries");
                         numberOfTries++;
                     }
                 }
@@ -277,43 +263,43 @@ public class Indexer {
      * 100 Total Connections
      * will not follow redirects (default)
      */
-    private void initializeSolrServer()  {
-
-        solrServer = new HttpSolrServer(solrProperties.getProperty("url"));
-//        HttpSolrServer server = new HttpSolrServer(solrProperties.getProperty("url"));
-//        keep Default values do only alter if necessary!
-//        server.setMaxRetries                    (Integer.parseInt(solrProperties.getProperty("maxRetries")));
-//        server.setConnectionTimeout             (Integer.parseInt(solrProperties.getProperty("connectionTimeout")));
-//        server.setSoTimeout                     (Integer.parseInt(solrProperties.getProperty("soTimeout")));
-//        server.setDefaultMaxConnectionsPerHost  (Integer.parseInt(solrProperties.getProperty("maxConnectionsPerHost")));
-//        server.setMaxTotalConnections           (Integer.parseInt(solrProperties.getProperty("maxConnectionsTotal")));
-//        server.setFollowRedirects               (Boolean.parseBoolean(solrProperties.getProperty("followRedirects")));
-//        solrServer = server;
-    }
+//    private void initializeSolrServer()  {
+//
+//        solrServer = new HttpSolrServer(solrProperties.getProperty("url"));
+////        HttpSolrServer server = new HttpSolrServer(solrProperties.getProperty("url"));
+////        keep Default values do only alter if necessary!
+////        server.setMaxRetries                    (Integer.parseInt(solrProperties.getProperty("maxRetries")));
+////        server.setConnectionTimeout             (Integer.parseInt(solrProperties.getProperty("connectionTimeout")));
+////        server.setSoTimeout                     (Integer.parseInt(solrProperties.getProperty("soTimeout")));
+////        server.setDefaultMaxConnectionsPerHost  (Integer.parseInt(solrProperties.getProperty("maxConnectionsPerHost")));
+////        server.setMaxTotalConnections           (Integer.parseInt(solrProperties.getProperty("maxConnectionsTotal")));
+////        server.setFollowRedirects               (Boolean.parseBoolean(solrProperties.getProperty("followRedirects")));
+////        solrServer = server;
+//    }
 
     /**
      * Initializes the Mysql Server (via Reactome Adapter)
      * @throws IndexerException
      */
-    private void initializeMysql() throws IndexerException {
-        try {
-            dba = new MySQLAdaptor( databaseProperties.getProperty("host"),
-                                    databaseProperties.getProperty("database"),
-                                    databaseProperties.getProperty("user"),
-                                    databaseProperties.getProperty("password"),
-                                    Integer.parseInt(databaseProperties.getProperty("port")));
-        } catch (SQLException e) {
-            logger.error("Could not initiate MySQLAdapter", e);
-            throw new IndexerException(e.getMessage(), e);
-        }
-    }
+//    private void initializeMysql() throws IndexerException {
+//        try {
+//            dba = new MySQLAdaptor( databaseProperties.getProperty("host"),
+//                                    databaseProperties.getProperty("database"),
+//                                    databaseProperties.getProperty("user"),
+//                                    databaseProperties.getProperty("password"),
+//                                    Integer.parseInt(databaseProperties.getProperty("port")));
+//        } catch (SQLException e) {
+//            logger.error("Could not initiate MySQLAdapter", e);
+//            throw new IndexerException(e.getMessage(), e);
+//        }
+//    }
 
-    private void initializeMarshaller() {
-        marshaller = new Marshaller(marshallerProperties.getProperty("fileName"),
-                                    marshallerProperties.getProperty("name"),
-                                    marshallerProperties.getProperty("description"),
-                                    marshallerProperties.getProperty("release"));
-    }
+//    private void initializeMarshaller(File file) {
+//        marshaller = new Marshaller(marshallerProperties.getProperty("fileName"),
+//                                    marshallerProperties.getProperty("name"),
+//                                    marshallerProperties.getProperty("description"),
+//                                    marshallerProperties.getProperty("release"));
+//    }
 
 }
 

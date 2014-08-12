@@ -19,7 +19,7 @@
             <version>1.2.1</version>
         </dependency>
 
-        <!-- Log4j -->
+        <!--&lt;!&ndash; Log4j &ndash;&gt;-->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -126,15 +126,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <!--<version>2.4</version>-->
-                <!--<configuration>-->
-                    <!--<archive>-->
-                        <!--<manifest>-->
-                            <!--<mainClass>uk.ac.ebi.reactome.solr.indexer.impl.Main</mainClass>-->
-                        <!--</manifest>-->
-                    <!--</archive>-->
-
-                <!--</configuration>-->
             </plugin>
 
 

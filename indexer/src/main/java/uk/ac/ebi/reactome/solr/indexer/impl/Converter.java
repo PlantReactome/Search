@@ -1,9 +1,7 @@
 package uk.ac.ebi.reactome.solr.indexer.impl;
 
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import uk.ac.ebi.reactome.solr.indexer.model.CrossReference;
@@ -23,16 +21,18 @@ import java.util.List;
 
 public class Converter {
 
-    private static final Logger logger = Logger.getRootLogger();
+    private static final Logger logger = Logger.getLogger(Converter.class);
     private final List<String> keywords;
     /**
      * Constructor
      */
-    public Converter() {
+    public Converter(File controlledVocabulary) {
         logger.setLevel(Level.ERROR);
-        logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
-
-        keywords = loadFile("controlledvocabulary.csv");
+//        logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
+        keywords = loadFile(controlledVocabulary);
+        if (keywords==null) {
+            logger.error("No keywords available");
+        }
     }
 
     /**
@@ -74,7 +74,6 @@ public class Converter {
                 } else {
                     document.setRegulatedEntity(regulatedEntity.getDisplayName());
                 }
-
             }
             if (hasValues(instance, ReactomeJavaConstants.regulator)) {
                 GKInstance regulator = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.regulator);
@@ -85,16 +84,15 @@ public class Converter {
                     document.setRegulator(regulator.getDisplayName());
                 }
             }
-
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
     }
-    private List<String> loadFile(String fileName) {
+    private List<String> loadFile(File file) {
         try {
             List<String> list = new ArrayList<>();
-            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(fileName);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            FileInputStream fileStream = new FileInputStream(file);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileStream));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 list.add(line);
@@ -102,11 +100,10 @@ public class Converter {
             bufferedReader.close();
             return list;
         } catch (IOException e) {
-            logger.error("", e); //TODO!!
+            logger.error("An error occurred when loading the controlled vocabulary file", e);
         }
         return null;
     }
-
 
     /**
      * Sets all general attributes (attributes that should occur in events and physical entities
@@ -117,10 +114,9 @@ public class Converter {
 
         document.setDbId(instance.getDBID());
         setNameAndSynonyms(document, instance);
-        document.setKeywords(getKeywordsFromName(document.getName()));
-
-
-
+        if (keywords!=null) {
+            document.setKeywords(getKeywordsFromName(document.getName()));
+        }
         if (hasValues(instance, ReactomeJavaConstants.summation)){
 
             String summation = (concatenateSummations(instance));
@@ -204,13 +200,13 @@ public class Converter {
     }
 
     private List<String> getKeywordsFromName(String name) {
-        List<String> list = new ArrayList<>();
-        for (String keyword : keywords) {
-            if (name.toLowerCase().contains(keyword.toLowerCase())) {
-                list.add(keyword);
+            List<String> list = new ArrayList<>();
+            for (String keyword : keywords) {
+                if (name.toLowerCase().contains(keyword.toLowerCase())) {
+                    list.add(keyword);
+                }
             }
-        }
-        return list;
+            return list;
     }
 
     public void setCrossReference(IndexDocument document, GKInstance instance)  {

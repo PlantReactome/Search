@@ -9,6 +9,7 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by flo on 5/28/14.
@@ -120,6 +121,13 @@ public class Marshaller {
                     }
                 }
             }
+            if (document.getDiseaseId()!= null && !document.getDiseaseId().isEmpty()) {
+                for (String diseaseId: document.getDiseaseId()) {
+                    if (diseaseId.contains("doid:")){
+                        writeRef("DOID", diseaseId, iii);
+                    }
+                }
+            }
 
             if (document.getLiteratureReferencePubMedId()!=null && !document.getLiteratureReferencePubMedId().isEmpty()) {
                 for (String literatureReferencePubMedId : document.getLiteratureReferencePubMedId()) {
@@ -139,7 +147,22 @@ public class Marshaller {
 
             writer.write( ii + "<additional_fields>" + NEW_LINE );
             writeField("species" ,document.getSpecies(),iii);
-            writeField("type" ,document.getType(),iii);
+            if(document.getRelatedSpecies()!=null) {
+                for (String relatedSpecies : document.getRelatedSpecies()) {
+                    writeField("related_species", relatedSpecies, iii);
+                }
+            }
+            if(document.getDiseaseName()!=null) {
+                for (String diseaseName : document.getDiseaseName()) {
+                    writeField("disease_name", diseaseName, iii);
+                }
+            }
+            if(document.getDiseaseSynonyms()!=null) {
+                for (String synonym : document.getDiseaseSynonyms()) {
+                    writeField("disease_synonym", synonym, iii);
+                }
+            }
+            writeField("type", document.getType(), iii);
             if (document.getStId()!= null) {
                 writeField("stId", document.getStId(), iii);
             }

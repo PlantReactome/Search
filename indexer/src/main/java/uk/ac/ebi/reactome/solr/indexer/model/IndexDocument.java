@@ -33,6 +33,8 @@ public class IndexDocument {
 
     @Field
     private String species;
+    @Field
+    private List<String> relatedSpecies;
 
     private String taxId;
 
@@ -287,6 +289,14 @@ public class IndexDocument {
 
     public void setSpecies(String species) {
         this.species = species;
+    }
+
+    public List<String> getRelatedSpecies() {
+        return relatedSpecies;
+    }
+
+    public void setRelatedSpecies(List<String> relatedSpecies) {
+        this.relatedSpecies = relatedSpecies;
     }
 
     public List<String> getSynonyms() {

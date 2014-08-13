@@ -11,6 +11,7 @@
         <field name="type" 			    			type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
         <field name="exactType"     				type="facet_field"	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
         <field name="species" 			    		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="false"/>
+        <field name="relatedSpecies"	    		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
         <field name="isDisease"   	    			type="boolean_field"    indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="diseaseId"      			    type="keyword_field" 	indexed="true"  stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
         <field name="diseaseName"      				type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false"	multiValued="true"/>
@@ -20,9 +21,9 @@
         <field name="regulatorId"      			    type="stored_value"     indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="regulatedEntityId"   	    	type="stored_value" 	indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="type_facet" 		    		type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
-        <field name="species_facet"     			type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="false"/>
-        <field name="compartment_facet" 		    type="facet_field" 	    indexed="true" 	stored="false"  	omitNorms="true"    required="false" 	multiValued="true"/>
-        <field name="keywords_facet"		    	type="facet_field" 	    indexed="true" 	stored="false"  	omitNorms="true"    required="false" 	multiValued="true"/>
+        <field name="species_facet"     			type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
+        <field name="compartment_facet" 		    type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"    required="false" 	multiValued="true"/>
+        <field name="keywords_facet"		    	type="facet_field" 	    indexed="true" 	stored="false" 	omitNorms="true"    required="false" 	multiValued="true"/>
         <field name="synonyms" 			    		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
         <field name="summation" 				    type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="false"   required="false" 	multiValued="false"/>
         <field name="inferredSummation" 		    type="stored_value"     indexed="false" stored="true" 	omitNorms="true"    required="false" 	multiValued="false"/>
@@ -53,6 +54,7 @@
     <copyField source="name" dest="name_exact"/>
 
     <copyField source="species" 				dest="species_facet"/>
+    <copyField source="relatedSpecies" 			dest="species_facet"/>
     <copyField source="type" 					dest="type_facet"/>
     <copyField source="compartmentName" 	    dest="compartment_facet"/>
     <copyField source="keywords" 			    dest="keywords_facet"/>

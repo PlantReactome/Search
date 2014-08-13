@@ -137,7 +137,7 @@ public class Converter {
                     GKInstance d = (GKInstance) disease;
                     if(hasValue(d, ReactomeJavaConstants.identifier)){
                         String identifier = (String) d.getAttributeValue(ReactomeJavaConstants.identifier);
-                        diseasesId.add(identifier);diseasesId.add("DOID:" + identifier);
+                        diseasesId.add(identifier);diseasesId.add("doid:" + identifier);
                     }
                     if(hasValue(d, ReactomeJavaConstants.name)){
                         diseasesName.add((String) d.getAttributeValue(ReactomeJavaConstants.name));
@@ -184,6 +184,15 @@ public class Converter {
                 }
             } else {
                 document.setSpecies("Entries without species");
+            }
+
+            if(hasValues(instance, "relatedSpecies")){ //TODO: use the ReactomeJavaConstants.relatedSpecies when available
+                List<String> relatedSpeciess = new LinkedList<>();
+                for (Object aux : instance.getAttributeValuesList("relatedSpecies")) { //TODO: use the ReactomeJavaConstants.relatedSpecies when available
+                    GKInstance relatedSpecies = (GKInstance) aux;
+                    relatedSpeciess.add(relatedSpecies.getDisplayName());
+                }
+                document.setRelatedSpecies(relatedSpeciess);
             }
 
             if (hasValues(instance, ReactomeJavaConstants.literatureReference)){

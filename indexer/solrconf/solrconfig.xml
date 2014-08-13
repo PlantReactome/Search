@@ -197,6 +197,7 @@
                 name^2000000.0
                 keywords^0.1
                 species^1.0
+                relatedSpecies^1.0
                 type^1.0
                 synonyms^1.0
                 summation^0.1
@@ -254,6 +255,7 @@
                 name^2000000.0
                 keywords^0.1
                 species^1.0
+                relatedSpecies^1.0
                 type^1.0
                 synonyms^1.0
                 summation^0.1
@@ -308,6 +310,7 @@
                 name^2000000.0
                 keywords^0.1
                 species^1.0
+                relatedSpecies^1.0
                 type^1.0
                 synonyms^1.0
                 summation^0.1
@@ -371,6 +374,7 @@
                 name^2000000.0
                 keywords^0.1
                 species^1.0
+                relatedSpecies^1.0
                 type^1.0
                 synonyms^1.0
                 summation^0.1

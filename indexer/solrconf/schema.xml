@@ -9,8 +9,8 @@
         <field name="name_exact" 		        	type="text_field_exact" indexed="true" 	stored="false" 	omitNorms="false"   required="true"  	multiValued="false"/>
         <field name="keywords"			     		type="text_field" 	    indexed="true" 	stored="false"  omitNorms="true"    required="false" 	multiValued="true"/>
         <field name="type" 			    			type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
-        <field name="exactType"     				type="facet_field"	    indexed="true" 	stored="false" 	omitNorms="true"	required="true" 	multiValued="false"/>
-        <field name="species" 			    		type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="true"	required="false"	multiValued="false"/>
+        <field name="exactType"     				type="facet_field"	    indexed="false" stored="true" 	omitNorms="true"	required="true" 	multiValued="false"/>
+        <field name="species" 			    		type="text_field" 	    indexed="true" 	stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="isDisease"   	    			type="boolean_field"    indexed="false" stored="true" 	omitNorms="true"	required="false"	multiValued="false"/>
         <field name="diseaseId"      			    type="keyword_field" 	indexed="true"  stored="false" 	omitNorms="true"	required="false"	multiValued="true"/>
         <field name="diseaseName"      				type="text_field" 	    indexed="true" 	stored="false" 	omitNorms="false"	required="false"	multiValued="true"/>

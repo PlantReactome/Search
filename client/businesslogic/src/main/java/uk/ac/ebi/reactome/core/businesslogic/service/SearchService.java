@@ -161,8 +161,10 @@ public class SearchService {
         if (id != null && !id.isEmpty()) {
             IEnricher enricher = new Enricher(host, currentDatabase, user, password, port);
             if (id.contains("REACT_")) {
-                Entry entry = solrConverter.getEntryById(id);
-                return enricher.enrichEntry(Long.valueOf(entry.getDbId()));
+                Entry entry = solrConverter.getEntryById(id.split("\\.")[0]);
+                if (entry!= null) {
+                    return enricher.enrichEntry(Long.valueOf(entry.getDbId()));
+                }
             } else {
                 return enricher.enrichEntry(Long.valueOf(id));
             }
@@ -179,12 +181,14 @@ public class SearchService {
 
         IEnricher enricher = new Enricher(host,  database + version, user, password, port);
         if (id.contains("REACT_")) {
-            Entry entry = solrConverter.getEntryById(id);
-            return enricher.enrichEntry(Long.valueOf(entry.getDbId()));
+            Entry entry = solrConverter.getEntryById(id.split("\\.")[0]);
+            if (entry!=null) {
+                return enricher.enrichEntry(Long.valueOf(entry.getDbId()));
+            }
         } else {
             return enricher.enrichEntry(Long.valueOf(id));
         }
-
+        return null;
     }
 
     /**

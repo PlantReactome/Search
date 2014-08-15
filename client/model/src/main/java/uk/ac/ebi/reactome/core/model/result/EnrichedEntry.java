@@ -4,6 +4,7 @@ import uk.ac.ebi.reactome.core.model.result.submodels.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Internal Model for Reactome Entries
@@ -12,7 +13,7 @@ import java.util.Map;
  */
 public class EnrichedEntry extends Entry {
 
-    private Node root;
+    private Set<TreeNode> locationsPathwayBrowser;
 
     private List<String> summations;
     private List<String> synonyms;
@@ -51,13 +52,12 @@ public class EnrichedEntry extends Entry {
 
     private List<ModifiedResidue> modifiedResidues;
 
-
-    public Node getRoot() {
-        return root;
+    public Set<TreeNode> getLocationsPathwayBrowser() {
+        return locationsPathwayBrowser;
     }
 
-    public void setRoot(Node root) {
-        this.root = root;
+    public void setLocationsPathwayBrowser(Set<TreeNode> locationsPathwayBrowser) {
+        this.locationsPathwayBrowser = locationsPathwayBrowser;
     }
 
     public List<String> getSummations() {

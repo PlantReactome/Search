@@ -67,7 +67,7 @@ public class Enricher implements IEnricher  {
             }
         } catch (Exception e) {
             logger.error("Error occurred when trying to fetch Instance by dbId", e);
-            throw new EnricherException("Error occurred when trying to fetch Instance by dbId", e);
+//            throw new EnricherException("Error occurred when trying to fetch Instance by dbId", e);
         }
         return null;
     }
@@ -105,6 +105,13 @@ public class Enricher implements IEnricher  {
                 logger.error(e.getMessage(), e);
                 throw new EnricherException(e.getMessage() , e);
             }
+        }
+        return null;
+    }
+
+    protected String getStableIdentifier(GKInstance instance) throws Exception {
+        if (hasValue(instance, ReactomeJavaConstants.stableIdentifier)){
+            return (String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier);
         }
         return null;
     }

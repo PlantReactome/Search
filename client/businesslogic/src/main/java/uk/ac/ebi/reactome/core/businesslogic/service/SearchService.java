@@ -160,13 +160,13 @@ public class SearchService {
     public EnrichedEntry getEntryById(String id) throws EnricherException, SolrSearcherException {
         if (id != null && !id.isEmpty()) {
             IEnricher enricher = new Enricher(host, currentDatabase, user, password, port);
-            if (id.contains("REACT_")) {
+            if (id.toUpperCase().contains("REACT_")) {
                 Entry entry = solrConverter.getEntryById(id.split("\\.")[0]);
                 if (entry!= null) {
-                    return enricher.enrichEntry(Long.valueOf(entry.getDbId()));
+                    return enricher.enrichEntry(entry.getDbId());
                 }
             } else {
-                return enricher.enrichEntry(Long.valueOf(id));
+                return enricher.enrichEntry(id);
             }
         }
         return null;
@@ -180,13 +180,13 @@ public class SearchService {
     public EnrichedEntry getEntryById(Integer version, String id) throws EnricherException, SolrSearcherException {
 
         IEnricher enricher = new Enricher(host,  database + version, user, password, port);
-        if (id.contains("REACT_")) {
+        if (id.toUpperCase().contains("REACT_")) {
             Entry entry = solrConverter.getEntryById(id.split("\\.")[0]);
             if (entry!=null) {
-                return enricher.enrichEntry(Long.valueOf(entry.getDbId()));
+                return enricher.enrichEntry(entry.getDbId());
             }
         } else {
-            return enricher.enrichEntry(Long.valueOf(id));
+            return enricher.enrichEntry(id);
         }
         return null;
     }

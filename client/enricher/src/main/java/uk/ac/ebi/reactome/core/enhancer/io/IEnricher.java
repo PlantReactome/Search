@@ -11,6 +11,6 @@ import uk.ac.ebi.reactome.core.model.result.EnrichedEntry;
  */
 public interface IEnricher {
 
-    public EnrichedEntry enrichEntry(Long dbId) throws EnricherException;
+    public EnrichedEntry enrichEntry(String dbId) throws EnricherException;
 
 }

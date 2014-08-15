@@ -48,9 +48,16 @@ public class Enricher implements IEnricher  {
      * @return EnrichedEntry
      * @throws EnricherException
      */
-    public EnrichedEntry enrichEntry(Long dbId) throws EnricherException {
+    @Override
+    public EnrichedEntry enrichEntry(String dbId) throws EnricherException {
+        Long id;
         try {
-            GKInstance instance = dba.fetchInstance(dbId);
+            id = Long.valueOf(dbId);
+        }catch (NumberFormatException e){
+            return null;
+        }
+        try {
+            GKInstance instance = dba.fetchInstance(id);
             if (instance != null) {
                 EnrichedEntry enrichedEntry = new EnrichedEntry();
                 new GeneralAttributeEnricher().setGeneralAttributes(instance, enrichedEntry);

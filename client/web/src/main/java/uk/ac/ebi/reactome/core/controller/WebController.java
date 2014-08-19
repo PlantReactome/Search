@@ -204,6 +204,9 @@ class WebController {
             Query queryObject = new Query(q, species,types,compartments,keywords);
             model.addAttribute(PAGE, page);
             FacetMap facetMap = searchService.getFacetingInformation(queryObject);
+            // Faceting information is used to determine if the query with the currently selected filters
+            // will return any results. If nothing is found, all the selected filters will be removed and
+            // another query will be sent to Solr
             if (facetMap != null && facetMap.getTotalNumFount()>0){
                 model.addAttribute(SPECIES_FACET,         facetMap.getSpeciesFacet());
                 model.addAttribute(TYPES_FACET,           facetMap.getTypeFacet());
@@ -245,6 +248,7 @@ class WebController {
                     }
                     return "ebisearcher";
                 } else {
+                    // Generating spellcheck suggestions if no faceting informatioon was found, while using no filters
                     model.addAttribute(SUGGESTIONS, searchService.getSpellcheckSuggestions(q));
                 }
             }

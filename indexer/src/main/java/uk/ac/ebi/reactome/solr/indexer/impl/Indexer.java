@@ -41,8 +41,9 @@ public class Indexer {
     private int addInterval;
     private int numberOfTries;
     private Boolean verbose;
+    private Boolean xml;
 
-    public Indexer(MySQLAdaptor dba, SolrServer solrServer, File controlledVocabulary, File ebeye, String release, Boolean verbose){
+    public Indexer(MySQLAdaptor dba, SolrServer solrServer, File controlledVocabulary, File ebeye, String release, Boolean xml, Boolean verbose){
 
         logger.setLevel(Level.INFO);
         Indexer.dba = dba;
@@ -61,21 +62,29 @@ public class Indexer {
         } catch (IOException e) {
             logger.error("Error occurred when loading properties file", e);
         }
-        marshaller = new Marshaller(ebeye,name ,description , release);
+
         this.verbose = verbose;
+        this.xml = xml;
+        if (xml) {
+            marshaller = new Marshaller(ebeye, name, description, release);
+        }
     }
 
     public void index() throws IndexerException {
 
         try {
             cleanSolrIndex();
-            marshaller.writeHeader();
-            int entriesCount = 0;
+            if (xml) {
+                marshaller.writeHeader();
+            }
+                int entriesCount = 0;
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
             entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
-            marshaller.writeFooter(entriesCount);
-            commitSolrServer();
+            if (xml) {
+                marshaller.writeFooter(entriesCount);
+            }
+                commitSolrServer();
             closeSolrServer();
         } catch (Exception e) {
             logger.error(e);
@@ -100,15 +109,19 @@ public class Indexer {
             GKInstance instance = (GKInstance) object;
             IndexDocument document = converter.buildDocumentFromGkInstance(instance);
             collection.add(document);
-            marshaller.writeEntry(document);
+            if (xml) {
+                marshaller.writeEntry(document);
+            }
             numberOfDocuments ++;
             if (numberOfDocuments % addInterval == 0 && !collection.isEmpty()) {
                 addDocumentsToSolrServer(collection);
                 collection.clear();
-                logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
+                if(xml) {
+                    marshaller.flush();
+                }
+                    logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
                 if (verbose){
                     System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
-                    marshaller.flush();
                 }
             }
 //            if (numberOfDocuments==250) {

@@ -38,6 +38,8 @@ public class IndexerTool {
                         "XML output file for the EBeye" )
                         ,new FlaggedOption( "release", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'r', "release",
                         "Release version number" )
+                        ,new QualifiedSwitch( "xml", JSAP.BOOLEAN_PARSER, null, JSAP.NOT_REQUIRED, 'x', "xml",
+                        "Generates XML formatted ouptup (for EBEYE)" )
                         ,new QualifiedSwitch( "verbose", JSAP.BOOLEAN_PARSER, null, JSAP.NOT_REQUIRED, 'v', "verbose",
                         "Requests verbose output." )
                 }
@@ -60,8 +62,8 @@ public class IndexerTool {
             String release = config.getString("release");
             File controlledVocabulary = new File(config.getString("input"));
             Boolean verbose = config.getBoolean("verbose");
-
-            Indexer indexer = new Indexer(dba, solrServer, controlledVocabulary, output, release, verbose);
+            Boolean xml = config.getBoolean("xml");
+            Indexer indexer = new Indexer(dba, solrServer, controlledVocabulary, output, release, xml, verbose);
 
             indexer.index();
             long stopTime = System.currentTimeMillis();

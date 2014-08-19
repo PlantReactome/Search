@@ -80,6 +80,12 @@ public class SolrSearcher {
         logger.info("SolrServer initialized");
     }
 
+    /**
+     * Query for checking if this specific String exists in the index
+     * @param query String of the query parameter given
+     * @return true if there are results
+     * @throws SolrSearcherException
+     */
     public boolean existsQuery (String query) throws SolrSearcherException {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRequestHandler(EXISTS_REQUEST_HANDLER);
@@ -96,7 +102,7 @@ public class SolrSearcher {
      * @return QueryResponse
      * @throws uk.ac.ebi.reactome.solr.core.exception.SolrSearcherException
      */
-    public QueryResponse searchCluster (Query queryObject) throws SolrSearcherException {
+    public QueryResponse searchCluster(Query queryObject) throws SolrSearcherException {
         SolrQuery parameters = new SolrQuery();
 
         parameters.setRequestHandler(CLUSTERED_REQUEST_HANDLER);

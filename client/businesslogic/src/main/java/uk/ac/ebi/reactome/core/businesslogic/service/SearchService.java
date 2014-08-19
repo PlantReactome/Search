@@ -76,6 +76,9 @@ public class SearchService {
 
             FacetMap facetMap = solrConverter.getFacetingInformation(queryObject);
             boolean correctFacets = true;
+            // Each faceting group(species,types,keywords,compartments) is dependent from all selected filters of other faceting groups
+            // This brings the risk of having filters that contradict each other. To avoid having selected facets that will cause problems
+            // with the next filtering or querying it is necessary to remove those from the filtering process and repeat the faceting step
             if (queryObject.getSpecies() != null && facetMap.getSpeciesFacet().getSelected().size() != queryObject.getSpecies().size()) {
                 correctFacets = false;
                 List<String> species = new ArrayList<String>();

@@ -33,7 +33,8 @@ public class SolrConverter implements ISolrConverter {
     private static final String ST_ID                 =  "stId";
     private static final String NAME                  =  "name";
 
-    private static final String SPECIES               =  "species_facet";
+    private static final String SPECIES               =  "species";
+    private static final String SPECIES_FACET         =  "species_facet";
     private static final String TYPES                 =  "type_facet";
     private static final String KEYWORDS              =  "keywords_facet";
     private static final String COMPARTMENTS          =  "compartment_facet";
@@ -208,7 +209,7 @@ public class SolrConverter implements ISolrConverter {
         if (response!= null && queryObject!=null) {
             FacetMap facetMap = new FacetMap();
             facetMap.setTotalNumFount(response.getResults().getNumFound());
-            facetMap.setSpeciesFacet(getFacets(response.getFacetField(SPECIES), queryObject.getSpecies()));
+            facetMap.setSpeciesFacet(getFacets(response.getFacetField(SPECIES_FACET), queryObject.getSpecies()));
             facetMap.setTypeFacet(getFacets(response.getFacetField(TYPES), queryObject.getTypes()));
             facetMap.setKeywordFacet(getFacets(response.getFacetField(KEYWORDS), queryObject.getKeywords()));
             facetMap.setCompartmentFacet(getFacets(response.getFacetField(COMPARTMENTS), queryObject.getCompartment()));
@@ -255,7 +256,7 @@ public class SolrConverter implements ISolrConverter {
                 for (FacetField.Count field : fields) {
                     available.add(new FacetContainer(field.getName(), field.getCount()));
                 }
-                if (facetField.getName().equals(SPECIES)) {
+                if (facetField.getName().equals(SPECIES_FACET)) {
                     facetMap.setSpeciesFacet(new FacetList(available));
                 } else if (facetField.getName().equals(TYPES)) {
                     facetMap.setTypeFacet(new FacetList(available));
@@ -290,7 +291,11 @@ public class SolrConverter implements ISolrConverter {
 
             entry.setExactType((String) solrDocument.getFieldValue(EXACT_TYPE));
             entry.setIsDisease((Boolean) solrDocument.getFieldValue(IS_DISEASE));
-            entry.setSpecies((String) solrDocument.getFieldValue(SPECIES));
+            //Only the first species is taken into account
+            Collection species = solrDocument.getFieldValues(SPECIES);
+            if(species!=null) {
+                entry.setSpecies((String) species.toArray()[0]);
+            }
             entry.setDatabaseName((String) solrDocument.getFieldValue(DATABASE_NAME));
             entry.setReferenceURL((String) solrDocument.getFieldValue(REFERENCE_URL));
             entry.setRegulatorId((String) solrDocument.getFieldValue(REGULATOR_ID));

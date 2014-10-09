@@ -216,7 +216,12 @@ public class GeneralAttributeEnricher extends Enricher{
     private Set<TreeNode> generateUrlFromLeaves(Set<GraphNode>leaves) throws EnricherException {
         Set<TreeNode> topLvlTrees = new HashSet<TreeNode>();
         for (GraphNode leaf : leaves) {
-            topLvlTrees.add(getTreeFromGraphLeaf(leaf, "", ""));
+            TreeNode tree = getTreeFromGraphLeaf(leaf, "", "");
+            if(tree!=null){
+                topLvlTrees.add(tree);
+            }else{
+                logger.error("Could no process tree for " + leaf.getName());
+            }
         }
         return topLvlTrees;
     }
@@ -233,8 +238,10 @@ public class GeneralAttributeEnricher extends Enricher{
                 id = String.valueOf(leaf.getDbId());
             }
         } catch (EnricherException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
+        if(diagram.isEmpty()) return null;
+
         String url = this.PATHWAY_BROWSER_URL;
         if (leaf.getSpecies() != null && !leaf.getSpecies().contains("Homo sapiens")) {
             url += "SPECIES=" + leaf.getSpeciesId();

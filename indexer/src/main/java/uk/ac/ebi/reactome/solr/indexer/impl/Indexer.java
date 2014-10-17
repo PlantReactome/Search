@@ -43,7 +43,7 @@ public class Indexer {
     private Boolean verbose;
     private Boolean xml;
 
-    public Indexer(MySQLAdaptor dba, SolrServer solrServer, File controlledVocabulary, File ebeye, String release, Boolean xml, Boolean verbose){
+    public Indexer(MySQLAdaptor dba, SolrServer solrServer, File controlledVocabulary, File ebeye, String release, Boolean verbose){
 
         logger.setLevel(Level.INFO);
         Indexer.dba = dba;
@@ -64,7 +64,7 @@ public class Indexer {
         }
 
         this.verbose = verbose;
-        this.xml = xml;
+        this.xml = ebeye!=null;
         if (xml) {
             marshaller = new Marshaller(ebeye, name, description, release);
         }

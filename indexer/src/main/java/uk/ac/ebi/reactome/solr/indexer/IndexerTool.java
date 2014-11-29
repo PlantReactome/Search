@@ -31,13 +31,13 @@ public class IndexerTool {
                                 "The database host")
                         ,new FlaggedOption( "database", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'd', "database",
                                 "The reactome database name to connect to")
-                        ,new FlaggedOption( "db username", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'u', "dbuser",
+                        ,new FlaggedOption( "dbuser", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'u', "dbuser",
                                 "The database user")
-                        ,new FlaggedOption( "db password", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'p', "dbpassword",
+                        ,new FlaggedOption( "dbpassword", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'p', "dbpassword",
                                 "The password to connect to the database")
-                        ,new FlaggedOption( "solr username", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'e', "solruser",
+                        ,new FlaggedOption( "solruser", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'e', "solruser",
                                 "The solr user")
-                        ,new FlaggedOption( "solr password", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'a', "solrpassword",
+                        ,new FlaggedOption( "solrpassword", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'a', "solrpassword",
                                 "The password to connect to solr")
                         ,new FlaggedOption( "solrurl", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 's', "solrurl",
                                 "Url of the running Solr server")

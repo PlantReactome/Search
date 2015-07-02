@@ -185,6 +185,7 @@ public class SearchService {
         IEnricher enricher = new Enricher(host,  database + version, user, password, port);
         if (id.toUpperCase().contains("REACT_") || id.toUpperCase().contains("R-")) {
             Entry entry = solrConverter.getEntryById(id.split("\\.")[0]);
+            System.err.println('stable ID '+id);
             if (entry!=null) {
                 return enricher.enrichEntry(entry.getDbId());
             }

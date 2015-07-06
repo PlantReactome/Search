@@ -18,16 +18,13 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- *
  * This class is responsible for establishing connection to Solr
  * and the MySQL adapter. It iterates through the collection of
  * GkInstances returned by the MySQL adapter for a given SchemaClass
  * and adds IndexDocuments in batches to the Solr Server
  *
- *
  * @author Florian Korninger (fkorn@ebi.ac.uk)
  * @version 1.0
- *
  */
 public class Indexer {
 
@@ -43,7 +40,7 @@ public class Indexer {
     private Boolean verbose;
     private Boolean xml;
 
-    public Indexer(MySQLAdaptor dba, SolrServer solrServer, File controlledVocabulary, File ebeye, String release, Boolean verbose){
+    public Indexer(MySQLAdaptor dba, SolrServer solrServer, File controlledVocabulary, File ebeye, String release, Boolean verbose) {
 
         logger.setLevel(Level.INFO);
         Indexer.dba = dba;
@@ -64,7 +61,7 @@ public class Indexer {
         }
 
         this.verbose = verbose;
-        this.xml = ebeye!=null;
+        this.xml = ebeye != null;
         if (xml) {
             marshaller = new Marshaller(ebeye, name, description, release);
         }
@@ -77,14 +74,14 @@ public class Indexer {
             if (xml) {
                 marshaller.writeHeader();
             }
-                int entriesCount = 0;
+            int entriesCount = 0;
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
             entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
             if (xml) {
                 marshaller.writeFooter(entriesCount);
             }
-                commitSolrServer();
+            commitSolrServer();
             closeSolrServer();
         } catch (Exception e) {
             logger.error(e);
@@ -96,6 +93,7 @@ public class Indexer {
      * Iterates of a Collection of GkInstances, each Instance will be converted
      * to a IndexDocument by the Converter, The IndexDocuments will be added to
      * Solr and marshaled to a xml file.
+     *
      * @param className Name of the SchemaClass that should be indexed
      * @return number of Documents processed
      * @throws Exception
@@ -112,26 +110,27 @@ public class Indexer {
             if (xml) {
                 marshaller.writeEntry(document);
             }
-            numberOfDocuments ++;
+            numberOfDocuments++;
             if (numberOfDocuments % addInterval == 0 && !collection.isEmpty()) {
                 addDocumentsToSolrServer(collection);
                 collection.clear();
-                if(xml) {
+                if (xml) {
                     marshaller.flush();
                 }
-                    logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
-                if (verbose){
+                logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
+                if (verbose) {
                     System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
                 }
+//                commitSolrServer(); //For test purposes
             }
 //            if (numberOfDocuments==250) {
 //                break;
 //            }
         }
-        if (!collection.isEmpty()){
+        if (!collection.isEmpty()) {
             addDocumentsToSolrServer(collection);
             logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
-            if (verbose){
+            if (verbose) {
                 System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
             }
         }
@@ -140,10 +139,11 @@ public class Indexer {
 
     /**
      * Safely adding Document Bean to Solr Server
+     *
      * @param documents List of Documents that will be added to Solr
      * @throws IndexerException
      */
-    private void addDocumentsToSolrServer (List<IndexDocument> documents) throws IndexerException {
+    private void addDocumentsToSolrServer(List<IndexDocument> documents) throws IndexerException {
 
         if (solrServer != null && documents != null && !documents.isEmpty()) {
             try {
@@ -152,7 +152,7 @@ public class Indexer {
                 int numberOfTries = 3;
                 boolean unsuccessfulAdd = true;
 
-                while (numberOfTries <= this.numberOfTries && unsuccessfulAdd){
+                while (numberOfTries <= this.numberOfTries && unsuccessfulAdd) {
                     try {
                         solrServer.addBeans(documents);
                         unsuccessfulAdd = false;
@@ -160,78 +160,79 @@ public class Indexer {
                         numberOfTries++;
                     }
                 }
-                if (unsuccessfulAdd){
+                if (unsuccessfulAdd) {
                     logger.error("Could not add document", e);
                     throw new IndexerException("Could not add document", e);
                 }
             }
-        }
-        else {
+        } else {
             logger.error("SolrServer or Document is null");
         }
     }
 
     /**
      * Cleaning Solr Server (removes all current Data)
+     *
      * @throws IndexerException
      */
     private void cleanSolrIndex() throws IndexerException {
 
-        if (solrServer != null ){
+        if (solrServer != null) {
             try {
                 solrServer.deleteByQuery("*:*");
+                solrServer.commit();
                 logger.info("Solr index has been cleaned");
             } catch (SolrServerException e) {
                 logger.error("could not Delete Solr Data solr Exception", e);
             } catch (IOException e) {
                 logger.error("could not Delete Solr Data IO Exception", e);
             }
-        }
-        else {
+        } else {
             logger.error("SolrServer Should not be Null");
         }
     }
 
     /**
      * Closes connection to Solr Server
+     *
      * @throws IndexerException (if commit was not successful)
      */
     private void closeSolrServer() throws IndexerException {
 
-        if (solrServer != null ){
+        if (solrServer != null) {
             solrServer.shutdown();
             logger.info("SolrServer shutdown");
-        }
-        else {
+        } else {
             logger.error("SolrServer Should not be Null");
         }
     }
 
     /**
      * Commits Data that has been added till now to Solr Server
+     *
      * @throws IndexerException not comiting could mean that this Data will not be added to Solr
      */
     private void commitSolrServer() throws IndexerException {
-        if (solrServer != null ){
+        if (solrServer != null) {
             try {
                 solrServer.commit();
-                    logger.info("Solr index has been committed and flushed to disk");
+                logger.info("Solr index has been committed and flushed to disk");
             } catch (Exception e) {
                 logger.error("Error occurred while committing, " + (this.numberOfTries - numberOfTries) + "more tries");
                 int numberOfTries = 1;
                 boolean unsuccessfulCommit = true;
 
-                while (numberOfTries <= this.numberOfTries && unsuccessfulCommit){
+                while (numberOfTries <= this.numberOfTries && unsuccessfulCommit) {
                     try {
                         solrServer.commit();
                         unsuccessfulCommit = false;
-                            logger.info("Solr index has been committed and flushed to disk");
+                        logger.info("Solr index has been committed and flushed to disk");
                     } catch (Exception e2) {
                         logger.error("Error occurred while committing, " + (this.numberOfTries - numberOfTries) + "more tries");
                         numberOfTries++;
                     }
                 }
-                if (unsuccessfulCommit){
+                if (unsuccessfulCommit) {
                     logger.error("Could not commit", e);
                     throw new IndexerException("Could not commit", e);
                 }

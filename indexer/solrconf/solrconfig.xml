@@ -192,6 +192,7 @@
             <str name="bq">species:"Homo sapiens"^0.8</str>  <!-- boost query to ensure human entries rank higher than the corresponding computationally inferred entries-->
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
+                oldStId^90.0
                 stId^80.0
                 name_exact^2000000.0
                 name^2000000.0
@@ -250,6 +251,7 @@
             <int name="rows">0</int>  <!--no search results returned because we are only interested in faceting information-->
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
+                oldStId^90.0
                 stId^80.0
                 name_exact^2000000.0
                 name^2000000.0
@@ -305,6 +307,7 @@
 
             <str name="qf">
                 dbId^100.0
+                oldStId^90.0
                 stId^80.0
                 name_exact^2000000.0
                 name^2000000.0
@@ -369,6 +372,7 @@
 
             <str name="qf">
                 dbId^100.0
+                oldStId^90.0
                 stId^80.0
                 name_exact^2000000.0
                 name^2000000.0

@@ -165,6 +165,9 @@ public class Marshaller {
             if (document.getStId()!= null) {
                 writeField("stId", document.getStId(), iii);
             }
+            if (document.getOldStId()!=null) {
+                writeField("oldStId", document.getOldStId(), iii);
+            }
             if (document.getSynonyms()!= null && !document.getSynonyms().isEmpty()) {
                 for (String synonym : document.getSynonyms()) {
                     writeField("synonym", synonym, iii);

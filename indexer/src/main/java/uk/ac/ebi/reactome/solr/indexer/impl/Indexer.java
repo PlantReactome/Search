@@ -76,7 +76,9 @@ public class Indexer {
             }
             int entriesCount = 0;
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
+            commitSolrServer();
             entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
+            commitSolrServer();
             entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
             if (xml) {
                 marshaller.writeFooter(entriesCount);

@@ -16,6 +16,8 @@ public class IndexDocument {
     @Field
     private String stId;
     @Field
+    private String oldStId;
+    @Field
     private String name;
     @Field
     private String type;
@@ -265,6 +267,14 @@ public class IndexDocument {
 
     public void setStId(String stId) {
         this.stId = stId;
+    }
+
+    public String getOldStId() {
+        return oldStId;
+    }
+
+    public void setOldStId(String oldStId) {
+        this.oldStId = oldStId;
     }
 
     public String getName() {

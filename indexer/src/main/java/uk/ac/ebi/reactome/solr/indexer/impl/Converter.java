@@ -170,6 +170,11 @@ public class Converter {
         try {
             if (hasValues(instance, ReactomeJavaConstants.stableIdentifier)){
                 document.setStId((String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier));
+                try {
+                    document.setOldStId((String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue("oldIdentifier"));
+                }catch (Exception e){
+                    logger.error("Couldn't find the oldIdentifier for " + instance.getDisplayName());
+                }
             }
 
             if (hasValue(instance, ReactomeJavaConstants.species)){

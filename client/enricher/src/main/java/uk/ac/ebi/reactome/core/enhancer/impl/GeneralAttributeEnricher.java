@@ -6,14 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.reactome.core.enhancer.exception.EnricherException;
 import uk.ac.ebi.reactome.core.model.result.EnrichedEntry;
-import uk.ac.ebi.reactome.core.model.result.submodels.Disease;
-import uk.ac.ebi.reactome.core.model.result.submodels.Literature;
-import uk.ac.ebi.reactome.core.model.result.submodels.Node;
+import uk.ac.ebi.reactome.core.model.result.submodels.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Queries the MySql database and converts entry to a local object
@@ -25,9 +20,10 @@ public class GeneralAttributeEnricher extends Enricher{
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralAttributeEnricher.class);
     private static final String PUBMED_URL = "http://www.ncbi.nlm.nih.gov/pubmed/";
-    private static final String PATHWAY_BROWSER = "/PathwayBrowser/#";
+    private static final String PATHWAY_BROWSER_URL = "/PathwayBrowser/#";
 
     public void setGeneralAttributes(GKInstance instance, EnrichedEntry enrichedEntry) throws EnricherException {
+
 
         try {
             List<String> names = getAttributes(instance, ReactomeJavaConstants.name);
@@ -41,7 +37,9 @@ public class GeneralAttributeEnricher extends Enricher{
                     enrichedEntry.setName(instance.getDisplayName());
                 }
             }
-            enrichedEntry.setStId(getAttributeDisplayName(instance, ReactomeJavaConstants.stableIdentifier));
+            if (hasValue(instance, ReactomeJavaConstants.stableIdentifier)){
+                enrichedEntry.setStId((String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier));
+            }
             enrichedEntry.setSpecies(getAttributeDisplayName(instance,ReactomeJavaConstants.species));
             List<?> summationInstances = instance.getAttributeValuesList(ReactomeJavaConstants.summation);
             List<String> summations = new ArrayList<String>();
@@ -57,18 +55,21 @@ public class GeneralAttributeEnricher extends Enricher{
             enrichedEntry.setDiseases(getDiseases(instance));
             enrichedEntry.setLiterature(setLiteratureReferences(instance));
 
-            String url = PATHWAY_BROWSER;
-
-            List<String> loc = new ArrayList<String>();
-                recursion(instance, instance.getDisplayName() + "#" + instance.getDBID().toString(), loc);
+            List<List<EntityReference>> list = new ArrayList<List<EntityReference>>();
+            List<EntityReference> path = new ArrayList<EntityReference>();
+            GraphNode tree  = new GraphNode();
+            tree.setDbId(instance.getDBID());
+            tree.setName(instance.getDisplayName());
             if (hasValue(instance, ReactomeJavaConstants.species)) {
                 GKInstance species = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species);
-                if (species != null && !species.getDisplayName().contains("Homo sapiens")) {
-                    url += "SPECIES=" + species.getDBID();
-
-                }
+                tree.setSpecies(species.getDisplayName());
+                tree.setSpeciesId(species.getDBID());
             }
-            enrichedEntry.setRoot(makeUrl(loc, url));
+            tree.setStId(getStableIdentifier(instance));
+            recursion(instance, tree);
+            Set<GraphNode>leafs = tree.getLeafs();
+            Set<TreeNode>trees = generateUrlFromLeaves(leafs);
+            enrichedEntry.setLocationsPathwayBrowser(trees);
 
 
         } catch (Exception e) {
@@ -84,28 +85,28 @@ public class GeneralAttributeEnricher extends Enricher{
      * @throws EnricherException
      */
     private List<Literature> setLiteratureReferences(GKInstance instance) throws EnricherException {
-            if (hasValues(instance, ReactomeJavaConstants.literatureReference)) {
-                List<Literature> literatureList = new ArrayList<Literature>();
-                try {
-                    List<?> literatureInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.literatureReference);
-                    for (Object literatureObject : literatureInstanceList) {
-                        GKInstance literatureInstance = (GKInstance) literatureObject;
-                        Literature literature = new Literature();
-                        literature.setTitle(getAttributeString(literatureInstance, ReactomeJavaConstants.title));
-                        literature.setJournal(getAttributeString(literatureInstance, ReactomeJavaConstants.journal));
-                        literature.setPubMedIdentifier(getAttributeString(literatureInstance, ReactomeJavaConstants.pubMedIdentifier));
-                        literature.setYear(getAttributeInteger(literatureInstance, ReactomeJavaConstants.year));
-                        if (literature.getPubMedIdentifier() != null) {
-                            literature.setUrl(PUBMED_URL + literature.getPubMedIdentifier());
-                        }
-                        literatureList.add(literature);
+        if (hasValues(instance, ReactomeJavaConstants.literatureReference)) {
+            List<Literature> literatureList = new ArrayList<Literature>();
+            try {
+                List<?> literatureInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.literatureReference);
+                for (Object literatureObject : literatureInstanceList) {
+                    GKInstance literatureInstance = (GKInstance) literatureObject;
+                    Literature literature = new Literature();
+                    literature.setTitle(getAttributeString(literatureInstance, ReactomeJavaConstants.title));
+                    literature.setJournal(getAttributeString(literatureInstance, ReactomeJavaConstants.journal));
+                    literature.setPubMedIdentifier(getAttributeString(literatureInstance, ReactomeJavaConstants.pubMedIdentifier));
+                    literature.setYear(getAttributeInteger(literatureInstance, ReactomeJavaConstants.year));
+                    if (literature.getPubMedIdentifier() != null) {
+                        literature.setUrl(PUBMED_URL + literature.getPubMedIdentifier());
                     }
-                    return literatureList;
-                } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
-                    throw new EnricherException(e.getMessage(), e);
+                    literatureList.add(literature);
                 }
+                return literatureList;
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+                throw new EnricherException(e.getMessage(), e);
             }
+        }
         return null;
     }
 
@@ -116,260 +117,175 @@ public class GeneralAttributeEnricher extends Enricher{
      * @throws EnricherException
      */
     private List<Disease> getDiseases(GKInstance instance) throws EnricherException {
-            if (hasValues(instance, ReactomeJavaConstants.disease)) {
-                try {
-                    List<Disease> diseases = new ArrayList<Disease>();
-                    List<?> diseaseInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.disease);
-                    for (Object diseaseObject : diseaseInstanceList) {
-                        Disease disease = new Disease();
-                        GKInstance diseaseInstance = (GKInstance) diseaseObject;
-                        disease.setName(getAttributeString(diseaseInstance, ReactomeJavaConstants.name));
-                        disease.setSynonyms(getAttributes(diseaseInstance, ReactomeJavaConstants.synonym));
-                        disease.setIdentifier(getAttributeString(diseaseInstance, ReactomeJavaConstants.identifier));
-                        disease.setDatabase(getDatabase(diseaseInstance, disease.getIdentifier()));
-                        diseases.add(disease);
-                    }
-                    return diseases;
-                } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
-                    throw new EnricherException(e.getMessage() , e);
+        if (hasValues(instance, ReactomeJavaConstants.disease)) {
+            try {
+                List<Disease> diseases = new ArrayList<Disease>();
+                List<?> diseaseInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.disease);
+                for (Object diseaseObject : diseaseInstanceList) {
+                    Disease disease = new Disease();
+                    GKInstance diseaseInstance = (GKInstance) diseaseObject;
+                    disease.setName(getAttributeString(diseaseInstance, ReactomeJavaConstants.name));
+                    disease.setSynonyms(getAttributes(diseaseInstance, ReactomeJavaConstants.synonym));
+                    disease.setIdentifier(getAttributeString(diseaseInstance, ReactomeJavaConstants.identifier));
+                    disease.setDatabase(getDatabase(diseaseInstance, disease.getIdentifier()));
+                    diseases.add(disease);
                 }
+                return diseases;
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+                throw new EnricherException(e.getMessage() , e);
             }
+        }
         return null;
     }
 
-    @SuppressWarnings("ConstantConditions")
-    private void recursion(GKInstance instance, String path, List<String> list)  throws EnricherException {
+
+    private Map<Long,GraphNode> nodeMap = new HashMap<Long, GraphNode>();
+
+    private GraphNode getOrCreateTreeNode(GKInstance instance) throws Exception {
+        GraphNode node = nodeMap.get(instance.getDBID());
+        if (node == null) {
+            node = new GraphNode();
+            node.setName(instance.getDisplayName());
+            node.setDbId(instance.getDBID());
+            if (hasValue(instance, ReactomeJavaConstants.species)) {
+                GKInstance species = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species);
+                node.setSpecies(species.getDisplayName());
+                node.setSpeciesId(species.getDBID());
+            }            node.setStId(getStableIdentifier(instance));
+            nodeMap.put(node.getDbId(), node);
+        }
+        return node;
+    }
+
+    private void nodeFromReference(GKInstance instance, GraphNode node,String fieldName) throws Exception {
+        Collection<?> components = instance.getReferers(fieldName);
+        if (components != null && !components.isEmpty()) {
+            for (Object entryObject : components) {
+                GKInstance entry = (GKInstance) entryObject;
+                GraphNode newNode = getOrCreateTreeNode(entry);
+                node.addChild(newNode);
+                newNode.addParent(node);
+                recursion(entry,newNode);
+            }
+        }
+    }
+
+    private void skippNodes(GKInstance instance, GraphNode node, String fieldName) throws Exception {
+        Collection<?> regulator = instance.getReferers(fieldName);
+        if (regulator != null && !regulator.isEmpty()) {
+            for (Object entryObject : regulator) {
+                GKInstance entry = (GKInstance) entryObject;
+                recursion(entry,node);
+            }
+        }
+    }
+
+    private void nodeFromAttributes(GKInstance instance, GraphNode node, String fieldName) throws Exception {
+        if (hasValues(instance, fieldName)) {
+            GKInstance regulatedEntityInstance = (GKInstance) instance.getAttributeValue(fieldName);
+            if (regulatedEntityInstance != null) {
+                GraphNode newNode = getOrCreateTreeNode(regulatedEntityInstance);
+                node.addChild(newNode);
+                newNode.addParent(node);
+                recursion(regulatedEntityInstance,newNode);
+            }
+        }
+    }
+
+    private void recursion(GKInstance instance, GraphNode node)  throws EnricherException {
         try {
-            Collection<?> components = instance.getReferers(ReactomeJavaConstants.hasComponent);
-            if (components != null && components.size() > 0) {
-                for (Object entryObject : components) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, entry.getDisplayName()+"#"+entry.getDBID().toString() + "//" + path,  list);
-                }
-            }
-            Collection<?> repeatedUnit = instance.getReferers(ReactomeJavaConstants.repeatedUnit);
-            if (repeatedUnit != null && repeatedUnit.size() > 0) {
-                for (Object entryObject : repeatedUnit) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, entry.getDisplayName()+"#"+entry.getDBID().toString() + "//" + path,  list);
-                }
-            }
-            Collection<?> hasCandidate = instance.getReferers(ReactomeJavaConstants.hasCandidate);
-            if (hasCandidate != null && hasCandidate.size() > 0) {
-                for (Object entryObject : hasCandidate) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, entry.getDisplayName()+"#"+entry.getDBID().toString() + "//" + path,  list);
-                }
-            }
-            Collection<?> hasMember = instance.getReferers(ReactomeJavaConstants.hasMember);
-            if (hasMember != null && hasMember.size() > 0) {
-                for (Object entryObject : hasMember) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, entry.getDisplayName()+"#"+entry.getDBID().toString() + "//" + path,  list);
-                }
-            }
-            Collection<?> input = instance.getReferers(ReactomeJavaConstants.input);
-            if (input != null && input.size() > 0) {
-                for (Object entryObject : input) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, entry.getDisplayName()+"#"+entry.getDBID().toString() + "//" + path,  list);
-                }
-            }
-            Collection<?> output = instance.getReferers(ReactomeJavaConstants.output);
-            if (output != null && output.size() > 0) {
-                for (Object entryObject : output) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, entry.getDisplayName()+"#"+entry.getDBID().toString() + "//" + path,  list);
-                }
-            }
-            Collection<?> hasEvent = instance.getReferers(ReactomeJavaConstants.hasEvent);
-            if (hasEvent != null && hasEvent.size() > 0) {
-                for (Object entryObject : hasEvent) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, entry.getDisplayName()+"#"+entry.getDBID().toString() + "//" + path,  list);
-                }
-            }
-            Collection<?> activeUnit = instance.getReferers(ReactomeJavaConstants.activeUnit);
-            if (activeUnit != null && activeUnit.size() > 0) {
-                for (Object entryObject : activeUnit) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, entry.getDisplayName()+"#"+entry.getDBID().toString() + "//" + path,  list);
-                }
-            }
-            Collection<?> catalystActivity = instance.getReferers(ReactomeJavaConstants.catalystActivity);
-            if (catalystActivity != null && catalystActivity.size() > 0) {
-                for (Object entryObject : catalystActivity) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, entry.getDisplayName()+"#"+entry.getDBID().toString() + "//" + path,  list);
-                }
-            }
-//            Collection<?> regulatedEntity = instance.getReferers(ReactomeJavaConstants.regulatedEntity);
-//            if (regulatedEntity != null && regulatedEntity.size() > 0) {
-//                for (Object entryObject : regulatedEntity) {
-//                    GKInstance entry = (GKInstance) entryObject;
-//                    recursion(entry, path,  list);
-//                }
-//            }
-            Collection<?> regulator = instance.getReferers(ReactomeJavaConstants.regulator);
-            if (regulator != null && regulator.size() > 0) {
-                for (Object entryObject : regulator) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry, path,  list);
-                }
-            }
-            Collection<?> physicalEntity = instance.getReferers(ReactomeJavaConstants.physicalEntity);
-            if (physicalEntity != null && physicalEntity.size() > 0) {
-                for (Object entryObject : physicalEntity) {
-                    GKInstance entry = (GKInstance) entryObject;
-                    recursion(entry,  path,  list);
-                }
-            }
-            GKInstance regulatedEntityInstance = null;
-            if (hasValues(instance, ReactomeJavaConstants.regulatedEntity)) {
-                regulatedEntityInstance = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.regulatedEntity);
-                if (regulatedEntityInstance != null) {
-                    recursion(regulatedEntityInstance, regulatedEntityInstance.getDisplayName() + "#" + regulatedEntityInstance.getDBID().toString() + "//" + path, list);
-                }
-            }
-            if (components == null
-                    && repeatedUnit == null
-                    && hasCandidate == null
-                    && hasMember==null
-                    && input == null
-                    && output == null
-                    && hasEvent ==null
-                    && catalystActivity == null
-//                    && regulatedEntity == null
-                    && regulator ==null
-                    && physicalEntity==null
-                    && regulatedEntityInstance == null) {
-                list.add(path);
-            }
+            nodeFromReference(instance,node,ReactomeJavaConstants.hasComponent);
+            nodeFromReference(instance,node,ReactomeJavaConstants.repeatedUnit);
+            nodeFromReference(instance,node,ReactomeJavaConstants.hasCandidate);
+            nodeFromReference(instance,node,ReactomeJavaConstants.hasMember);
+            nodeFromReference(instance,node,ReactomeJavaConstants.input);
+            nodeFromReference(instance,node,ReactomeJavaConstants.output);
+            nodeFromReference(instance,node,ReactomeJavaConstants.hasEvent);
+            nodeFromReference(instance,node,ReactomeJavaConstants.activeUnit);
+            nodeFromReference(instance,node,ReactomeJavaConstants.catalystActivity);
+            skippNodes(instance,node,ReactomeJavaConstants.regulator);
+            skippNodes(instance,node,ReactomeJavaConstants.physicalEntity);
+            nodeFromAttributes(instance, node, ReactomeJavaConstants.regulatedEntity);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new EnricherException(e.getMessage() , e);
         }
     }
 
-    private Node makeUrl (List<String> loc, String url) throws EnricherException {
-
-        Node root = new Node();
-        root.setChildren(new HashMap<String, Node>());
-//        String regex = ".*?(?=,198014)";
-//        String text = "http://localhost:8080/PathwayBrowser/#DIAGRAM=1980143&ID=1980122&PATH=162582,157118,1980143,2122948";
-//        String[] a = text.split(regex);
-
-        for (String singlePath : loc){
-            Node current = root;
-            String id;
-            String diagram = "";
-            String path = "";
-            String[] arrayPath = singlePath.split("//");
-            for (String s : arrayPath) {
-                String[] nameId = s.split("#");
-                Node node1  = new Node();
-                node1.setName(nameId[0]);
-                node1.setDbId(Long.parseLong(nameId[nameId.length-1]));
-                if (current.getChildren() == null) {
-                    current.setChildren(new HashMap<String, Node>());
-
-
-                    current.getChildren().put(node1.getName(),node1);
-                }
-                else if (!current.getChildren().containsKey(node1.getName())){
-
-                    current.getChildren().put(node1.getName(), node1);
-                }
-                String newUrl = url;
-                String dbId = String.valueOf(current.getDbId());
-
-                if (current.getName() != null) {
-
-                    if(hasDiagram(current.getDbId())){
-
-                        diagram = String.valueOf(current.getDbId());
-                        id = "";
-
-                    } else {
-                        id = String.valueOf(current.getDbId());
-                    }
-
-                    if (!diagram.isEmpty()) {
-
-                        if ( newUrl.endsWith("#")) {
-                            newUrl += "DIAGRAM=" + diagram;
-                        } else {
-                            newUrl += "&amp;DIAGRAM=" + diagram;
-                        }
-                    }
-                    if (!id.isEmpty() && !diagram.isEmpty()) {
-                        newUrl += "&amp;ID=" + id;
-                    }
-                    if (!id.isEmpty() && diagram.isEmpty()) {
-                        if ( newUrl.endsWith("#")) {
-                            newUrl += "DIAGRAM=" + id;
-                        } else {
-                            newUrl += "&amp;DIAGRAM=" + id;
-                        }
-                    }
-                    if (!path.isEmpty()) {
-                        newUrl += "&amp;PATH=" + path;
-
-                        path += "," + dbId;
-
-                    } else {
-
-                        path = dbId;
-                    }
-
-                    if (newUrl.contains("DIAGRAM")) {
-                        newUrl = newUrl.replaceAll("," + diagram + ".*$", "");
-                        current.setUrl(newUrl);
-                    }
-                }
-
-                current = current.getChildren().get(node1.getName());
-            }
-            String newUrl = url;
-
-            if (current.getName() != null) {
-                if(hasDiagram(current.getDbId())){
-
-                    diagram = String.valueOf(current.getDbId());
-                    id = "";
-
-                } else {
-                    id = String.valueOf(current.getDbId());
-                }
-
-                if (!diagram.isEmpty()) {
-
-                    if ( newUrl.endsWith("#")) {
-                        newUrl += "DIAGRAM=" + diagram;
-                    } else {
-                        newUrl += "&amp;DIAGRAM=" + diagram;
-                    }
-                }
-                if (!id.isEmpty() && !diagram.isEmpty()) {
-                    newUrl += "&amp;ID=" + id;
-                }
-                if (!id.isEmpty() && diagram.isEmpty()) {
-                    if ( newUrl.endsWith("#")) {
-                        newUrl += "DIAGRAM=" + id;
-                    } else {
-                        newUrl += "&amp;DIAGRAM=" + id;
-                    }
-                }
-                if (!path.isEmpty()) {
-                    newUrl += "&amp;PATH=" + path;
-                }
-                if (newUrl.contains("DIAGRAM")) {
-                    newUrl = newUrl.replaceAll("," + diagram + ".*$", "");
-                    current.setUrl(newUrl);
-                }
+    private Set<TreeNode> generateUrlFromLeaves(Set<GraphNode>leaves) throws EnricherException {
+        Set<TreeNode> topLvlTrees = new HashSet<TreeNode>();
+        for (GraphNode leaf : leaves) {
+            TreeNode tree = getTreeFromGraphLeaf(leaf, "", "");
+            if(tree!=null){
+                topLvlTrees.add(tree);
+            }else{
+                logger.error("Could no process tree for " + leaf.getName());
             }
         }
-        return root;
+        return topLvlTrees;
+    }
+    private TreeNode getTreeFromGraphLeaf(GraphNode leaf, String diagram, String path) {
+        TreeNode tree = new TreeNode();
+        tree.setName(leaf.getName());
+        tree.setSpecies(leaf.getSpecies());
+
+        String id = null;
+        try {
+            if (hasDiagram(leaf.getDbId())) {
+                diagram = String.valueOf(leaf.getDbId());
+            } else {
+                id = String.valueOf(leaf.getDbId());
+            }
+        } catch (EnricherException e) {
+            logger.error(e.getMessage(), e);
+        }
+        if(diagram.isEmpty()) return null;
+
+        String url = this.PATHWAY_BROWSER_URL;
+        if (leaf.getSpecies() != null && !leaf.getSpecies().contains("Homo sapiens")) {
+            url += "SPECIES=" + leaf.getSpeciesId();
+        }
+        if (url.endsWith("#")) {
+            url += "DIAGRAM=" + diagram;
+        } else {
+            url += "&amp;DIAGRAM=" + diagram;
+        }
+        if(id!=null && !id.isEmpty()){
+            url += "&amp;ID=" + id;
+        }
+        if(!path.isEmpty()) {
+            url += "&amp;PATH=" + getRightPath(diagram, path);
+        }
+//        url = url.replaceAll(diagram + "[^"+ diagram + "]*$", "");
+        if (!diagram.isEmpty()) {
+            tree.setUrl(url);
+        }
+
+        if (path.isEmpty()) {
+            path += leaf.getDbId();
+        } else {
+            path += "," + leaf.getDbId();
+        }
+
+
+        if (leaf.getParent()!=null) {
+
+            for (GraphNode node : leaf.getParent()) {
+                tree.addChild(getTreeFromGraphLeaf(node,diagram,path));
+
+            }
+
+        }
+        return tree;
+    }
+
+    private String getRightPath(String diagram, String path){
+        try{
+            path = path.substring(0, path.lastIndexOf(diagram));
+        }catch (StringIndexOutOfBoundsException ex){
+            //Nothing here
+        }
+        return (path.endsWith(",")) ? path.substring(0, path.length()-1) : path;
     }
 }

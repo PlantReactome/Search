@@ -24,6 +24,8 @@
 
     <bean id="solrCore" class="uk.ac.ebi.reactome.solr.core.impl.SolrSearcher">
         <constructor-arg name="url" value="${solr_url}"/>
+        <constructor-arg name="user" value="${solr_user}"/>
+        <constructor-arg name="password" value="${solr_password}"/>
     </bean>
 
     <bean id="solrConverter" class="uk.ac.ebi.reactome.solr.core.impl.SolrConverter">
@@ -43,7 +45,7 @@
     </bean>
 
     <bean id="templateCacher" class="uk.ac.ebi.reactome.core.helper.HeaderFooterCacher">
-        <constructor-arg name="server" value="${template_server}"/>
+        <constructor-arg name="server" value="${template_server_host}"/>
     </bean>
 
     <!--<bean id="templateFilter" class="uk.ac.ebi.reactome.core.filter.TemplateFilter" />-->

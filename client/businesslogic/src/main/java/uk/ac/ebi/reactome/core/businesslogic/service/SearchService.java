@@ -51,12 +51,12 @@ public class SearchService {
         try {
             Properties databaseProperties = new Properties();
             databaseProperties.load(getClass().getResourceAsStream("/web.properties"));
-            host = databaseProperties.getProperty("host");
-            database = databaseProperties.getProperty("database");
-            currentDatabase = databaseProperties.getProperty("currentDatabase");
-            user = databaseProperties.getProperty("user");
-            password = databaseProperties.getProperty("password");
-            port = Integer.valueOf(databaseProperties.getProperty("port"));
+            host = databaseProperties.getProperty("database_host");
+            database = databaseProperties.getProperty("database_name");
+            currentDatabase = databaseProperties.getProperty("database_currentDatabase");
+            user = databaseProperties.getProperty("database_user");
+            password = databaseProperties.getProperty("database_password");
+            port = Integer.valueOf(databaseProperties.getProperty("database_port"));
         } catch (IOException e) {
             logger.error("Error when loading Database Properties ", e);
             throw new SearchServiceException("Error when loading Database Properties ", e);
@@ -76,6 +76,9 @@ public class SearchService {
 
             FacetMap facetMap = solrConverter.getFacetingInformation(queryObject);
             boolean correctFacets = true;
+            // Each faceting group(species,types,keywords,compartments) is dependent from all selected filters of other faceting groups
+            // This brings the risk of having filters that contradict each other. To avoid having selected facets that will cause problems
+            // with the next filtering or querying it is necessary to remove those from the filtering process and repeat the faceting step
             if (queryObject.getSpecies() != null && facetMap.getSpeciesFacet().getSelected().size() != queryObject.getSpecies().size()) {
                 correctFacets = false;
                 List<String> species = new ArrayList<String>();
@@ -160,11 +163,13 @@ public class SearchService {
     public EnrichedEntry getEntryById(String id) throws EnricherException, SolrSearcherException {
         if (id != null && !id.isEmpty()) {
             IEnricher enricher = new Enricher(host, currentDatabase, user, password, port);
-            if (id.contains("REACT_")) {
-                Entry entry = solrConverter.getEntryById(id);
-                return enricher.enrichEntry(Long.valueOf(entry.getDbId()));
+            if (id.toUpperCase().startsWith("R")) {
+                Entry entry = solrConverter.getEntryById(id.split("\\.")[0]);
+                if (entry!= null) {
+                    return enricher.enrichEntry(entry.getDbId());
+                }
             } else {
-                return enricher.enrichEntry(Long.valueOf(id));
+                return enricher.enrichEntry(id);
             }
         }
         return null;
@@ -178,13 +183,15 @@ public class SearchService {
     public EnrichedEntry getEntryById(Integer version, String id) throws EnricherException, SolrSearcherException {
 
         IEnricher enricher = new Enricher(host,  database + version, user, password, port);
-        if (id.contains("REACT_")) {
-            Entry entry = solrConverter.getEntryById(id);
-            return enricher.enrichEntry(Long.valueOf(entry.getDbId()));
+        if (id.toUpperCase().startsWith("R")) {
+            Entry entry = solrConverter.getEntryById(id.split("\\.")[0]);
+            if (entry!=null) {
+                return enricher.enrichEntry(entry.getDbId());
+            }
         } else {
-            return enricher.enrichEntry(Long.valueOf(id));
+            return enricher.enrichEntry(id);
         }
-
+        return null;
     }
 
     /**

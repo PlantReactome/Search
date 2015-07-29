@@ -1,5 +1,8 @@
 package uk.ac.ebi.reactome.solr.core.impl;
 
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -52,6 +55,7 @@ public class SolrSearcher {
 
     private final static String DB_ID                       =  "dbId";
     private final static String ST_ID                       =  "stId";
+    private final static String OLD_ST_ID                   =  "oldStId";
     private final static String ALL_FIELDS                  =  "*:*";
 
     /**
@@ -60,15 +64,29 @@ public class SolrSearcher {
      * since Solr 4.2 Solr is using by default a poolingClientConnectionManager
      * @param url solr URL
      */
-    public SolrSearcher(String url) {
+    public SolrSearcher(String url, String user, String password) {
 
         logger.setLevel(Level.INFO);
         logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
 
-        solrServer = new HttpSolrServer(url);
+        if(user!=null && !user.isEmpty() && password!=null && !password.isEmpty()) {
+            DefaultHttpClient httpclient = new DefaultHttpClient();
+            UsernamePasswordCredentials upc = new UsernamePasswordCredentials(user, password);
+            httpclient.getCredentialsProvider().setCredentials(AuthScope.ANY, upc);
+            solrServer = new HttpSolrServer(url, httpclient);
+        }else{
+            solrServer = new HttpSolrServer(url);
+        }
+
         logger.info("SolrServer initialized");
     }
 
+    /**
+     * Query for checking if this specific String exists in the index
+     * @param query String of the query parameter given
+     * @return true if there are results
+     * @throws SolrSearcherException
+     */
     public boolean existsQuery (String query) throws SolrSearcherException {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRequestHandler(EXISTS_REQUEST_HANDLER);
@@ -85,7 +103,7 @@ public class SolrSearcher {
      * @return QueryResponse
      * @throws uk.ac.ebi.reactome.solr.core.exception.SolrSearcherException
      */
-    public QueryResponse searchCluster (Query queryObject) throws SolrSearcherException {
+    public QueryResponse searchCluster(Query queryObject) throws SolrSearcherException {
         SolrQuery parameters = new SolrQuery();
 
         parameters.setRequestHandler(CLUSTERED_REQUEST_HANDLER);
@@ -136,7 +154,7 @@ public class SolrSearcher {
         solrQuery.setRequestHandler(DEFAULT_REQUEST_HANDLER);
         solrQuery.setStart(0);
         solrQuery.setRows(1);
-        solrQuery.setQuery(DB_ID + ":" + id + " OR " + ST_ID + ":" + id);
+        solrQuery.setQuery(DB_ID + ":" + id + " OR " + ST_ID + ":" + id + " OR " + OLD_ST_ID + ":" + id);
         return querySolrServer(solrQuery);
     }
 
@@ -165,9 +183,9 @@ public class SolrSearcher {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRequestHandler(SPELLCHECK_REQUEST_HANDLER);
         solrQuery.set(SOLR_SPELLCHECK_QUERY, query);
-        if (query.toLowerCase().matches("^uniprot:[a-z0-9]+$") || query.toLowerCase().matches("^[a-z]+:[0-9]+$") ){
-            solrQuery.set("spellcheck.collate", false);
-        }
+//        if (query.toLowerCase().matches("^uniprot:[a-z0-9]+$") || query.toLowerCase().matches("^[a-z]+:[0-9]+$") ){
+//            solrQuery.set("spellcheck.collate", false);
+//        }
         return querySolrServer(solrQuery);
     }
 

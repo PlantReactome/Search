@@ -161,8 +161,8 @@ class WebController {
         }
     }
 
-    //    quick and ugly fix
-    @ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
+//    quick and ugly fix
+@ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
     @RequestMapping(value = "/query/", method = RequestMethod.GET)
     public void error () {
 //        return "../../resources/404.jas";

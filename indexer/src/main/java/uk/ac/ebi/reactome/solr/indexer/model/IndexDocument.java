@@ -16,6 +16,8 @@ public class IndexDocument {
     @Field
     private String stId;
     @Field
+    private String oldStId;
+    @Field
     private String name;
     @Field
     private String type;
@@ -23,8 +25,21 @@ public class IndexDocument {
     private String exactType;
     @Field
     private Boolean isDisease;
+
+    @Field
+    private List<String> diseaseId;
+    @Field
+    private List<String> diseaseName;
+    @Field
+    private List<String> diseaseSynonyms;
+
     @Field
     private String species;
+    @Field
+    private List<String> relatedSpecies;
+
+    private String taxId;
+
     @Field
     private List<String> synonyms;
     @Field
@@ -76,12 +91,11 @@ public class IndexDocument {
     @Field
     private List<String> crossReferences;
 
-    private List<String> crossReferenceDatabase;
 
     @Field
     private List<String> referenceCrossReferences;
 
-    private List<String> referenceCrossReferenceDatabase;
+    private List<CrossReference> allCrossReferences;
 
     @Field
     private String referenceName;
@@ -103,6 +117,22 @@ public class IndexDocument {
 
     // Auto Generated Getters Setters
 
+
+    public String getTaxId() {
+        return taxId;
+    }
+
+    public void setTaxId(String taxId) {
+        this.taxId = taxId;
+    }
+
+    public List<String> getGoBiologicalProcessAccessions() {
+        return goBiologicalProcessAccessions;
+    }
+
+    public List<String> getGoCellularComponentAccessions() {
+        return goCellularComponentAccessions;
+    }
 
     public String getRegulatorId() {
         return regulatorId;
@@ -126,6 +156,30 @@ public class IndexDocument {
 
     public void setIsDisease(Boolean isDisease) {
         this.isDisease = isDisease;
+    }
+
+    public List<String> getDiseaseId() {
+        return diseaseId;
+    }
+
+    public void setDiseaseId(List<String> diseaseId) {
+        this.diseaseId = diseaseId;
+    }
+
+    public List<String> getDiseaseName() {
+        return diseaseName;
+    }
+
+    public void setDiseaseName(List<String> diseaseName) {
+        this.diseaseName = diseaseName;
+    }
+
+    public List<String> getDiseaseSynonyms() {
+        return diseaseSynonyms;
+    }
+
+    public void setDiseaseSynonyms(List<String> diseaseSynonyms) {
+        this.diseaseSynonyms = diseaseSynonyms;
     }
 
     public String getExactType() {
@@ -152,13 +206,7 @@ public class IndexDocument {
         this.keywords = keywords;
     }
 
-    public List<String> getReferenceCrossReferenceDatabase() {
-        return referenceCrossReferenceDatabase;
-    }
 
-    public void setReferenceCrossReferenceDatabase(List<String> referenceCrossReferenceDatabase) {
-        this.referenceCrossReferenceDatabase = referenceCrossReferenceDatabase;
-    }
 
     public List<String> getReferenceCrossReferences() {
         return referenceCrossReferences;
@@ -176,12 +224,17 @@ public class IndexDocument {
         this.crossReferences = crossReferences;
     }
 
-    public List<String> getCrossReferenceDatabase() {
-        return crossReferenceDatabase;
+    public List<CrossReference> getAllCrossReferences() {
+        return allCrossReferences;
     }
 
-    public void setCrossReferenceDatabase(List<String> crossReferenceDatabase) {
-        this.crossReferenceDatabase = crossReferenceDatabase;
+    public void setAllCrossReferences(List<CrossReference> allCrossReferences) {
+        if (this.allCrossReferences == null) {
+            this.allCrossReferences = allCrossReferences;
+        } else {
+            this.allCrossReferences.addAll(allCrossReferences);
+        }
+
     }
 
     public String getRegulatedEntity() {
@@ -216,6 +269,14 @@ public class IndexDocument {
         this.stId = stId;
     }
 
+    public String getOldStId() {
+        return oldStId;
+    }
+
+    public void setOldStId(String oldStId) {
+        this.oldStId = oldStId;
+    }
+
     public String getName() {
         return name;
     }
@@ -238,6 +299,14 @@ public class IndexDocument {
 
     public void setSpecies(String species) {
         this.species = species;
+    }
+
+    public List<String> getRelatedSpecies() {
+        return relatedSpecies;
+    }
+
+    public void setRelatedSpecies(List<String> relatedSpecies) {
+        this.relatedSpecies = relatedSpecies;
     }
 
     public List<String> getSynonyms() {

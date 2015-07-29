@@ -48,9 +48,16 @@ public class Enricher implements IEnricher  {
      * @return EnrichedEntry
      * @throws EnricherException
      */
-    public EnrichedEntry enrichEntry(Long dbId) throws EnricherException {
+    @Override
+    public EnrichedEntry enrichEntry(String dbId) throws EnricherException {
+        Long id;
         try {
-            GKInstance instance = dba.fetchInstance(dbId);
+            id = Long.valueOf(dbId);
+        }catch (NumberFormatException e){
+            return null;
+        }
+        try {
+            GKInstance instance = dba.fetchInstance(id);
             if (instance != null) {
                 EnrichedEntry enrichedEntry = new EnrichedEntry();
                 new GeneralAttributeEnricher().setGeneralAttributes(instance, enrichedEntry);
@@ -67,7 +74,7 @@ public class Enricher implements IEnricher  {
             }
         } catch (Exception e) {
             logger.error("Error occurred when trying to fetch Instance by dbId", e);
-            throw new EnricherException("Error occurred when trying to fetch Instance by dbId", e);
+//            throw new EnricherException("Error occurred when trying to fetch Instance by dbId", e);
         }
         return null;
     }
@@ -105,6 +112,13 @@ public class Enricher implements IEnricher  {
                 logger.error(e.getMessage(), e);
                 throw new EnricherException(e.getMessage() , e);
             }
+        }
+        return null;
+    }
+
+    protected String getStableIdentifier(GKInstance instance) throws Exception {
+        if (hasValue(instance, ReactomeJavaConstants.stableIdentifier)){
+            return (String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier);
         }
         return null;
     }
@@ -392,8 +406,14 @@ public class Enricher implements IEnricher  {
                 List<String> list = new ArrayList<String>();
                 List<?> instanceList = instance.getAttributeValuesList(fieldName);
                 for (Object attributeObject : instanceList) {
-                    GKInstance attributeInstance = (GKInstance) attributeObject;
-                    list.add(attributeInstance.getDisplayName());
+                    if(attributeObject instanceof GKInstance) {
+                        GKInstance attributeInstance = (GKInstance) attributeObject;
+                        list.add(attributeInstance.getDisplayName());
+                    } else if (attributeObject instanceof String){
+                        list.add((String) attributeObject);
+                    } else {
+                        logger.error(instance.getSchemClass().getName() + " field type unknown for " + fieldName);
+                    }
                 }
                 return list;
             } catch (Exception e) {

@@ -55,6 +55,7 @@ public class SolrSearcher {
 
     private final static String DB_ID                       =  "dbId";
     private final static String ST_ID                       =  "stId";
+    private final static String OLD_ST_ID                   =  "oldStId";
     private final static String ALL_FIELDS                  =  "*:*";
 
     /**
@@ -153,7 +154,7 @@ public class SolrSearcher {
         solrQuery.setRequestHandler(DEFAULT_REQUEST_HANDLER);
         solrQuery.setStart(0);
         solrQuery.setRows(1);
-        solrQuery.setQuery(DB_ID + ":" + id + " OR " + ST_ID + ":" + id);
+        solrQuery.setQuery(DB_ID + ":" + id + " OR " + ST_ID + ":" + id + " OR " + OLD_ST_ID + ":" + id);
         return querySolrServer(solrQuery);
     }
 

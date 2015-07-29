@@ -2,6 +2,7 @@ package uk.ac.ebi.reactome.core.controller;
 
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +10,7 @@ import uk.ac.ebi.reactome.core.businesslogic.service.SearchService;
 import uk.ac.ebi.reactome.core.enhancer.exception.EnricherException;
 import uk.ac.ebi.reactome.core.model.facetting.FacetMap;
 import uk.ac.ebi.reactome.core.model.query.Query;
+import uk.ac.ebi.reactome.core.model.result.EnrichedEntry;
 import uk.ac.ebi.reactome.core.model.result.GroupedResult;
 import uk.ac.ebi.reactome.core.model.result.Result;
 import uk.ac.ebi.reactome.solr.core.exception.SolrSearcherException;
@@ -49,6 +51,8 @@ class WebController {
     private static final String MAX_PAGE        =  "maxpage";
     private static final String CLUSTER         =  "cluster";
 
+    private static final String TITLE =  "title";
+
     // Autowired annotation not necessary for Constructor injection
     public WebController(SearchService searchService) {
         this.searchService = searchService;
@@ -87,6 +91,7 @@ class WebController {
         model.addAttribute(TYPES_FACET,           facetMap.getTypeFacet());
         model.addAttribute(KEYWORDS_FACET,        facetMap.getKeywordFacet());
         model.addAttribute(COMPARTMENTS_FACET,    facetMap.getCompartmentFacet());
+        model.addAttribute(TITLE,    "advanced Search");
         return "ebiadvanced";
     }
 
@@ -114,8 +119,14 @@ class WebController {
 //        model.addAttribute(TYPES, checkOutputIntegrity(types));
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
-        model.addAttribute(ENTRY, searchService.getEntryById(version, id));
+        EnrichedEntry entry = searchService.getEntryById(version, id);
+        if (entry!= null) {
+        model.addAttribute(ENTRY, entry);
+        model.addAttribute(TITLE, entry.getName() + " (" + entry.getSpecies() + ")" );
         return "detail";
+    } else {
+        return "noresultsfound";
+    }
     }
 
     /**
@@ -140,8 +151,21 @@ class WebController {
 //        model.addAttribute(TYPES, checkOutputIntegrity(types));
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
-        model.addAttribute(ENTRY, searchService.getEntryById(id));
-        return "detail";
+        EnrichedEntry entry = searchService.getEntryById(id);
+        if (entry!= null) {
+            model.addAttribute(ENTRY, entry);
+            model.addAttribute(TITLE, entry.getName());
+            return "detail";
+        } else {
+            return "noresultsfound";
+        }
+    }
+
+    //    quick and ugly fix
+    @ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
+    @RequestMapping(value = "/query/", method = RequestMethod.GET)
+    public void error () {
+//        return "../../resources/404.jas";
     }
 
     /**
@@ -162,13 +186,16 @@ class WebController {
                           @RequestParam ( required = false ) Integer page,
                           ModelMap model) throws SolrSearcherException {
         if (q!= null && !q.isEmpty()) {
+            q = filterQuery(q);
             if (cluster == null) {
                 cluster = false;
             }
             if (page==null || page == 0) {
                 page = 1;
             }
+
             model.addAttribute(Q, checkOutputIntegrity(q));
+            model.addAttribute(TITLE, "Search results for " + q);
             model.addAttribute(SPECIES, checkOutputListIntegrity(species));
             model.addAttribute(TYPES, checkOutputListIntegrity(types));
             model.addAttribute(COMPARTMENTS, checkOutputListIntegrity(compartments));
@@ -177,6 +204,9 @@ class WebController {
             Query queryObject = new Query(q, species,types,compartments,keywords);
             model.addAttribute(PAGE, page);
             FacetMap facetMap = searchService.getFacetingInformation(queryObject);
+            // Faceting information is used to determine if the query with the currently selected filters
+            // will return any results. If nothing is found, all the selected filters will be removed and
+            // another query will be sent to Solr
             if (facetMap != null && facetMap.getTotalNumFount()>0){
                 model.addAttribute(SPECIES_FACET,         facetMap.getSpeciesFacet());
                 model.addAttribute(TYPES_FACET,           facetMap.getTypeFacet());
@@ -218,6 +248,7 @@ class WebController {
                     }
                     return "ebisearcher";
                 } else {
+                    // Generating spellcheck suggestions if no faceting informatioon was found, while using no filters
                     model.addAttribute(SUGGESTIONS, searchService.getSpellcheckSuggestions(q));
                 }
             }
@@ -273,5 +304,18 @@ class WebController {
             return checkedList;
         }
         return null;
+    }
+    private String filterQuery(String q){
+        //Massaging the query parameter to remove dots in Reactome stable identifiers
+        StringBuilder sb = new StringBuilder();
+        for (String token : q.split("\\s+")) {
+            if(token.toUpperCase().contains("R-")){
+                sb.append(token.split("\\.")[0]);
+            }else{
+                sb.append(token);
+            }
+            sb.append(" ");
+        }
+        return sb.toString().trim();
     }
 }

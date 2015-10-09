@@ -1,10 +1,9 @@
 package uk.ac.ebi.reactome.solr.indexer;
 
 import com.martiansoftware.jsap.*;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.gk.persistence.MySQLAdaptor;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
@@ -76,10 +75,12 @@ public class IndexerTool {
             String url = config.getString("solrurl");
 
             if (user != null && !user.isEmpty() && password != null && !password.isEmpty()) {
-                DefaultHttpClient httpclient = new DefaultHttpClient();
-                UsernamePasswordCredentials upc = new UsernamePasswordCredentials(user, password);
-                httpclient.getCredentialsProvider().setCredentials(AuthScope.ANY, upc);
-                solrServer = new HttpSolrServer(url, httpclient);
+                HttpSolrServer server = new HttpSolrServer(url);
+                HttpClientUtil.setBasicAuth((DefaultHttpClient) server.getHttpClient(), user,password);
+//                HttpClient httpClient = new DefaultHttpClient();
+//                UsernamePasswordCredentials upc = new UsernamePasswordCredentials(user, password);
+//                httpclient.getCredentialsProvider().setCredentials(AuthScope.ANY, upc);
+//                solrServer = new HttpSolrServer(url, httpclient);
             } else {
                 System.out.println("Trying to connect without password");
                 solrServer = new HttpSolrServer(url);

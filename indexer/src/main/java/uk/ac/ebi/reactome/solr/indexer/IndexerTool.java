@@ -54,29 +54,42 @@ public class IndexerTool {
         JSAPResult config = jsap.parse(args);
         if( jsap.messagePrinted() ) System.exit( 1 );
 
+        MySQLAdaptor dba = null;
         try {
-            MySQLAdaptor dba = new MySQLAdaptor(
+            dba = new MySQLAdaptor(
                     config.getString("host"),
                     config.getString("database"),
                     config.getString("dbuser"),
                     config.getString("dbpassword")
             );
+        } catch (SQLException e) {
+            System.out.println("Could not initiate MySQLAdapter");
+            e.printStackTrace();
+            System.exit(1);
+        }
 
+        SolrServer solrServer = null;
+        try {
             //Solr parameters
             String user = config.getString("solruser");
             String password = config.getString("solrpassword");
             String url = config.getString("solrurl");
 
-            SolrServer solrServer;
-            if(user!=null && !user.isEmpty() && password!=null && !password.isEmpty()) {
+            if (user != null && !user.isEmpty() && password != null && !password.isEmpty()) {
                 DefaultHttpClient httpclient = new DefaultHttpClient();
                 UsernamePasswordCredentials upc = new UsernamePasswordCredentials(user, password);
                 httpclient.getCredentialsProvider().setCredentials(AuthScope.ANY, upc);
                 solrServer = new HttpSolrServer(url, httpclient);
-            }else{
+            } else {
+                System.out.println("Trying to connect without password");
                 solrServer = new HttpSolrServer(url);
             }
+        } catch (Exception e){
+            System.err.println("Error trying to connect to the Solr Server");
+            System.exit(1);
+        }
 
+        try{
             File output = new File(config.getString("output"));
             String release = config.getString("release");
             File controlledVocabulary = new File(config.getString("input"));
@@ -92,10 +105,6 @@ public class IndexerTool {
             if (verbose) {
                 System.out.println("Indexing was successful within: " + minutes + "minutes " + seconds + "seconds ");
             }
-        }
-        catch (SQLException e) {
-            System.out.println("Could not initiate MySQLAdapter");
-            e.printStackTrace();
         } catch (IndexerException e) {
             System.out.println("ERROR");
             e.printStackTrace();

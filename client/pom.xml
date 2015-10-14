@@ -9,22 +9,6 @@
     <url>http://maven.apache.org</url>
 
     <dependencies>
-        <!--Project dependencies
-        <dependency>
-          <groupId>SolrCore</groupId>
-          <artifactId>businesslogic</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>SolrCore</groupId>
-          <artifactId>solrcore</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>SolrCore</groupId>
-          <artifactId>enricher</artifactId>
-          <version>${project.version}</version>
-        </dependency>-->
 
         <!--Jsp Servlets -->
         <dependency>
@@ -85,92 +69,57 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.5</version>
         </dependency>
+
         <!--Reactome MySql adapter-->
         <dependency>
             <groupId>org.reactome.base</groupId>
             <artifactId>reactome-base</artifactId>
             <version>1.2.1</version>
         </dependency>
+
         <!--Jackson-->
         <dependency>
-
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.10</version>
         </dependency>
 
-        <!-- Log4j -->
-        <!--<dependency>-->
-        <!--<groupId>log4j</groupId>-->
-        <!--<artifactId>log4j</artifactId>-->
-        <!--<version>1.2.17</version>-->
-        <!--</dependency>-->
-
-
-        <!--<dependency>-->
-        <!--<groupId>com.google.code.gson</groupId>-->
-        <!--<artifactId>gson</artifactId>-->
-        <!--<version>1.7.1</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>cglib</groupId>-->
-        <!--<artifactId>cglib</artifactId>-->
-        <!--<version>2.2.2</version>-->
-        <!--</dependency>-->
-
+        <!-- Pride Utils -->
         <dependency>
             <groupId>uk.ac.ebi.pride.web</groupId>
             <artifactId>pride-web-utils</artifactId>
             <version>1.3.11</version>
+            <!-- It is causing maven conflicts -->
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
-        <!--    SOLR       -->
+        <!-- SOLR       -->
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
             <version>4.6.0</version>
         </dependency>
 
-
-        <!--HTML PArser-->
+        <!--HTML Parser-->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.7.3</version>
         </dependency>
 
-
     </dependencies>
-    <!--<build>-->
-        <!--&lt;!&ndash;Maven properties ? &ndash;&gt;-->
-        <!--<resources>-->
-            <!--<resource>-->
-                <!--<directory>src/main/resources</directory>-->
-                <!--<filtering>true</filtering>-->
-            <!--</resource>-->
-        <!--</resources>-->
-
-        <!--<finalName>content</finalName>-->
-        <!--<plugins>-->
-            <!--<plugin>-->
-                <!--<artifactId>maven-compiler-plugin</artifactId>-->
-                <!--<configuration>-->
-                    <!--<source>1.6</source>-->
-                    <!--<target>1.6</target>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
-        <!--</plugins>-->
-    <!--</build>-->
 
     <properties>
-        <!--<deploymentPath>/content</deploymentPath>-->
         <deploymentPath>/</deploymentPath>
     </properties>
 
     <build>
         <finalName>content</finalName>
-
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

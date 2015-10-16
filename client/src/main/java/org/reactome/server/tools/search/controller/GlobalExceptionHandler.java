@@ -32,36 +32,65 @@ class GlobalExceptionHandler {
 //    @ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR, reason="EnricherException occurred")
     @ExceptionHandler(EnricherException.class)
     public ModelAndView handleOtherExceptions(HttpServletRequest request, EnricherException e){
-       ModelAndView model = new ModelAndView("error/generic_error");
-        logger.info("Exception occurred:: URL="+request.getRequestURL());
-        model.addObject(EXCEPTION, e);
-        model.addObject(URL, request.getRequestURL());
-        return model;
+//       ModelAndView model = new ModelAndView("generic_error");
+//        model.addObject(EXCEPTION, e);
+//        model.addObject(URL, request.getRequestURL());
+//        model.addObject("subject", "Unexpected error occurred.");
+//        model.addObject("message", "Type your message\n type again \n\n type");
+
+        return buildModelView("generic_error", request, e);
+//        return model;
     }
 
 //    @ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR, reason="SolrSearcherException occurred")
     @ExceptionHandler(SolrSearcherException.class)
     public ModelAndView handleSolrSearcherException(HttpServletRequest request, SolrSearcherException e){
-        ModelAndView model = new ModelAndView("error/generic_error");
-        logger.info("SolrSearcherException occurred:: URL="+request.getRequestURL());
-        model.addObject(EXCEPTION, e);
-        model.addObject(URL, request.getRequestURL());
-        return model;
+//        ModelAndView model = new ModelAndView("generic_error");
+//        logger.info("SolrSearcherException occurred:: URL="+request.getRequestURL());
+//        model.addObject(EXCEPTION, e);
+//        model.addObject(URL, request.getRequestURL());
+//        return model;
+        return buildModelView("generic_error", request, e);
+
     }
 
 //    @ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR, reason="SearchServiceException occurred")
     @ExceptionHandler(SearchServiceException.class)
     public ModelAndView handleSQLException(HttpServletRequest request, SearchServiceException e){
-        ModelAndView model = new ModelAndView("error/generic_error");
-        logger.info("SQLException occurred:: URL="+request.getRequestURL());
-        model.addObject(EXCEPTION, e);
-        model.addObject(URL, request.getRequestURL());
-        return model;
+//        ModelAndView model = new ModelAndView("generic_error");
+//        logger.info("SQLException occurred:: URL="+request.getRequestURL());
+//        model.addObject(EXCEPTION, e);
+//        model.addObject(URL, request.getRequestURL());
+//        return model;
+
+        return buildModelView("generic_error", request, e);
+
     }
 
     @ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
     @ExceptionHandler(IOException.class)
     public void handleIOException(){
         logger.error("IOException handler executed");  //returning 404 error code
+    }
+
+    public ModelAndView buildModelView(String modelName, HttpServletRequest request, Exception e){
+        logger.info("Exception occurred:: URL="+request.getRequestURL());
+
+        ModelAndView model = new ModelAndView(modelName);
+        model.addObject(EXCEPTION, e);
+        model.addObject(URL, request.getRequestURL() + request.getParameterNames().toString());
+
+        model.addObject("subject", "Unexpected error occurred.");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Dear HelpDesk,");
+        sb.append("\n\n");
+        sb.append("An unexpected error has occurred during my search.");
+        sb.append("\n\n");
+        sb.append("<< Please add more information >>");
+
+        model.addObject("message", sb.toString());
+
+        return model;
     }
 }

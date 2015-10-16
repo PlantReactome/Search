@@ -30,6 +30,10 @@
                 </div>
             </c:otherwise>
         </c:choose>
+
+        <c:import url="contact_form.jsp">
+            <c:param name="source" value="W"/>
+        </c:import>
     </div>
     <div class="clear"></div>
 </div>

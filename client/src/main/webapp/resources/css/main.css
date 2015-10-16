@@ -372,3 +372,55 @@ select {
     column-gap:15px;
     columns:3;
 }
+
+.contact-form {
+    padding: 1px;
+    width: 100%;
+    margin:20px;
+}
+
+.contact-form .fieldarea {
+    /*padding: 4px;*/
+    /*margin: 1px;*/
+    background: #fff;
+}
+
+.contact-form .fieldarea label {
+    /*display: inline-block;*/
+    width: 80px;
+    margin-left: 5px;
+}
+
+.contact-form .fieldarea textarea {
+    /*display: inline-flex;*/
+    width: 390px;
+}
+
+.contact-form .field {
+    /*padding: 4px;*/
+    margin: 1px;
+    background: #fff;
+}
+
+.contact-form .field label {
+    display: inline-block;
+    width: 80px;
+    /*margin-left: 5px;*/
+}
+
+.contact-form .field input {
+    display: inline-block;
+    width: 300px;
+}
+
+.contact-msg-error {
+    color: #FF0000;
+    margin: 5px;
+
+}
+
+.contact-msg-success {
+    margin: 15px;
+    color: #4C4C74;
+    font-weight: bold;
+}

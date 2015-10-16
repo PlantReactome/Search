@@ -41,7 +41,6 @@ public class SearchService {
      * @throws SearchServiceException
      */
     public SearchService() throws SearchServiceException {
-        //this.solrConverter = solrConverter;
         loadProperties();
     }
 

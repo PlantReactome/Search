@@ -5,8 +5,12 @@ import org.jsoup.safety.Whitelist;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.EnricherException;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
+import org.reactome.server.tools.search.service.MailService;
 import org.reactome.server.tools.search.service.SearchService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -28,6 +32,12 @@ class WebController {
 
     @Autowired
     private SearchService searchService;
+
+    @Autowired
+    private MailService mailService;
+
+    private Logger logger = LoggerFactory.getLogger(WebController.class);
+
     private static final int rowCount = 30;
 
     private static final String SPECIES_FACET         =  "species_facet";
@@ -50,20 +60,17 @@ class WebController {
     private static final String CLUSTER         =  "cluster";
 
     private static final String TITLE =  "title";
+    private static final String MAIL_SUBJECT =  "subject";
 
-    // Autowired annotation not necessary for Constructor injection
-    //public WebController(SearchService searchService) {
-    //    this.searchService = searchService;
-    //}
+    private static final String MAIL_SUBJECT_PLACEHOLDER =  "No results found for";
 
-    /**
-     * entry point (for testing)
-     * @return empty page
-     */
-    @RequestMapping(value = "/start", method = RequestMethod.GET)
-    public String entryPoint () {
-        return "ebistart";
-    }
+    private static String defaultSubject;
+
+    @Value("${mail_error_dest}")
+    private String mailErrorDest; // E
+
+    @Value("${mail_support_dest}")
+    private String mailSupportDest; // W
 
     /**
      * Method for autocompletion
@@ -97,7 +104,7 @@ class WebController {
      * Shows detailed information of an entry
      * @param id StId or DbId
      * @param version Reactome Database version
-//     * @param q,species,types,compartments,keywords parameters to save existing query and facets
+    //     * @param q,species,types,compartments,keywords parameters to save existing query and facets
      * @param model SpringModel
      * @return Detailed page
      * @throws EnricherException
@@ -119,18 +126,21 @@ class WebController {
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
         EnrichedEntry entry = searchService.getEntryById(version, id);
         if (entry!= null) {
-        model.addAttribute(ENTRY, entry);
-        model.addAttribute(TITLE, entry.getName() + " (" + entry.getSpecies() + ")" );
-        return "detail";
-    } else {
-        return "noresultsfound";
-    }
+            model.addAttribute(ENTRY, entry);
+            model.addAttribute(TITLE, entry.getName() + " (" + entry.getSpecies() + ")" );
+            return "detail";
+        } else {
+            defaultSubject = MAIL_SUBJECT_PLACEHOLDER + " " + id;
+            model.addAttribute(MAIL_SUBJECT, defaultSubject);
+
+            return "noresultsfound";
+        }
     }
 
     /**
      * Shows detailed information of an entry
      * @param id StId or DbId
-//     * @param q,species,types,compartments,keywords parameters to save existing query and facets
+    //     * @param q,species,types,compartments,keywords parameters to save existing query and facets
      * @param model SpringModel
      * @return Detailed page
      * @throws EnricherException
@@ -155,12 +165,15 @@ class WebController {
             model.addAttribute(TITLE, entry.getName());
             return "detail";
         } else {
+
+            defaultSubject = MAIL_SUBJECT_PLACEHOLDER + " " + id;
+            model.addAttribute(MAIL_SUBJECT, defaultSubject);
             return "noresultsfound";
         }
     }
 
-//    quick and ugly fix
-@ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
+    //    quick and ugly fix
+    @ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
     @RequestMapping(value = "/query/", method = RequestMethod.GET)
     public void error () {
 //        return "../../resources/404.jas";
@@ -251,7 +264,37 @@ class WebController {
                 }
             }
         }
+
+        //model.addAttribute(MAIL_MESSAGE, "Type your message\n type again \n\n type");
+        defaultSubject = MAIL_SUBJECT_PLACEHOLDER + " " + q;
+        model.addAttribute(MAIL_SUBJECT, defaultSubject);
+
         return "noresultsfound";
+    }
+
+    @RequestMapping(value = "/contact", method = RequestMethod.POST)
+    public @ResponseBody String contact (@RequestParam ( required = true ) String mailAddress,
+                                         @RequestParam String message,
+                                         @RequestParam String exception,
+                                         @RequestParam String url,
+                                         @RequestParam String source){
+
+        String to = mailSupportDest;
+        if(source.equals("E")){
+            to = mailErrorDest;
+
+            message = message.concat("\n\n URL: " + url);
+            message = message.concat("\n\n Exception: " + exception);
+
+            defaultSubject = "Unexpected error occurred.";
+        }
+
+
+
+        // Call email service.
+        mailService.send(to, mailAddress, defaultSubject, message);
+
+        return "success";
     }
 
     /**
@@ -320,4 +363,6 @@ class WebController {
     public void setSearchService(SearchService searchService) {
         this.searchService = searchService;
     }
+
+
 }

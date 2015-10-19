@@ -5,6 +5,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -16,14 +17,16 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.reactome.server.tools.search.domain.Query;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
+import org.reactome.server.tools.search.util.PreemptiveAuthInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
- * SolrCore converts Queries to SolrQueries and allows to retrieve Data from a SolrServer
+ * SolrCore converts Queries to SolrQueries and allows to retrieve Data from a solrClient
  * SolrCore returns a QueryResponse (SolrObject)
  *
  * @author Florian Korninger (fkorn@ebi.ac.uk)
@@ -65,7 +68,7 @@ public class SolrCore {
 
     /**
      * Constructor for Dependency Injection
-     * InitializesSolrServer
+     * InitializessolrClient
      * since Solr 4.2 Solr is using by default a poolingClientConnectionManager
      * @param url solr URL
      */
@@ -89,7 +92,7 @@ public class SolrCore {
             solrClient = new  HttpSolrClient(url);
         }
 
-        logger.info("SolrServer initialized");
+        logger.info("solrClient initialized");
     }
 
     /**
@@ -103,7 +106,7 @@ public class SolrCore {
         solrQuery.setRequestHandler(EXISTS_REQUEST_HANDLER);
         solrQuery.setQuery(query);
 
-        QueryResponse queryResponse = querySolrServer(solrQuery);
+        QueryResponse queryResponse = querysolrClient(solrQuery);
         return queryResponse.getResults().getNumFound() > 0;
     }
 
@@ -128,7 +131,7 @@ public class SolrCore {
             parameters.set(SOLR_GROUP_LIMIT, queryObject.getRows());
         }
         parameters.setQuery(queryObject.getQuery());
-        return querySolrServer(parameters);
+        return querysolrClient(parameters);
     }
     /**
      * Converts all parameters of the given queryObject to Solr parameters and queries Solr Server
@@ -151,7 +154,7 @@ public class SolrCore {
             parameters.setRows(queryObject.getRows());
         }
         parameters.setQuery(queryObject.getQuery());
-        return querySolrServer(parameters);
+        return querysolrClient(parameters);
     }
 
     /**
@@ -166,7 +169,7 @@ public class SolrCore {
         solrQuery.setStart(0);
         solrQuery.setRows(1);
         solrQuery.setQuery(DB_ID + ":" + id + " OR " + ST_ID + ":" + id + " OR " + OLD_ST_ID + ":" + id);
-        return querySolrServer(solrQuery);
+        return querysolrClient(solrQuery);
     }
 
     /**
@@ -180,7 +183,7 @@ public class SolrCore {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRequestHandler(SUGGEST_REQUEST_HANDLER);
         solrQuery.set(SOLR_SPELLCHECK_QUERY, query);
-        return querySolrServer(solrQuery);
+        return querysolrClient(solrQuery);
     }
 
     /**
@@ -197,7 +200,7 @@ public class SolrCore {
 //        if (query.toLowerCase().matches("^uniprot:[a-z0-9]+$") || query.toLowerCase().matches("^[a-z]+:[0-9]+$") ){
 //            solrQuery.set("spellcheck.collate", false);
 //        }
-        return querySolrServer(solrQuery);
+        return querysolrClient(solrQuery);
     }
 
     /**
@@ -223,7 +226,7 @@ public class SolrCore {
             parameters.addFilterQuery(COMPARTMENT_TAG + getFilterString(queryObject.getCompartment(), COMPARTMENT_FACET));
         }
         parameters.setQuery(queryObject.getQuery());
-        return querySolrServer(parameters);
+        return querysolrClient(parameters);
     }
 
     /**
@@ -235,7 +238,7 @@ public class SolrCore {
         SolrQuery parameters = new SolrQuery();
         parameters.setRequestHandler(TOTAL_FACET_REQUEST_HANDLER);
         parameters.setQuery(ALL_FIELDS);
-        return querySolrServer(parameters);
+        return querysolrClient(parameters);
     }
 
     /**
@@ -264,10 +267,10 @@ public class SolrCore {
      * @return QueryResponse
      * @throws org.reactome.server.tools.search.exception.SolrSearcherException
      */
-    private QueryResponse querySolrServer(SolrQuery query) throws SolrSearcherException {
+    private QueryResponse querysolrClient(SolrQuery query) throws SolrSearcherException {
         try {
-            return solrServer.query(query);
-        } catch (SolrServerException e) {
+            return solrClient.query(query);
+        } catch (IOException|SolrServerException e) {
             logger.error("Solr exception occurred with query: " + query, e);
             throw new SolrSearcherException("Solr exception occurred with query: " + query, e);
         }
@@ -277,8 +280,8 @@ public class SolrCore {
      * Shutdown only closes the connection to Solr
      * never used
      */
-//    private void closeSolrServer() {
-//        solrServer.shutdown();
-//        logger.info("SolrServer shutdown");
+//    private void closesolrClient() {
+//        solrClient.shutdown();
+//        logger.info("solrClient shutdown");
 //    }
 }

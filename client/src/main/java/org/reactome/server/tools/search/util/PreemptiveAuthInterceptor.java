@@ -19,7 +19,7 @@ import java.io.IOException;
  * Created by flo on 16.10.15.
  */
 
-class PreemptiveAuthInterceptor implements HttpRequestInterceptor {
+public class PreemptiveAuthInterceptor implements HttpRequestInterceptor {
 
     @Override
     public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {

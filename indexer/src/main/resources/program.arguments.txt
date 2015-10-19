@@ -1,4 +1,4 @@
--d reactome -u reactome -p reactome -s http://localhost:8983/solr/reactome_final -c controlledvocabulary.csv -o ebeye.xml -r 49 -x -v
+-d reactome -u reactome -p reactome -s http://localhost:8983/solr/reactome_final -c controlledvocabulary.csv -o ebeye.xml -r 49 -v
 
 <profile>
             <id>indexer</id>

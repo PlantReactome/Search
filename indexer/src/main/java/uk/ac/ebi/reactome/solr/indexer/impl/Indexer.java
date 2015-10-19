@@ -2,7 +2,7 @@ package uk.ac.ebi.reactome.solr.indexer.impl;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
@@ -28,7 +28,7 @@ import java.util.Properties;
  */
 public class Indexer {
 
-    private static SolrServer solrServer;
+    private static SolrClient solrClient;
     private static MySQLAdaptor dba;
     private Converter converter;
     private Marshaller marshaller;
@@ -40,11 +40,11 @@ public class Indexer {
     private Boolean verbose;
     private Boolean xml;
 
-    public Indexer(MySQLAdaptor dba, SolrServer solrServer, File controlledVocabulary, File ebeye, String release, Boolean verbose) {
+    public Indexer(MySQLAdaptor dba, SolrClient solrClient, File controlledVocabulary, File ebeye, String release, Boolean verbose) {
 
         logger.setLevel(Level.INFO);
         Indexer.dba = dba;
-        Indexer.solrServer = solrServer;
+        Indexer.solrClient = solrClient;
         converter = new Converter(controlledVocabulary);
 
         Properties indexerProperties = new Properties();
@@ -70,6 +70,7 @@ public class Indexer {
     public void index() throws IndexerException {
 
         try {
+            System.out.println(solrClient.ping());
             cleanSolrIndex();
             if (xml) {
                 marshaller.writeHeader();
@@ -84,11 +85,14 @@ public class Indexer {
                 marshaller.writeFooter(entriesCount);
             }
             commitSolrServer();
-            closeSolrServer();
+
         } catch (Exception e) {
             logger.error(e);
             throw new IndexerException(e);
+        } finally {
+            closeSolrServer();
         }
+
     }
 
     /**
@@ -123,11 +127,7 @@ public class Indexer {
                 if (verbose) {
                     System.out.println(numberOfDocuments + " " + className + " have now been added to Solr");
                 }
-//                commitSolrServer(); //For test purposes
             }
-//            if (numberOfDocuments==250) {
-//                break;
-//            }
         }
         if (!collection.isEmpty()) {
             addDocumentsToSolrServer(collection);
@@ -147,16 +147,16 @@ public class Indexer {
      */
     private void addDocumentsToSolrServer(List<IndexDocument> documents) throws IndexerException {
 
-        if (solrServer != null && documents != null && !documents.isEmpty()) {
+        if (solrClient != null && documents != null && !documents.isEmpty()) {
             try {
-                solrServer.addBeans(documents);
+                solrClient.addBeans(documents);
             } catch (Exception e) {
                 int numberOfTries = 3;
                 boolean unsuccessfulAdd = true;
 
                 while (numberOfTries <= this.numberOfTries && unsuccessfulAdd) {
                     try {
-                        solrServer.addBeans(documents);
+                        solrClient.addBeans(documents);
                         unsuccessfulAdd = false;
                     } catch (Exception e2) {
                         numberOfTries++;
@@ -179,10 +179,10 @@ public class Indexer {
      */
     private void cleanSolrIndex() throws IndexerException {
 
-        if (solrServer != null) {
+        if (solrClient != null) {
             try {
-                solrServer.deleteByQuery("*:*");
-                solrServer.commit();
+                solrClient.deleteByQuery("*:*");
+                solrClient.commit();
                 logger.info("Solr index has been cleaned");
             } catch (SolrServerException e) {
                 logger.error("could not Delete Solr Data solr Exception", e);
@@ -196,14 +196,18 @@ public class Indexer {
 
     /**
      * Closes connection to Solr Server
-     *
      * @throws IndexerException (if commit was not successful)
      */
-    private void closeSolrServer() throws IndexerException {
+    public static void closeSolrServer() throws IndexerException {
 
-        if (solrServer != null) {
-            solrServer.shutdown();
-            logger.info("SolrServer shutdown");
+        if (solrClient != null) {
+            try {
+                solrClient.close();
+                logger.info("SolrServer shutdown");
+            } catch (IOException e) {
+                logger.error("an error occured while closing the SolrServer", e);
+                throw new IndexerException(e);
+            }
         } else {
             logger.error("SolrServer Should not be Null");
         }
@@ -215,9 +219,9 @@ public class Indexer {
      * @throws IndexerException not comiting could mean that this Data will not be added to Solr
      */
     private void commitSolrServer() throws IndexerException {
-        if (solrServer != null) {
+        if (solrClient != null) {
             try {
-                solrServer.commit();
+                solrClient.commit();
                 logger.info("Solr index has been committed and flushed to disk");
             } catch (Exception e) {
                 logger.error("Error occurred while committing, " + (this.numberOfTries - numberOfTries) + "more tries");
@@ -226,7 +230,7 @@ public class Indexer {
 
                 while (numberOfTries <= this.numberOfTries && unsuccessfulCommit) {
                     try {
-                        solrServer.commit();
+                        solrClient.commit();
                         unsuccessfulCommit = false;
                         logger.info("Solr index has been committed and flushed to disk");
                     } catch (Exception e2) {
@@ -248,15 +252,15 @@ public class Indexer {
 //     */
 //    private void optimizeSolrServer() throws IndexerException {
 //
-//        if (solrServer != null){
+//        if (solrClient != null){
 //            try {
-//                solrServer.optimize();
+//                solrClient.optimize();
 //            } catch (Exception e) {
 //                int numberOfTries = 1;
 //                boolean unsuccessfulOptimize = true;
 //                while (numberOfTries <= this.numberOfTries && unsuccessfulOptimize){
 //                    try {
-//                        solrServer.optimize();
+//                        solrClient.optimize();
 //                        unsuccessfulOptimize = false;
 //                    } catch (Exception e2) {
 //                        numberOfTries++;
@@ -281,7 +285,7 @@ public class Indexer {
      */
 //    private void initializeSolrServer()  {
 //
-//        solrServer = new HttpSolrServer(solrProperties.getProperty("url"));
+//        solrClient = new HttpSolrServer(solrProperties.getProperty("url"));
 ////        HttpSolrServer server = new HttpSolrServer(solrProperties.getProperty("url"));
 ////        keep Default values do only alter if necessary!
 ////        server.setMaxRetries                    (Integer.parseInt(solrProperties.getProperty("maxRetries")));
@@ -290,7 +294,7 @@ public class Indexer {
 ////        server.setDefaultMaxConnectionsPerHost  (Integer.parseInt(solrProperties.getProperty("maxConnectionsPerHost")));
 ////        server.setMaxTotalConnections           (Integer.parseInt(solrProperties.getProperty("maxConnectionsTotal")));
 ////        server.setFollowRedirects               (Boolean.parseBoolean(solrProperties.getProperty("followRedirects")));
-////        solrServer = server;
+////        solrClient = server;
 //    }
 
     /**

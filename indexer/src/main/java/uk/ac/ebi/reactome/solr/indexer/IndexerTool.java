@@ -3,9 +3,12 @@ package uk.ac.ebi.reactome.solr.indexer;
 import com.martiansoftware.jsap.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.solr.client.solrj.SolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.gk.persistence.MySQLAdaptor;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
 import uk.ac.ebi.reactome.solr.indexer.impl.Indexer;
@@ -15,12 +18,12 @@ import java.sql.SQLException;
 
 /**
  * Creates the Solr documents and the ebeye.xml file
- *
  * Created by flo on 4/30/14.
  */
 public class IndexerTool {
 
-    public static void main(String[] args) throws JSAPException {
+
+    public static void main(String[] args) throws JSAPException, IndexerException {
         long startTime = System.currentTimeMillis();
 
         SimpleJSAP jsap = new SimpleJSAP(
@@ -67,21 +70,26 @@ public class IndexerTool {
             String password = config.getString("solrpassword");
             String url = config.getString("solrurl");
 
-            SolrServer solrServer;
+            SolrClient solrClient;
             if(user!=null && !user.isEmpty() && password!=null && !password.isEmpty()) {
-                DefaultHttpClient httpclient = new DefaultHttpClient();
-                UsernamePasswordCredentials upc = new UsernamePasswordCredentials(user, password);
-                httpclient.getCredentialsProvider().setCredentials(AuthScope.ANY, upc);
-                solrServer = new HttpSolrServer(url, httpclient);
+                HttpClientBuilder builder = HttpClientBuilder.create().addInterceptorFirst(new PreemptiveAuthInterceptor());
+                CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password);
+                credentialsProvider.setCredentials(AuthScope.ANY, credentials);
+                HttpClient client = builder.setDefaultCredentialsProvider(credentialsProvider).build();
+                solrClient = new HttpSolrClient(url,client);
             }else{
-                solrServer = new HttpSolrServer(url);
+                solrClient = new  HttpSolrClient(url);
+            }
+            File output = null;
+            if (config.getString("outout") != null) {
+                 output = new File(config.getString("output"));
             }
 
-            File output = new File(config.getString("output"));
             String release = config.getString("release");
             File controlledVocabulary = new File(config.getString("input"));
             Boolean verbose = config.getBoolean("verbose");
-            Indexer indexer = new Indexer(dba, solrServer, controlledVocabulary, output, release, verbose);
+            Indexer indexer = new Indexer(dba, solrClient, controlledVocabulary, output, release, verbose);
 
             indexer.index();
             long stopTime = System.currentTimeMillis();

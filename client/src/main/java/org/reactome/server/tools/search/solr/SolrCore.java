@@ -2,15 +2,17 @@ package org.reactome.server.tools.search.solr;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.reactome.server.tools.search.domain.Query;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
@@ -30,7 +32,7 @@ import java.util.List;
 @Component
 public class SolrCore {
 
-    private SolrServer solrServer;
+    private SolrClient solrClient;
     private final static Logger logger = Logger.getRootLogger();
 
     private final static String DEFAULT_REQUEST_HANDLER     =  "/select";
@@ -76,12 +78,15 @@ public class SolrCore {
         logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
 
         if(user!=null && !user.isEmpty() && password!=null && !password.isEmpty()) {
-            DefaultHttpClient httpclient = new DefaultHttpClient();
-            UsernamePasswordCredentials upc = new UsernamePasswordCredentials(user, password);
-            httpclient.getCredentialsProvider().setCredentials(AuthScope.ANY, upc);
-            solrServer = new HttpSolrServer(url, httpclient);
+
+            HttpClientBuilder builder = HttpClientBuilder.create().addInterceptorFirst(new PreemptiveAuthInterceptor());
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password);
+            credentialsProvider.setCredentials(AuthScope.ANY, credentials);
+            HttpClient client = builder.setDefaultCredentialsProvider(credentialsProvider).build();
+            solrClient = new HttpSolrClient(url,client);
         }else{
-            solrServer = new HttpSolrServer(url);
+            solrClient = new  HttpSolrClient(url);
         }
 
         logger.info("SolrServer initialized");

@@ -81,7 +81,6 @@ public class SolrCore {
         logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
 
         if(user!=null && !user.isEmpty() && password!=null && !password.isEmpty()) {
-
             HttpClientBuilder builder = HttpClientBuilder.create().addInterceptorFirst(new PreemptiveAuthInterceptor());
             CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password);

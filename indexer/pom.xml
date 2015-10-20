@@ -26,7 +26,7 @@
             <version>1.2.17</version>
         </dependency>
 
-        <!-- Solr 4.3.0 -->
+        <!-- Solr 5.3.1 -->
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>

@@ -12,6 +12,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.gk.persistence.MySQLAdaptor;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
 import uk.ac.ebi.reactome.solr.indexer.impl.Indexer;
+import uk.ac.ebi.reactome.solr.indexer.util.PreemptiveAuthInterceptor;
 
 import java.io.File;
 import java.sql.SQLException;

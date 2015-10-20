@@ -35,7 +35,7 @@
     </error-page>
     <error-page>
         <error-code>500</error-code>
-        <location>/resources/404.jsp</location>
+        <location>/WEB-INF/jsp/generic_error.jsp</location>
     </error-page>
 
     <servlet>

@@ -48,10 +48,10 @@ $> sudo ./install_solr.sh -i not4hack -p 8081 -u solruser
 ```
 
   </li>
-  <li>To validate the installation of the Apache Solr the URL http://<serverip>:<port>/solr must ask for Basic Authentication. Please provide the user and password configured in the install_solr.sh script</li>
+  <li>To validate the installation of the Apache Solr the URL http://[serverip]:[port]/solr must ask for Basic Authentication. Please provide the user and password configured in the install_solr.sh script</li>
   <li> You're now able to run the Reactome Indexer. Follow next steps.</li>
   
-  </ol>
+</ol>
   
 #### How do I run the Reactome Indexer ?
 ** Maven Setup: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html.
@@ -63,7 +63,7 @@ git clone https://github.com/reactome/Search.git
 ```
 
 </li>
-<li>Navigate into indexer </li>
+<li>Navigate into indexer</li>
 <li>Package with Maven
 
 ```
@@ -76,13 +76,13 @@ mvn clean package
 Run indexer
 
 ```
-java -jar Indexer-<version>-jar-with-dependencies.jar -d <dbname> -u <dbuser> -p <dbpass> -s http://<solrurl>:<solrport>/solr/<solrcore> -c controlledvocabulary.csv -o ebeye.xml -r <reactomedata-currentversion> -v
+java -jar Indexer-[version]-jar-with-dependencies.jar -d dbname -u dbuser -p dbpass -s http://solrurl:solrport/solr/solrcore -c controlledvocabulary.csv -o ebeye.xml -r reactomedata-currentversio -v
 ```
 
 e.g
 
 ```
-java -jar Indexer-<version>-jar-with-dependencies.jar -d reactome -u reactome -p reactome -s http://localhost:8983/solr/reactome_final -c controlledvocabulary.csv -o ebeye.xml -r 49 -v
+java -jar Indexer-[version]-jar-with-dependencies.jar -d reactome -u reactome -p reactome -s http://localhost:8983/solr/reactome_final -c controlledvocabulary.csv -o ebeye.xml -r 49 -v
 ```
 
 </li>

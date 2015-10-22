@@ -45,11 +45,11 @@ public class IndexerTool {
                                 "The password to connect to solr")
                         ,new FlaggedOption( "solrurl", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 's', "solrurl",
                                 "Url of the running Solr server")
-                        ,new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'c', "cv",
-                                "CSV input file specifying the controlled vocabulary terms that should appear as keywords" )
+//                        ,new FlaggedOption( "input", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'c', "cv",
+//                                "CSV input file specifying the controlled vocabulary terms that should appear as keywords" )
                         ,new FlaggedOption( "output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'o', "output",
                                 "XML output file for the EBeye" )
-                        ,new FlaggedOption( "release", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'r', "release",
+                        ,new FlaggedOption( "release", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'r', "release",
                                 "Release version number" )
                         ,new QualifiedSwitch( "verbose", JSAP.BOOLEAN_PARSER, null, JSAP.NOT_REQUIRED, 'v', "verbose",
                                 "Requests verbose output." )
@@ -88,7 +88,8 @@ public class IndexerTool {
             }
 
             String release = config.getString("release");
-            File controlledVocabulary = new File(config.getString("input"));
+            //File controlledVocabulary = new File("controlledvocabulary.csv");
+            String controlledVocabulary = "controlledVocabulary.csv";
             Boolean verbose = config.getBoolean("verbose");
             Indexer indexer = new Indexer(dba, solrClient, controlledVocabulary, output, release, verbose);
 

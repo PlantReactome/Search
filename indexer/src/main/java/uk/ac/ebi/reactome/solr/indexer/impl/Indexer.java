@@ -40,7 +40,7 @@ public class Indexer {
     private Boolean verbose;
     private Boolean xml;
 
-    public Indexer(MySQLAdaptor dba, SolrClient solrClient, File controlledVocabulary, File ebeye, String release, Boolean verbose) {
+    public Indexer(MySQLAdaptor dba, SolrClient solrClient, String controlledVocabulary, File ebeye, String release, Boolean verbose) {
 
         logger.setLevel(Level.INFO);
         Indexer.dba = dba;

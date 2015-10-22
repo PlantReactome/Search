@@ -26,7 +26,7 @@ public class Converter {
     /**
      * Constructor
      */
-    public Converter(File controlledVocabulary) {
+    public Converter(String controlledVocabulary) {
         logger.setLevel(Level.ERROR);
 //        logger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
         keywords = loadFile(controlledVocabulary);
@@ -88,16 +88,16 @@ public class Converter {
             logger.error(e.getMessage(), e);
         }
     }
-    private List<String> loadFile(File file) {
+    private List<String> loadFile(String fileName) {
         try {
             List<String> list = new ArrayList<>();
-            FileInputStream fileStream = new FileInputStream(file);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileStream));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + fileName)));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 list.add(line);
             }
             bufferedReader.close();
+            logger.debug(list.toString());
             return list;
         } catch (IOException e) {
             logger.error("An error occurred when loading the controlled vocabulary file", e);

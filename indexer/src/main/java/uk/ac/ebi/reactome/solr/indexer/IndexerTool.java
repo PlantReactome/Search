@@ -89,7 +89,7 @@ public class IndexerTool {
 
             String release = config.getString("release");
             //File controlledVocabulary = new File("controlledvocabulary.csv");
-            String controlledVocabulary = "controlledVocabulary.csv";
+            String controlledVocabulary = "controlledvocabulary.csv";
             Boolean verbose = config.getBoolean("verbose");
             Indexer indexer = new Indexer(dba, solrClient, controlledVocabulary, output, release, verbose);
 

@@ -72,7 +72,6 @@ $> sudo ./install_solr.sh -i not4hack -p 8081 -u solruser
 ```
 java -jar Indexer-<version>-jar-with-dependencies.jar -d <dbname> -u <dbuser> -p <dbpass> -s http://<solrurl>:<solrport>/solr/<solrcore> -c controlledvocabulary.csv -o ebeye.xml -r <reactomedata-currentversion> -v
 ```
-
 e.g
 ```
 java -jar Indexer-<version>-jar-with-dependencies.jar -d reactome -u reactome -p reactome -s http://localhost:8983/solr/reactome_final -c controlledvocabulary.csv -o ebeye.xml -r 49 -v

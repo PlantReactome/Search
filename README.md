@@ -57,24 +57,33 @@ $> sudo ./install_solr.sh -i not4hack -p 8081 -u solruser
 ** Maven Setup: https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html.
 <ol>
 <li>Clone the Search repository on your end
+
 ```
-  git clone https://github.com/reactome/Search.git
+git clone https://github.com/reactome/Search.git
 ```
+
 </li>
-<li>Navigate into indexer: Search > indexer</li>
+<li>Navigate into indexer </li>
 <li>Package with Maven
+
 ```
-    mvn clean package
+mvn clean package
 ```
+
 </li>
 <li>Navigate into target directory</li>
-<li>Run indexer
+<li>
+Run indexer
+
 ```
 java -jar Indexer-<version>-jar-with-dependencies.jar -d <dbname> -u <dbuser> -p <dbpass> -s http://<solrurl>:<solrport>/solr/<solrcore> -c controlledvocabulary.csv -o ebeye.xml -r <reactomedata-currentversion> -v
 ```
+
 e.g
+
 ```
 java -jar Indexer-<version>-jar-with-dependencies.jar -d reactome -u reactome -p reactome -s http://localhost:8983/solr/reactome_final -c controlledvocabulary.csv -o ebeye.xml -r 49 -v
 ```
+
 </li>
 </ol>

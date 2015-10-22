@@ -29,7 +29,7 @@
          If both ramBufferSizeMB and maxBufferedDocs is set, then
          Lucene will flush based on whichever limit is hit first.
          The default is 100 MB.  -->
-     <ramBufferSizeMB>1000</ramBufferSizeMB> 
+     <ramBufferSizeMB>128</ramBufferSizeMB> 
     <!-- Merge Factor
          The merge factor controls how many segments will get merged at a time.
          For TieredMergePolicy, mergeFactor is a convenience parameter which

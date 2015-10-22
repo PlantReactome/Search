@@ -111,8 +111,8 @@ unzip -q $_BRANCH.zip -d .
 echo "Creating Solr core..."
 su - solr -c "/opt/solr/bin/solr create -c $_SOLR_CORE -d $_CWD/Search-$_BRANCH/solr-conf"
 
-echo "Increasing solr heap..."
-sed -i "s/^\(SOLR_HEAP\s*=\s*\).*$/\1\"1024m\"/" $_SOLR_HOME/solr.in.sh 
+#echo "Increasing solr heap..."
+#sed -i "s/^\(SOLR_HEAP\s*=\s*\).*$/\1\"1024m\"/" $_SOLR_HOME/solr.in.sh 
 
 echo "Enabling Solr admin authentication in Jetty..."
 cp Search-$_BRANCH/solr-jetty-conf/jetty.xml /opt/solr-$_SOLR_VERSION/server/etc/

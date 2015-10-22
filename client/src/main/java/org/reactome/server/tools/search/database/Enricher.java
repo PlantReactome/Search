@@ -19,7 +19,7 @@ import java.util.*;
  */
 public class Enricher implements IEnricher  {
     private static MySQLAdaptor dba;
-    private static final Logger logger = LoggerFactory.getLogger(Enricher.class);
+    protected static final Logger logger = LoggerFactory.getLogger(Enricher.class);
 
     /**
      * Constructor to make this class expandable

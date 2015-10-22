@@ -11,7 +11,7 @@ import java.util.Set;
  */
 public class EnrichedEntry extends Entry {
 
-    private Set<TreeNode> locationsPathwayBrowser;
+    private Set<Node> locationsPathwayBrowser;
 
     private List<String> summations;
     private List<String> synonyms;
@@ -50,11 +50,11 @@ public class EnrichedEntry extends Entry {
 
     private List<ModifiedResidue> modifiedResidues;
 
-    public Set<TreeNode> getLocationsPathwayBrowser() {
+    public Set<Node> getLocationsPathwayBrowser() {
         return locationsPathwayBrowser;
     }
 
-    public void setLocationsPathwayBrowser(Set<TreeNode> locationsPathwayBrowser) {
+    public void setLocationsPathwayBrowser(Set<Node> locationsPathwayBrowser) {
         this.locationsPathwayBrowser = locationsPathwayBrowser;
     }
 

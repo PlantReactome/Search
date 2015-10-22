@@ -50,7 +50,8 @@ $('#search_form').submit(function(e) {
 
 $(".plus").click(function () {
     $plus = $(this);
-    $treeContent = $plus.next();
+    console.debug($(this));
+    $treeContent = $plus.nextAll().eq(1);
     $treeContent.slideToggle(500, function () {
         if ($treeContent.is(":visible") ){
             return $plus.find(".image").attr("src", "../resources/images/minus.png");

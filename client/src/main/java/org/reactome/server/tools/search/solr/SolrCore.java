@@ -13,6 +13,7 @@ import org.apache.log4j.PatternLayout;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpClientUtil;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.reactome.server.tools.search.domain.Query;
@@ -86,11 +87,11 @@ public class SolrCore {
             UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password);
             credentialsProvider.setCredentials(AuthScope.ANY, credentials);
             HttpClient client = builder.setDefaultCredentialsProvider(credentialsProvider).build();
+            HttpClientUtil.setSoTimeout(client,1);
             solrClient = new HttpSolrClient(url,client);
         }else{
             solrClient = new  HttpSolrClient(url);
         }
-
         logger.info("solrClient initialized");
     }
 

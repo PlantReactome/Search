@@ -81,6 +81,75 @@
         <url-pattern>/wordpress/*</url-pattern>
     </servlet-mapping>
 
+
+    <servlet>
+        <servlet-name>PathwayBrowser</servlet-name>
+        <servlet-class>uk.ac.ebi.pride.web.util.servlet.proxy.ProxyServlet</servlet-class>
+        <init-param>
+            <param-name>proxyHost</param-name>
+            <param-value>reactomedev.oicr.on.ca</param-value>
+        </init-param>
+        <init-param>
+            <param-name>proxyPort</param-name>
+            <param-value>80</param-value>
+        </init-param>
+        <init-param>
+            <param-name>proxyPath</param-name>
+            <param-value>/PathwayBrowser/</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PathwayBrowser</servlet-name>
+        <url-pattern>/PathwayBrowser/*</url-pattern>
+    </servlet-mapping>
+
+
+    <!-- RESTFul WS PROXY Configuration (ONLY USED IN DEV MODE) -->
+    <servlet>
+        <servlet-name>ReactomeRESTfulAPI</servlet-name>
+        <servlet-class>uk.ac.ebi.pride.web.util.servlet.proxy.ProxyServlet</servlet-class>
+        <init-param>
+            <param-name>proxyHost</param-name>
+            <param-value>reactomedev.oicr.on.ca</param-value>
+        </init-param>
+        <init-param>
+            <param-name>proxyPort</param-name>
+            <param-value>80</param-value>
+        </init-param>
+        <init-param>
+            <param-name>proxyPath</param-name>
+            <param-value>/ReactomeRESTfulAPI/RESTfulWS</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReactomeRESTfulAPI</servlet-name>
+        <url-pattern>/ReactomeRESTfulAPI/RESTfulWS/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Downloads (ONLY USED IN DEV MODE) -->
+    <servlet>
+        <servlet-name>Download</servlet-name>
+        <servlet-class>uk.ac.ebi.pride.web.util.servlet.proxy.ProxyServlet</servlet-class>
+        <init-param>
+            <param-name>proxyHost</param-name>
+            <param-value>reactomedev.oicr.on.ca</param-value>
+        </init-param>
+        <init-param>
+            <param-name>proxyPort</param-name>
+            <param-value>80</param-value>
+        </init-param>
+        <init-param>
+            <param-name>proxyPath</param-name>
+            <param-value>/download/current/</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Download</servlet-name>
+        <url-pattern>/download/current/*</url-pattern>
+    </servlet-mapping>
+
+
+
     <welcome-file-list>
         <welcome-file>/resources/index.jsp</welcome-file>
     </welcome-file-list>

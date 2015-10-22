@@ -2,12 +2,14 @@ package org.reactome.server.tools.search.database;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
-import org.reactome.server.tools.search.domain.*;
+import org.reactome.server.tools.search.domain.Disease;
+import org.reactome.server.tools.search.domain.EnrichedEntry;
+import org.reactome.server.tools.search.domain.EntityReference;
+import org.reactome.server.tools.search.domain.Literature;
 import org.reactome.server.tools.search.exception.EnricherException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Queries the MySql database and converts entry to a local object
@@ -17,9 +19,7 @@ import java.util.*;
  */
 public class GeneralAttributeEnricher extends Enricher{
 
-    private static final Logger logger = LoggerFactory.getLogger(GeneralAttributeEnricher.class);
     private static final String PUBMED_URL = "http://www.ncbi.nlm.nih.gov/pubmed/";
-    private static final String PATHWAY_BROWSER_URL = "/PathwayBrowser/#";
 
     public void setGeneralAttributes(GKInstance instance, EnrichedEntry enrichedEntry) throws EnricherException {
 
@@ -56,19 +56,8 @@ public class GeneralAttributeEnricher extends Enricher{
 
             List<List<EntityReference>> list = new ArrayList<List<EntityReference>>();
             List<EntityReference> path = new ArrayList<EntityReference>();
-            GraphNode tree  = new GraphNode();
-            tree.setDbId(instance.getDBID());
-            tree.setName(instance.getDisplayName());
-            if (hasValue(instance, ReactomeJavaConstants.species)) {
-                GKInstance species = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species);
-                tree.setSpecies(species.getDisplayName());
-                tree.setSpeciesId(species.getDBID());
-            }
-            tree.setStId(getStableIdentifier(instance));
-            recursion(instance, tree);
-            Set<GraphNode>leafs = tree.getLeafs();
-            Set<TreeNode>trees = generateUrlFromLeaves(leafs);
-            enrichedEntry.setLocationsPathwayBrowser(trees);
+            PathwayBrowserTreeGenerator pathwayBrowserTreeGenerator = new PathwayBrowserTreeGenerator();
+            enrichedEntry.setLocationsPathwayBrowser(pathwayBrowserTreeGenerator.generateGraphForGivenGkInstance(instance));
 
 
         } catch (Exception e) {
@@ -136,155 +125,5 @@ public class GeneralAttributeEnricher extends Enricher{
             }
         }
         return null;
-    }
-
-
-    private Map<Long,GraphNode> nodeMap = new HashMap<Long, GraphNode>();
-
-    private GraphNode getOrCreateTreeNode(GKInstance instance) throws Exception {
-        GraphNode node = nodeMap.get(instance.getDBID());
-        if (node == null) {
-            node = new GraphNode();
-            node.setName(instance.getDisplayName());
-            node.setDbId(instance.getDBID());
-            if (hasValue(instance, ReactomeJavaConstants.species)) {
-                GKInstance species = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species);
-                node.setSpecies(species.getDisplayName());
-                node.setSpeciesId(species.getDBID());
-            }            node.setStId(getStableIdentifier(instance));
-            nodeMap.put(node.getDbId(), node);
-        }
-        return node;
-    }
-
-    private void nodeFromReference(GKInstance instance, GraphNode node,String fieldName) throws Exception {
-        Collection<?> components = instance.getReferers(fieldName);
-        if (components != null && !components.isEmpty()) {
-            for (Object entryObject : components) {
-                GKInstance entry = (GKInstance) entryObject;
-                GraphNode newNode = getOrCreateTreeNode(entry);
-                node.addChild(newNode);
-                newNode.addParent(node);
-                recursion(entry,newNode);
-            }
-        }
-    }
-
-    private void skippNodes(GKInstance instance, GraphNode node, String fieldName) throws Exception {
-        Collection<?> regulator = instance.getReferers(fieldName);
-        if (regulator != null && !regulator.isEmpty()) {
-            for (Object entryObject : regulator) {
-                GKInstance entry = (GKInstance) entryObject;
-                recursion(entry,node);
-            }
-        }
-    }
-
-    private void nodeFromAttributes(GKInstance instance, GraphNode node, String fieldName) throws Exception {
-        if (hasValues(instance, fieldName)) {
-            GKInstance regulatedEntityInstance = (GKInstance) instance.getAttributeValue(fieldName);
-            if (regulatedEntityInstance != null) {
-                GraphNode newNode = getOrCreateTreeNode(regulatedEntityInstance);
-                node.addChild(newNode);
-                newNode.addParent(node);
-                recursion(regulatedEntityInstance,newNode);
-            }
-        }
-    }
-
-    private void recursion(GKInstance instance, GraphNode node)  throws EnricherException {
-        try {
-            nodeFromReference(instance,node,ReactomeJavaConstants.hasComponent);
-            nodeFromReference(instance,node,ReactomeJavaConstants.repeatedUnit);
-            nodeFromReference(instance,node,ReactomeJavaConstants.hasCandidate);
-            nodeFromReference(instance,node,ReactomeJavaConstants.hasMember);
-            nodeFromReference(instance,node,ReactomeJavaConstants.input);
-            nodeFromReference(instance,node,ReactomeJavaConstants.output);
-            nodeFromReference(instance,node,ReactomeJavaConstants.hasEvent);
-            nodeFromReference(instance,node,ReactomeJavaConstants.activeUnit);
-            nodeFromReference(instance,node,ReactomeJavaConstants.catalystActivity);
-            skippNodes(instance,node,ReactomeJavaConstants.regulator);
-            skippNodes(instance,node,ReactomeJavaConstants.physicalEntity);
-            nodeFromAttributes(instance, node, ReactomeJavaConstants.regulatedEntity);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            throw new EnricherException(e.getMessage() , e);
-        }
-    }
-
-    private Set<TreeNode> generateUrlFromLeaves(Set<GraphNode>leaves) throws EnricherException {
-        Set<TreeNode> topLvlTrees = new HashSet<TreeNode>();
-        for (GraphNode leaf : leaves) {
-            TreeNode tree = getTreeFromGraphLeaf(leaf, "", "");
-            if(tree!=null){
-                topLvlTrees.add(tree);
-            }else{
-                logger.error("Could no process tree for " + leaf.getName());
-            }
-        }
-        return topLvlTrees;
-    }
-    private TreeNode getTreeFromGraphLeaf(GraphNode leaf, String diagram, String path) {
-        TreeNode tree = new TreeNode();
-        tree.setName(leaf.getName());
-        tree.setSpecies(leaf.getSpecies());
-
-        String id = null;
-        try {
-            if (hasDiagram(leaf.getDbId())) {
-                diagram = String.valueOf(leaf.getDbId());
-            } else {
-                id = String.valueOf(leaf.getDbId());
-            }
-        } catch (EnricherException e) {
-            logger.error(e.getMessage(), e);
-        }
-        if(diagram.isEmpty()) return null;
-
-        String url = this.PATHWAY_BROWSER_URL;
-        if (leaf.getSpecies() != null && !leaf.getSpecies().contains("Homo sapiens")) {
-            url += "SPECIES=" + leaf.getSpeciesId();
-        }
-        if (url.endsWith("#")) {
-            url += "DIAGRAM=" + diagram;
-        } else {
-            url += "&amp;DIAGRAM=" + diagram;
-        }
-        if(id!=null && !id.isEmpty()){
-            url += "&amp;ID=" + id;
-        }
-        if(!path.isEmpty()) {
-            url += "&amp;PATH=" + getRightPath(diagram, path);
-        }
-//        url = url.replaceAll(diagram + "[^"+ diagram + "]*$", "");
-        if (!diagram.isEmpty()) {
-            tree.setUrl(url);
-        }
-
-        if (path.isEmpty()) {
-            path += leaf.getDbId();
-        } else {
-            path += "," + leaf.getDbId();
-        }
-
-
-        if (leaf.getParent()!=null) {
-
-            for (GraphNode node : leaf.getParent()) {
-                tree.addChild(getTreeFromGraphLeaf(node,diagram,path));
-
-            }
-
-        }
-        return tree;
-    }
-
-    private String getRightPath(String diagram, String path){
-        try{
-            path = path.substring(0, path.lastIndexOf(diagram));
-        }catch (StringIndexOutOfBoundsException ex){
-            //Nothing here
-        }
-        return (path.endsWith(",")) ? path.substring(0, path.length()-1) : path;
     }
 }

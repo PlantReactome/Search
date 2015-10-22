@@ -4,8 +4,6 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.EnricherException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -17,7 +15,6 @@ import java.util.*;
  */
 public class PhysicalEntityAttributeEnricher extends Enricher{
 
-    private static final Logger logger = LoggerFactory.getLogger(PhysicalEntityAttributeEnricher.class);
     private static final String ENTITY_ON_OTHER_CELL = "entityOnOtherCell";
 
     public void setPhysicalEntityAttributes(GKInstance instance, EnrichedEntry enrichedEntry) throws EnricherException {

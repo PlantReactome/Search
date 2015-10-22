@@ -5,8 +5,6 @@ import org.gk.model.ReactomeJavaConstants;
 import org.reactome.server.tools.search.domain.CatalystActivity;
 import org.reactome.server.tools.search.domain.EnrichedEntry;
 import org.reactome.server.tools.search.exception.EnricherException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +16,6 @@ import java.util.List;
  * @version 1.0
  */
 public class EventAttributeEnricher extends Enricher {
-
-    private static final Logger logger = LoggerFactory.getLogger(EventAttributeEnricher.class);
 
     public void setEventAttributes(GKInstance instance, EnrichedEntry enrichedEntry) throws EnricherException {
         try {

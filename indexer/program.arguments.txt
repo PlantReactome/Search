@@ -1,11 +1,3 @@
--d reactome -u reactome -p reactome -s http://localhost:8983/solr/reactome -e admin -a reactome -c controlledvocabulary.csv -o ebeye.xml -r 49 -v
+-d reactome -u reactome -p reactome -s http://localhost:8983/solr/reactome -e admin -a reactome -i 100 -o ebeye.xml -r 49 -v
 -d reactome -u reactome -p reactome -s http://localhost:8983/solr/reactome -e admin -a reactome -v
 
-<profile>
-    <id>indexer</id>
-    <properties>
-        <indexer.addInterval>100</indexer.addInterval>
-        <indexer.numberOfTries>1</indexer.numberOfTries>
-        <log4j.fileLocation>~/test/logging.log</log4j.fileLocation>
-    </properties>
-</profile>

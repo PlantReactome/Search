@@ -9,23 +9,22 @@
         <input type="hidden" name="url" id="url" value="${url}"/>
 
         <div class="field">
-            <label for="mailAddress"><h6>From:</h6></label>
+            <label for="mailAddress"><p>From:</p></label>
             <input type="email" id="mailAddress" name="mailAddress" size="80" class="search"/>
         </div>
         <div class="field">
-            <label for="to"><h6>To:</h6></label>
+            <label for="to"><p>To:</p></label>
             <input type="to" id="to" name="to" size="80" class="search" value="Reactome Helpdesk" readonly>
         </div>
         <div class="field">
-            <label for="subject"><h6>Subject:</h6></label>
+            <label for="subject"><p>Subject:</p></label>
             <input type="text" id="subject" name="subject" class="search" value="${subject}" readonly/>
         </div>
         <div class="fieldarea">
-            <label for="message"><h6>Message:</h6></label>
-                <textarea id="message" name="message" class="search" rows="5" cols="80"
-                          width="70%">${message}</textarea>
+            <label for="message"><p>Message:</p></label>
+                <textarea id="message" name="message" class="search" rows="5" cols="80">${message}</textarea>
         </div>
-        <div style="width: 43%; text-align:right">
+        <div class="button-send">
             <p>
                 <input type="button" class="submit" value="Send" id="send"/>
             </p>

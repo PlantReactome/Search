@@ -216,13 +216,13 @@ public class Converter {
     }
 
     private List<String> getKeywordsFromName(String name) {
-            List<String> list = new ArrayList<>();
-            for (String keyword : keywords) {
-                if (name.toLowerCase().contains(keyword.toLowerCase())) {
-                    list.add(keyword);
-                }
+        List<String> list = new ArrayList<>();
+        for (String keyword : keywords) {
+            if (name.toLowerCase().contains(keyword.toLowerCase())) {
+                list.add(keyword);
             }
-            return list;
+        }
+        return list;
     }
 
     public void setCrossReference(IndexDocument document, GKInstance instance)  {
@@ -445,26 +445,26 @@ public class Converter {
                 document.setReferenceGeneNames(referenceEntity.getAttributeValuesList(ReactomeJavaConstants.geneName));
             }
 
-            GKInstance referenceDatabase = (GKInstance) referenceEntity.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
-            String id = null;
-            String db = (String) referenceDatabase.getAttributeValue(ReactomeJavaConstants.name);
-            if (hasValue(referenceEntity, ReactomeJavaConstants.variantIdentifier)) {
-                id = (String) referenceEntity.getAttributeValue(ReactomeJavaConstants.variantIdentifier);
-            }
-            else if (hasValue(referenceEntity, ReactomeJavaConstants.identifier)){
-                id = (String) referenceEntity.getAttributeValue(ReactomeJavaConstants.identifier);
-            }
-            if(id!=null) {
-                List<String> referenceIdentifiers = new LinkedList<>();
-                referenceIdentifiers.add(id);
-                referenceIdentifiers.add(db + ":" + id);
-                document.setReferenceIdentifiers(referenceIdentifiers);
-            }
-
             if (hasValues(referenceEntity, ReactomeJavaConstants.otherIdentifier)){
                 document.setReferenceOtherIdentifier(referenceEntity.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier));
             }
-            if (hasValue(referenceEntity, ReactomeJavaConstants.referenceDatabase)) {
+
+            if (hasValue(referenceEntity, ReactomeJavaConstants.referenceDatabase)){
+                GKInstance referenceDatabase = (GKInstance) referenceEntity.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
+                String db = (String) referenceDatabase.getAttributeValue(ReactomeJavaConstants.name);
+
+                String id = null;
+                if (hasValue(referenceEntity, ReactomeJavaConstants.variantIdentifier)) {
+                    id = (String) referenceEntity.getAttributeValue(ReactomeJavaConstants.variantIdentifier);
+                } else if (hasValue(referenceEntity, ReactomeJavaConstants.identifier)){
+                    id = (String) referenceEntity.getAttributeValue(ReactomeJavaConstants.identifier);
+                }
+                if(id!=null) {
+                    List<String> referenceIdentifiers = new LinkedList<>();
+                    referenceIdentifiers.add(id);
+                    referenceIdentifiers.add(db + ":" + id);
+                    document.setReferenceIdentifiers(referenceIdentifiers);
+                }
                 GKInstance database = (GKInstance) referenceEntity.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
                 document.setDatabaseName((String) database.getAttributeValue(ReactomeJavaConstants.name));
                 String url = (String) database.getAttributeValue(ReactomeJavaConstants.accessUrl);

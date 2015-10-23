@@ -156,6 +156,7 @@ public class Indexer {
                 for (IndexDocument document : documents) {
                     try {
                         solrClient.addBean(document);
+                        logger.info("A single document was added to Solr");
                     } catch (IOException|SolrServerException|HttpSolrClient.RemoteSolrException e1) {
                         logger.error("Could not add document", e);
                         logger.error("Document DBID: " + document.getDbId() + " Name " + document.getName());

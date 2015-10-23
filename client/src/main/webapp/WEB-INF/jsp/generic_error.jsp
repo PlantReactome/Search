@@ -3,9 +3,6 @@
 <c:import url="header.jsp"/>
 <div class="ebi-content">
     <div class="grid_23 padding">
-        <div class="generic-error-div">
-            <h4>Application Error, please contact support.</h4>
-        </div>
         <c:import url="contact_form.jsp">
             <c:param name="source" value="E"/>
         </c:import>

@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -40,29 +39,32 @@ class WebController {
 
     private static final int rowCount = 30;
 
-    private static final String SPECIES_FACET         =  "species_facet";
-    private static final String TYPES_FACET           =  "type_facet";
-    private static final String KEYWORDS_FACET        =  "keyword_facet";
-    private static final String COMPARTMENTS_FACET    =  "compartment_facet";
+    private static final String SPECIES_FACET = "species_facet";
+    private static final String TYPES_FACET = "type_facet";
+    private static final String KEYWORDS_FACET = "keyword_facet";
+    private static final String COMPARTMENTS_FACET = "compartment_facet";
 
-    private static final String Q               =  "q";
-    private static final String SPECIES         =  "species";
-    private static final String TYPES           =  "types";
-    private static final String KEYWORDS        =  "keywords";
-    private static final String COMPARTMENTS    =  "compartments";
+    private static final String Q = "q";
+    private static final String SPECIES = "species";
+    private static final String TYPES = "types";
+    private static final String KEYWORDS = "keywords";
+    private static final String COMPARTMENTS = "compartments";
 
-    private static final String ENTRY           =  "entry";
-    private static final String GROUPED_RESULT  =  "groupedResult";
-    private static final String SUGGESTIONS     =  "suggestions";
+    private static final String ENTRY = "entry";
+    private static final String GROUPED_RESULT = "groupedResult";
+    private static final String SUGGESTIONS = "suggestions";
 
-    private static final String PAGE            =  "page";
-    private static final String MAX_PAGE        =  "maxpage";
-    private static final String CLUSTER         =  "cluster";
+    private static final String PAGE = "page";
+    private static final String MAX_PAGE = "maxpage";
+    private static final String CLUSTER = "cluster";
 
-    private static final String TITLE =  "title";
-    private static final String MAIL_SUBJECT =  "subject";
+    private static final String TITLE = "title";
 
-    private static final String MAIL_SUBJECT_PLACEHOLDER =  "No results found for";
+    private static final String MAIL_SUBJECT = "subject";
+    private static final String MAIL_SUBJECT_PLACEHOLDER = "No results found for";
+
+    private static final String MAIL_MESSAGE = "message";
+    private static String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI have searched for %s and I could not find it.";
 
     private static String defaultSubject;
 
@@ -74,64 +76,68 @@ class WebController {
 
     /**
      * Method for autocompletion
+     *
      * @param tagName query snippet to be autocompleted
      * @return List of Suggestions
      * @throws SolrSearcherException
      */
     @RequestMapping(value = "/getTags", method = RequestMethod.GET)
-    public @ResponseBody List<String> getTags(@RequestParam String tagName) throws SolrSearcherException {
+    public
+    @ResponseBody
+    List<String> getTags(@RequestParam String tagName) throws SolrSearcherException {
         return searchService.getAutocompleteSuggestions(tagName);
     }
 
     /**
      * Loads data for advanced view and displays advanced view
+     *
      * @param model SpringModel
      * @return Advanced view
      * @throws SolrSearcherException
      */
     @RequestMapping(value = "/advanced", method = RequestMethod.GET)
-    public String gotoAdv (ModelMap model) throws SolrSearcherException {
+    public String gotoAdv(ModelMap model) throws SolrSearcherException {
         FacetMapping facetMapping = searchService.getTotalFacetingInformation();
-        model.addAttribute(SPECIES_FACET,         facetMapping.getSpeciesFacet());
-        model.addAttribute(TYPES_FACET,           facetMapping.getTypeFacet());
-        model.addAttribute(KEYWORDS_FACET,        facetMapping.getKeywordFacet());
-        model.addAttribute(COMPARTMENTS_FACET,    facetMapping.getCompartmentFacet());
-        model.addAttribute(TITLE,    "advanced Search");
+        model.addAttribute(SPECIES_FACET, facetMapping.getSpeciesFacet());
+        model.addAttribute(TYPES_FACET, facetMapping.getTypeFacet());
+        model.addAttribute(KEYWORDS_FACET, facetMapping.getKeywordFacet());
+        model.addAttribute(COMPARTMENTS_FACET, facetMapping.getCompartmentFacet());
+        model.addAttribute(TITLE, "advanced Search");
         return "ebiadvanced";
     }
 
     /**
      * Shows detailed information of an entry
-     * @param id StId or DbId
+     *
+     * @param id      StId or DbId
      * @param version Reactome Database version
-    //     * @param q,species,types,compartments,keywords parameters to save existing query and facets
-     * @param model SpringModel
+     *                //     * @param q,species,types,compartments,keywords parameters to save existing query and facets
+     * @param model   SpringModel
      * @return Detailed page
      * @throws EnricherException
      * @throws SolrSearcherException
      */
     @RequestMapping(value = "/detail/v{version}/{id:.*}", method = RequestMethod.GET)
-    public String detailVersion (@PathVariable String id,
-                                 @PathVariable Integer version,
+    public String detailVersion(@PathVariable String id,
+                                @PathVariable Integer version,
 //                                 @RequestParam ( required = false ) String q,
 //                                 @RequestParam ( required = false ) String species,
 //                                 @RequestParam ( required = false ) String types,
 //                                 @RequestParam ( required = false ) String compartments,
 //                                 @RequestParam ( required = false ) String keywords,
-                                 ModelMap model) throws EnricherException, SolrSearcherException {
+                                ModelMap model) throws EnricherException, SolrSearcherException {
 //        model.addAttribute(Q, checkOutputIntegrity(q));
 //        model.addAttribute(SPECIES, checkOutputIntegrity(species));
 //        model.addAttribute(TYPES, checkOutputIntegrity(types));
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
         EnrichedEntry entry = searchService.getEntryById(version, id);
-        if (entry!= null) {
+        if (entry != null) {
             model.addAttribute(ENTRY, entry);
-            model.addAttribute(TITLE, entry.getName() + " (" + entry.getSpecies() + ")" );
+            model.addAttribute(TITLE, entry.getName() + " (" + entry.getSpecies() + ")");
             return "detail";
         } else {
-            defaultSubject = MAIL_SUBJECT_PLACEHOLDER + " " + id;
-            model.addAttribute(MAIL_SUBJECT, defaultSubject);
+            autoFillContactForm(model, id);
 
             return "noresultsfound";
         }
@@ -139,8 +145,9 @@ class WebController {
 
     /**
      * Shows detailed information of an entry
-     * @param id StId or DbId
-    //     * @param q,species,types,compartments,keywords parameters to save existing query and facets
+     *
+     * @param id    StId or DbId
+     *              //     * @param q,species,types,compartments,keywords parameters to save existing query and facets
      * @param model SpringModel
      * @return Detailed page
      * @throws EnricherException
@@ -153,55 +160,56 @@ class WebController {
 //                         @RequestParam ( required = false ) String types,
 //                         @RequestParam ( required = false ) String compartments,
 //                         @RequestParam ( required = false ) String keywords,
-                         ModelMap model)  throws EnricherException, SolrSearcherException {
+                         ModelMap model) throws EnricherException, SolrSearcherException {
 //        model.addAttribute(Q, checkOutputIntegrity(q));
 //        model.addAttribute(SPECIES, checkOutputIntegrity(species));
 //        model.addAttribute(TYPES, checkOutputIntegrity(types));
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
         EnrichedEntry entry = searchService.getEntryById(id);
-        if (entry!= null) {
+        if (entry != null) {
             model.addAttribute(ENTRY, entry);
             model.addAttribute(TITLE, entry.getName());
             return "detail";
         } else {
 
-            defaultSubject = MAIL_SUBJECT_PLACEHOLDER + " " + id;
-            model.addAttribute(MAIL_SUBJECT, defaultSubject);
+            autoFillContactForm(model, id);
+
             return "noresultsfound";
         }
     }
 
-    //    quick and ugly fix
-    @ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
-    @RequestMapping(value = "/query/", method = RequestMethod.GET)
-    public void error () {
-//        return "../../resources/404.jas";
-    }
+//    //    quick and ugly fix
+//    @ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
+//    @RequestMapping(value = "/query/", method = RequestMethod.GET)
+//    public void error () {
+////        return "../../resources/404.jas";
+//    }
 
     /**
      * spellcheck has to be applied after faceting search because dictionary can not contain 100% all index info
+     *
      * @param q,species,types,compartments,keywords parameters to save existing query and facets
-     * @param page page number
-     * @param model SpringModel
+     * @param page                                  page number
+     * @param model                                 SpringModel
      * @return main search result page
      * @throws SolrSearcherException
      */
     @RequestMapping(value = "/query", method = RequestMethod.GET)
-    public String search (@RequestParam ( required = true ) String q,
-                          @RequestParam ( required = false ) List<String> species,
-                          @RequestParam ( required = false ) List<String> types,
-                          @RequestParam ( required = false ) List<String> keywords,
-                          @RequestParam ( required = false ) List<String> compartments,
-                          @RequestParam ( required = false ) Boolean cluster,
-                          @RequestParam ( required = false ) Integer page,
-                          ModelMap model) throws SolrSearcherException {
-        if (q!= null && !q.isEmpty()) {
+    public String search(@RequestParam(required = true) String q,
+                         @RequestParam(required = false) List<String> species,
+                         @RequestParam(required = false) List<String> types,
+                         @RequestParam(required = false) List<String> keywords,
+                         @RequestParam(required = false) List<String> compartments,
+                         @RequestParam(required = false) Boolean cluster,
+                         @RequestParam(required = false) Integer page,
+                         ModelMap model) throws SolrSearcherException {
+        if (q != null && !q.isEmpty()) {
             q = filterQuery(q);
             if (cluster == null) {
                 cluster = false;
             }
-            if (page==null || page == 0) {
+            if (page == null || page == 0) {
                 page = 1;
             }
 
@@ -212,19 +220,19 @@ class WebController {
             model.addAttribute(COMPARTMENTS, checkOutputListIntegrity(compartments));
             model.addAttribute(KEYWORDS, checkOutputListIntegrity(keywords));
             model.addAttribute(CLUSTER, cluster);
-            Query queryObject = new Query(q, species,types,compartments,keywords);
+            Query queryObject = new Query(q, species, types, compartments, keywords);
             model.addAttribute(PAGE, page);
             FacetMapping facetMapping = searchService.getFacetingInformation(queryObject);
             // Faceting information is used to determine if the query with the currently selected filters
             // will return any results. If nothing is found, all the selected filters will be removed and
             // another query will be sent to Solr
-            if (facetMapping != null && facetMapping.getTotalNumFount()>0){
-                model.addAttribute(SPECIES_FACET,         facetMapping.getSpeciesFacet());
-                model.addAttribute(TYPES_FACET,           facetMapping.getTypeFacet());
-                model.addAttribute(KEYWORDS_FACET,        facetMapping.getKeywordFacet());
-                model.addAttribute(COMPARTMENTS_FACET,    facetMapping.getCompartmentFacet());
+            if (facetMapping != null && facetMapping.getTotalNumFount() > 0) {
+                model.addAttribute(SPECIES_FACET, facetMapping.getSpeciesFacet());
+                model.addAttribute(TYPES_FACET, facetMapping.getTypeFacet());
+                model.addAttribute(KEYWORDS_FACET, facetMapping.getKeywordFacet());
+                model.addAttribute(COMPARTMENTS_FACET, facetMapping.getCompartmentFacet());
                 Integer typeCount = getTypeCount(types, facetMapping);
-                if (typeCount!=0) {
+                if (typeCount != 0) {
                     Integer rows = rowCount;
                     if (cluster) {
                         rows = rowCount / typeCount;
@@ -238,21 +246,21 @@ class WebController {
                 }
                 return "ebisearcher";
             } else {
-                facetMapping = searchService.getFacetingInformation(new Query(q,null,null,null,null));
-                if (facetMapping != null && facetMapping.getTotalNumFount()>0){
-                    model.addAttribute(SPECIES_FACET,         facetMapping.getSpeciesFacet());
-                    model.addAttribute(TYPES_FACET,           facetMapping.getTypeFacet());
-                    model.addAttribute(KEYWORDS_FACET,        facetMapping.getKeywordFacet());
-                    model.addAttribute(COMPARTMENTS_FACET,    facetMapping.getCompartmentFacet());
+                facetMapping = searchService.getFacetingInformation(new Query(q, null, null, null, null));
+                if (facetMapping != null && facetMapping.getTotalNumFount() > 0) {
+                    model.addAttribute(SPECIES_FACET, facetMapping.getSpeciesFacet());
+                    model.addAttribute(TYPES_FACET, facetMapping.getTypeFacet());
+                    model.addAttribute(KEYWORDS_FACET, facetMapping.getKeywordFacet());
+                    model.addAttribute(COMPARTMENTS_FACET, facetMapping.getCompartmentFacet());
                     Integer typeCount = getTypeCount(types, facetMapping);
-                    if (typeCount!=0) {
+                    if (typeCount != 0) {
                         Integer rows = rowCount;
                         if (cluster) {
                             rows = rowCount / typeCount;
                         }
                         queryObject.setStart(rows * (page - 1));
                         queryObject.setRows(rows);
-                        GroupedResult groupedResult = searchService.getEntries(queryObject,cluster);
+                        GroupedResult groupedResult = searchService.getEntries(queryObject, cluster);
                         double resultCount = getHighestResultCount(groupedResult);
                         model.addAttribute(MAX_PAGE, (int) Math.ceil(resultCount / rows));
                         model.addAttribute(GROUPED_RESULT, groupedResult);
@@ -265,22 +273,22 @@ class WebController {
             }
         }
 
-        //model.addAttribute(MAIL_MESSAGE, "Type your message\n type again \n\n type");
-        defaultSubject = MAIL_SUBJECT_PLACEHOLDER + " " + q;
-        model.addAttribute(MAIL_SUBJECT, defaultSubject);
+        autoFillContactForm(model, q);
 
         return "noresultsfound";
     }
 
     @RequestMapping(value = "/contact", method = RequestMethod.POST)
-    public @ResponseBody String contact (@RequestParam ( required = true ) String mailAddress,
-                                         @RequestParam String message,
-                                         @RequestParam String exception,
-                                         @RequestParam String url,
-                                         @RequestParam String source){
+    public
+    @ResponseBody
+    String contact(@RequestParam(required = true) String mailAddress,
+                   @RequestParam String message,
+                   @RequestParam String exception,
+                   @RequestParam String url,
+                   @RequestParam String source) {
 
         String to = mailSupportDest;
-        if(source.equals("E")){
+        if (source.equals("E")) {
             to = mailErrorDest;
 
             message = message.concat("\n\n URL: " + url);
@@ -288,7 +296,6 @@ class WebController {
 
             defaultSubject = "Unexpected error occurred.";
         }
-
 
 
         // Call email service.
@@ -299,13 +306,14 @@ class WebController {
 
     /**
      * Returns the highest result number for the different groups
+     *
      * @param groupedResult result set
      * @return double highest result number
      */
-    private double getHighestResultCount(GroupedResult groupedResult){
+    private double getHighestResultCount(GroupedResult groupedResult) {
         double max = 0;
         for (Result result : groupedResult.getResults()) {
-            if (max<result.getEntriesCount()) {
+            if (max < result.getEntriesCount()) {
                 max = result.getEntriesCount();
             }
         }
@@ -314,19 +322,20 @@ class WebController {
 
     /**
      * Returns either selected types size or available types size
-     * @param types selected types
+     *
+     * @param types        selected types
      * @param facetMapping available types
      * @return integer
      */
-    private int getTypeCount (List<String>types, FacetMapping facetMapping){
-        if (types!= null) {
+    private int getTypeCount(List<String> types, FacetMapping facetMapping) {
+        if (types != null) {
             return types.size();
         } else {
             return facetMapping.getTypeFacet().getAvailable().size();
         }
     }
 
-    private String checkOutputIntegrity (String output) {
+    private String checkOutputIntegrity(String output) {
         if (output != null && !output.isEmpty()) {
             output = output.replaceAll("<", "<").replaceAll(">", ">");
             output = output.replaceAll("eval\\((.*)\\)", "");
@@ -336,8 +345,9 @@ class WebController {
         }
         return null;
     }
+
     private List<String> checkOutputListIntegrity(List<String> list) {
-        if (list!=null && !list.isEmpty()) {
+        if (list != null && !list.isEmpty()) {
             List<String> checkedList = new ArrayList<String>();
             for (String output : list) {
                 checkedList.add(checkOutputIntegrity(output));
@@ -346,13 +356,14 @@ class WebController {
         }
         return null;
     }
-    private String filterQuery(String q){
+
+    private String filterQuery(String q) {
         //Massaging the query parameter to remove dots in Reactome stable identifiers
         StringBuilder sb = new StringBuilder();
         for (String token : q.split("\\s+")) {
-            if(token.toUpperCase().contains("R-")){
+            if (token.toUpperCase().contains("R-")) {
                 sb.append(token.split("\\.")[0]);
-            }else{
+            } else {
                 sb.append(token);
             }
             sb.append(" ");
@@ -365,4 +376,10 @@ class WebController {
     }
 
 
+    public void autoFillContactForm(ModelMap model, String search) {
+        defaultSubject = MAIL_SUBJECT_PLACEHOLDER + " " + search;
+        model.addAttribute(MAIL_SUBJECT, defaultSubject);
+
+        model.addAttribute(MAIL_MESSAGE, String.format(MAIL_MESSAGE_PLACEHOLDER, search));
+    }
 }

@@ -18,11 +18,29 @@
         </div>
         <div class="field">
             <label for="subject"><p>Subject:</p></label>
-            <input type="text" id="subject" name="subject" class="search" value="${subject}" readonly/>
+            <c:choose>
+                
+                <c:when test="${not empty subject}">
+                    <input type="text" id="subject" name="subject" class="search" value="${subject}" readonly/>
+                </c:when>
+                <c:otherwise>
+                    <input type="text" id="subject" name="subject" class="search" value="URL Bad Request" readonly/>
+                </c:otherwise>
+            </c:choose>
+            <%--<input type="text" id="subject" name="subject" class="search" value="${subject}" readonly/>--%>
         </div>
         <div class="fieldarea">
             <label for="message"><p>Message:</p></label>
-                <textarea id="message" name="message" class="search" rows="5" cols="80">${message}</textarea>
+            <c:choose>
+
+                <c:when test="${not empty message}">
+                    <textarea id="message" name="message" class="search" rows="5" cols="80">${message}</textarea>
+                </c:when>
+                <c:otherwise>
+                    <textarea id="message" name="message" class="search" rows="5" cols="80">Dear Helpdesk,&#13;&#10;Reactome does not process my request properly.</textarea>
+                </c:otherwise>
+            </c:choose>
+
         </div>
         <div class="button-send">
             <p>

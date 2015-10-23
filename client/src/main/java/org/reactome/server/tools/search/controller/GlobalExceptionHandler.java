@@ -29,7 +29,7 @@ class GlobalExceptionHandler {
     private static final String EXCEPTION = "exception";
     private static final String URL = "url";
 
-    //    @ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR, reason="EnricherException occurred")
+    //@ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR, reason="EnricherException occurred")
     @ExceptionHandler(EnricherException.class)
     public ModelAndView handleOtherExceptions(HttpServletRequest request, EnricherException e) {
         return buildModelView("generic_error", request, e);
@@ -42,7 +42,7 @@ class GlobalExceptionHandler {
 
     }
 
-    //    @ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR, reason="SearchServiceException occurred")
+    //@ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR, reason="SearchServiceException occurred")
     @ExceptionHandler(SearchServiceException.class)
     public ModelAndView handleSQLException(HttpServletRequest request, SearchServiceException e) {
         return buildModelView("generic_error", request, e);

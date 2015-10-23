@@ -4,6 +4,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
@@ -142,7 +143,8 @@ public class Indexer {
     /**
      * Safely adding Document Bean to Solr Server
      * @param documents List of Documents that will be added to Solr
-     * @throws IndexerException
+     *
+     * !!!!!!!!!!!!!!!!!!!!!! REMOTE_SOLR_EXCEPTION is a Runtime Exception !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      */
     private void addDocumentsToSolrServer(List<IndexDocument> documents) {
 
@@ -150,8 +152,16 @@ public class Indexer {
             try {
                 solrClient.addBeans(documents);
                 logger.info(documents.size() + " Documents succsessfully added to Sorl");
-            } catch (IOException|SolrServerException e) {
-                logger.error("Could not add document", e);
+            } catch (IOException|SolrServerException|HttpSolrClient.RemoteSolrException e) {
+                for (IndexDocument document : documents) {
+                    try {
+                        solrClient.addBean(document);
+                    } catch (IOException|SolrServerException|HttpSolrClient.RemoteSolrException e1) {
+                        logger.error("Could not add document", e);
+                        logger.error("Document DBID: " + document.getDbId() + " Name " + document.getName());
+                    }
+                }
+                logger.error("Could not add documenst", e);
             }
         } else {
             logger.error("Solr Documents are null or empty");

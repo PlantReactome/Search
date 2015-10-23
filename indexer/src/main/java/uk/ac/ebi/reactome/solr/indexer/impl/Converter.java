@@ -7,7 +7,9 @@ import org.gk.model.ReactomeJavaConstants;
 import uk.ac.ebi.reactome.solr.indexer.model.CrossReference;
 import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -332,7 +334,7 @@ public class Converter {
     private void setNameAndSynonyms(IndexDocument document, GKInstance instance) {
         try {
             if (hasValues(instance, ReactomeJavaConstants.name)){
-                List<String> list =  instance.getAttributeValuesList(ReactomeJavaConstants.name);
+                List<String> list = instance.getAttributeValuesList(ReactomeJavaConstants.name);
                 if (list == null || list.size()<1) {
                     document.setName(instance.getDisplayName());
                 } else {
@@ -466,7 +468,7 @@ public class Converter {
                 GKInstance database = (GKInstance) referenceEntity.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
                 document.setDatabaseName((String) database.getAttributeValue(ReactomeJavaConstants.name));
                 String url = (String) database.getAttributeValue(ReactomeJavaConstants.accessUrl);
-                if(id!=null) {
+                if(url != null && id!=null) {
                     document.setReferenceURL(url.replace("###ID###", id));
                 }
             }

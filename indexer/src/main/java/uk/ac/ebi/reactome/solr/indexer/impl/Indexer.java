@@ -144,7 +144,7 @@ public class Indexer {
      * @param documents List of Documents that will be added to Solr
      * @throws IndexerException
      */
-    private void addDocumentsToSolrServer(List<IndexDocument> documents) throws IndexerException {
+    private void addDocumentsToSolrServer(List<IndexDocument> documents) {
 
         if (documents != null && !documents.isEmpty()) {
             try {

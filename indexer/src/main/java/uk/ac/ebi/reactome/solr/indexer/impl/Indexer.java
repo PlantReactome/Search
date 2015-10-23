@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * This class is responsible for establishing connection to Solr
@@ -33,44 +32,36 @@ public class Indexer {
     private Converter converter;
     private Marshaller marshaller;
 
-    private static final Logger logger = Logger.getLogger(Indexer.class);
-
     private int addInterval;
-    private int numberOfTries;
     private Boolean verbose;
     private Boolean xml;
+    private static final String CONTROLLED_VOCABULARY= "controlledvocabulary.csv";
+    private static final String EBEYE_NAME = "Reactome";
+    private static final String EBEYE_DESCRIPTION = "Reactome is a free, open-source, curated and peer reviewed pathway " +
+            "database. Our goal is to provide intuitive bioinformatics tools for the visualization, interpretation and " +
+            "analysis of pathway knowledge to support basic research, genome analysis, modeling, systems biology and " +
+            "education.";
 
-    public Indexer(MySQLAdaptor dba, SolrClient solrClient, String controlledVocabulary, File ebeye, String release, Boolean verbose) {
+    private static final Logger logger = Logger.getLogger(Indexer.class);
+
+    public Indexer(MySQLAdaptor dba, SolrClient solrClient, int addInterval, File ebeye, String release, Boolean verbose) {
 
         logger.setLevel(Level.INFO);
         Indexer.dba = dba;
         Indexer.solrClient = solrClient;
-        converter = new Converter(controlledVocabulary);
+        converter = new Converter(CONTROLLED_VOCABULARY);
 
-        Properties indexerProperties = new Properties();
-        String name = "";
-        String description = "";
-        try {
-            indexerProperties.load(getClass().getResourceAsStream("/indexer.properties"));
-            addInterval = Integer.parseInt(indexerProperties.getProperty("addInterval"));
-            numberOfTries = Integer.parseInt(indexerProperties.getProperty("numberOfTries"));
-            name = indexerProperties.getProperty("name");
-            description = indexerProperties.getProperty("description");
-        } catch (IOException e) {
-            logger.error("Error occurred when loading properties file", e);
-        }
-
+        this.addInterval = addInterval;
         this.verbose = verbose;
         this.xml = ebeye != null;
         if (xml) {
-            marshaller = new Marshaller(ebeye, name, description, release);
+            marshaller = new Marshaller(ebeye, EBEYE_NAME, EBEYE_DESCRIPTION, release);
         }
     }
 
     public void index() throws IndexerException {
 
         try {
-            System.out.println(solrClient.ping());
             cleanSolrIndex();
             if (xml) {
                 marshaller.writeHeader();
@@ -99,14 +90,19 @@ public class Indexer {
      * Iterates of a Collection of GkInstances, each Instance will be converted
      * to a IndexDocument by the Converter, The IndexDocuments will be added to
      * Solr and marshaled to a xml file.
-     *
      * @param className Name of the SchemaClass that should be indexed
      * @return number of Documents processed
-     * @throws Exception
+     * @throws IndexerException
      */
-    private int indexSchemaClass(String className) throws Exception {
+    private int indexSchemaClass(String className) throws IndexerException {
 
-        Collection<?> instances = dba.fetchInstancesByClass(className);
+        Collection<?> instances;
+        try {
+            instances = dba.fetchInstancesByClass(className);
+        } catch (Exception e) {
+            logger.error("Fetching Instances by ClassName from the Database caused an errer", e);
+            throw new IndexerException("Fetching Instances by ClassName from the Database caused an errer", e);
+        }
         int numberOfDocuments = 0;
         List<IndexDocument> collection = new ArrayList<>();
         for (Object object : instances) {
@@ -121,7 +117,11 @@ public class Indexer {
                 addDocumentsToSolrServer(collection);
                 collection.clear();
                 if (xml) {
-                    marshaller.flush();
+                    try {
+                        marshaller.flush();
+                    } catch (IOException e) {
+                        logger.error("An error occurred when trying to flush to XML", e);
+                    }
                 }
                 logger.info(numberOfDocuments + " " + className + " have now been added to Solr");
                 if (verbose) {
@@ -141,34 +141,20 @@ public class Indexer {
 
     /**
      * Safely adding Document Bean to Solr Server
-     *
      * @param documents List of Documents that will be added to Solr
      * @throws IndexerException
      */
     private void addDocumentsToSolrServer(List<IndexDocument> documents) throws IndexerException {
 
-        if (solrClient != null && documents != null && !documents.isEmpty()) {
+        if (documents != null && !documents.isEmpty()) {
             try {
                 solrClient.addBeans(documents);
-            } catch (Exception e) {
-                int numberOfTries = 3;
-                boolean unsuccessfulAdd = true;
-
-                while (numberOfTries <= this.numberOfTries && unsuccessfulAdd) {
-                    try {
-                        solrClient.addBeans(documents);
-                        unsuccessfulAdd = false;
-                    } catch (Exception e2) {
-                        numberOfTries++;
-                    }
-                }
-                if (unsuccessfulAdd) {
-                    logger.error("Could not add document", e);
-                    throw new IndexerException("Could not add document", e);
-                }
+                logger.info(documents.size() + " Documents succsessfully added to Sorl");
+            } catch (IOException|SolrServerException e) {
+                logger.error("Could not add document", e);
             }
         } else {
-            logger.error("SolrServer or Document is null");
+            logger.error("Solr Documents are null or empty");
         }
     }
 
@@ -178,149 +164,41 @@ public class Indexer {
      * @throws IndexerException
      */
     private void cleanSolrIndex() throws IndexerException {
-
-        if (solrClient != null) {
-            try {
-                solrClient.deleteByQuery("*:*");
-                solrClient.commit();
-                logger.info("Solr index has been cleaned");
-            } catch (SolrServerException e) {
-                logger.error("could not Delete Solr Data solr Exception", e);
-            } catch (IOException e) {
-                logger.error("could not Delete Solr Data IO Exception", e);
-            }
-        } else {
-            logger.error("SolrServer Should not be Null");
+        try {
+            solrClient.deleteByQuery("*:*");
+            commitSolrServer();
+            logger.info("Solr index has been cleaned");
+        } catch (SolrServerException|IOException e) {
+            logger.error("an error occured while cleaning the SolrServer", e);
+            throw new IndexerException("an error occured while cleaning the SolrServer", e);
         }
     }
 
     /**
      * Closes connection to Solr Server
-     * @throws IndexerException (if commit was not successful)
      */
-    public static void closeSolrServer() throws IndexerException {
-
-        if (solrClient != null) {
-            try {
-                solrClient.close();
-                logger.info("SolrServer shutdown");
-            } catch (IOException e) {
-                logger.error("an error occured while closing the SolrServer", e);
-                throw new IndexerException(e);
-            }
-        } else {
-            logger.error("SolrServer Should not be Null");
+    public static void closeSolrServer()  {
+        try {
+            solrClient.close();
+            logger.info("SolrServer shutdown");
+        } catch (IOException e) {
+            logger.error("an error occured while closing the SolrServer", e);
         }
     }
 
     /**
      * Commits Data that has been added till now to Solr Server
-     *
      * @throws IndexerException not comiting could mean that this Data will not be added to Solr
      */
     private void commitSolrServer() throws IndexerException {
-        if (solrClient != null) {
-            try {
-                solrClient.commit();
-                logger.info("Solr index has been committed and flushed to disk");
-            } catch (Exception e) {
-                logger.error("Error occurred while committing, " + (this.numberOfTries - numberOfTries) + "more tries");
-                int numberOfTries = 1;
-                boolean unsuccessfulCommit = true;
-
-                while (numberOfTries <= this.numberOfTries && unsuccessfulCommit) {
-                    try {
-                        solrClient.commit();
-                        unsuccessfulCommit = false;
-                        logger.info("Solr index has been committed and flushed to disk");
-                    } catch (Exception e2) {
-                        logger.error("Error occurred while committing, " + (this.numberOfTries - numberOfTries) + "more tries");
-                        numberOfTries++;
-                    }
-                }
-                if (unsuccessfulCommit) {
-                    logger.error("Could not commit", e);
-                    throw new IndexerException("Could not commit", e);
-                }
-            }
+        try {
+            solrClient.commit();
+            logger.info("Solr index has been committed and flushed to disk");
+        } catch (Exception e) {
+            logger.error("Error occurred while committing", e);
+            throw new IndexerException("Could not commit", e);
         }
     }
-
-//    /**
-//     * Optimizes the Solr Server (deletes unused and outdated Data)
-//     * throws no Exception Solr should work fine without optimization
-//     */
-//    private void optimizeSolrServer() throws IndexerException {
-//
-//        if (solrClient != null){
-//            try {
-//                solrClient.optimize();
-//            } catch (Exception e) {
-//                int numberOfTries = 1;
-//                boolean unsuccessfulOptimize = true;
-//                while (numberOfTries <= this.numberOfTries && unsuccessfulOptimize){
-//                    try {
-//                        solrClient.optimize();
-//                        unsuccessfulOptimize = false;
-//                    } catch (Exception e2) {
-//                        numberOfTries++;
-//                    }
-//                }
-//                if (unsuccessfulOptimize){
-//                    logger.error("Could not Optimize SolrServer");
-//                    throw new IndexerException("Could not optimize", e);
-//                }
-//            }
-//        }
-//
-//    }
-
-    /**
-     * InitializesSolrServer
-     * 1 retry to establish connection to server (Solr documentation advices not more than 1)
-     * 5 seconds to establish TCP
-     * 1 seconds socket read timeout (will mess up commits and optimize because of large spellcheck dictionary!)
-     * 100 Total Connections
-     * will not follow redirects (default)
-     */
-//    private void initializeSolrServer()  {
-//
-//        solrClient = new HttpSolrServer(solrProperties.getProperty("url"));
-////        HttpSolrServer server = new HttpSolrServer(solrProperties.getProperty("url"));
-////        keep Default values do only alter if necessary!
-////        server.setMaxRetries                    (Integer.parseInt(solrProperties.getProperty("maxRetries")));
-////        server.setConnectionTimeout             (Integer.parseInt(solrProperties.getProperty("connectionTimeout")));
-////        server.setSoTimeout                     (Integer.parseInt(solrProperties.getProperty("soTimeout")));
-////        server.setDefaultMaxConnectionsPerHost  (Integer.parseInt(solrProperties.getProperty("maxConnectionsPerHost")));
-////        server.setMaxTotalConnections           (Integer.parseInt(solrProperties.getProperty("maxConnectionsTotal")));
-////        server.setFollowRedirects               (Boolean.parseBoolean(solrProperties.getProperty("followRedirects")));
-////        solrClient = server;
-//    }
-
-    /**
-     * Initializes the Mysql Server (via Reactome Adapter)
-     * @throws IndexerException
-     */
-//    private void initializeMysql() throws IndexerException {
-//        try {
-//            dba = new MySQLAdaptor( databaseProperties.getProperty("host"),
-//                                    databaseProperties.getProperty("database"),
-//                                    databaseProperties.getProperty("user"),
-//                                    databaseProperties.getProperty("password"),
-//                                    Integer.parseInt(databaseProperties.getProperty("port")));
-//        } catch (SQLException e) {
-//            logger.error("Could not initiate MySQLAdapter", e);
-//            throw new IndexerException(e.getMessage(), e);
-//        }
-//    }
-
-//    private void initializeMarshaller(File file) {
-//        marshaller = new Marshaller(marshallerProperties.getProperty("fileName"),
-//                                    marshallerProperties.getProperty("name"),
-//                                    marshallerProperties.getProperty("description"),
-//                                    marshallerProperties.getProperty("release"));
-//    }
-
 }
 
 

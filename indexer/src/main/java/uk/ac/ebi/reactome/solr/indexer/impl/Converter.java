@@ -70,7 +70,11 @@ public class Converter {
             document.setExactType(instance.getSchemClass().getName());
             if (hasValues(instance, ReactomeJavaConstants.regulatedEntity)) {
                 GKInstance regulatedEntity = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.regulatedEntity);
-                document.setRegulatedEntityId(String.valueOf(regulatedEntity.getDBID()));
+                if(hasValue(regulatedEntity, ReactomeJavaConstants.stableIdentifier)) {
+                    document.setRegulatedEntityId((String) regulatedEntity.getAttributeValue(ReactomeJavaConstants.stableIdentifier));
+                } else {
+                    document.setRegulatedEntityId(String.valueOf(regulatedEntity.getDBID()));
+                }
                 if (hasValue(regulatedEntity, ReactomeJavaConstants.name)) {
                     document.setRegulatedEntity((String) regulatedEntity.getAttributeValue(ReactomeJavaConstants.name));
                 } else {
@@ -79,7 +83,11 @@ public class Converter {
             }
             if (hasValues(instance, ReactomeJavaConstants.regulator)) {
                 GKInstance regulator = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.regulator);
-                document.setRegulatorId(String.valueOf(regulator.getDBID()));
+                if(hasValue(regulator, ReactomeJavaConstants.stableIdentifier)) {
+                    document.setRegulatorId((String) regulator.getAttributeValue(ReactomeJavaConstants.stableIdentifier));
+                } else {
+                    document.setRegulatorId(String.valueOf(regulator.getDBID()));
+                }
                 if (hasValue(regulator, ReactomeJavaConstants.name)) {
                     document.setRegulator((String) regulator.getAttributeValue(ReactomeJavaConstants.name));
                 } else {

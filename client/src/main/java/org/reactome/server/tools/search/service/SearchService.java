@@ -19,6 +19,7 @@ import java.util.Properties;
 
 /**
  * Search Service acts as api between the Controller and Solr / Database
+ *
  * @author Florian Korninger (fkorn@ebi.ac.uk)
  * @version 1.0
  */
@@ -38,13 +39,14 @@ public class SearchService {
 
     /**
      * Constructor for Spring Dependency Injection and loading MavenProperties
+     *
      * @throws SearchServiceException
      */
     public SearchService() throws SearchServiceException {
         loadProperties();
     }
 
-    private void loadProperties () throws SearchServiceException {
+    private void loadProperties() throws SearchServiceException {
 
         try {
             Properties databaseProperties = new Properties();
@@ -65,12 +67,13 @@ public class SearchService {
      * Gets Faceting information for a specific query + filters.
      * This Method will query solr once again if the number of selected filters and found facets differ
      * (this will help preventing false faceting information when filter are contradictory to each other)
+     *
      * @param queryObject query and filter (species types keywords compartments)
      * @return FacetMapping
      * @throws SolrSearcherException
      */
-    public FacetMapping getFacetingInformation (Query queryObject) throws SolrSearcherException {
-        if (queryObject != null && queryObject.getQuery()!=null && !queryObject.getQuery().isEmpty()) {
+    public FacetMapping getFacetingInformation(Query queryObject) throws SolrSearcherException {
+        if (queryObject != null && queryObject.getQuery() != null && !queryObject.getQuery().isEmpty()) {
 
             FacetMapping facetMapping = solrConverter.getFacetingInformation(queryObject);
             boolean correctFacets = true;
@@ -120,21 +123,23 @@ public class SearchService {
 
     /**
      * Method for providing Faceting information for Species,Types,Keywords and Compartments
+     *
      * @return FacetMapping
      * @throws SolrSearcherException
      */
-    public FacetMapping getTotalFacetingInformation () throws SolrSearcherException {
+    public FacetMapping getTotalFacetingInformation() throws SolrSearcherException {
         return solrConverter.getFacetingInformation();
     }
 
     /**
      * Method for providing autocomplete suggestions
+     *
      * @param query Term (Snippet) you want to have autocompleted
-     * @return  List(String) of suggestions if solr is able to provide some
+     * @return List(String) of suggestions if solr is able to provide some
      * @throws SolrSearcherException
      */
     public List<String> getAutocompleteSuggestions(String query) throws SolrSearcherException {
-        if (query!= null && !query.isEmpty()) {
+        if (query != null && !query.isEmpty()) {
             return solrConverter.getAutocompleteSuggestions(query);
         }
         return null;
@@ -142,12 +147,13 @@ public class SearchService {
 
     /**
      * Method for supplying spellcheck suggestions
+     *
      * @param query Term you searched for
      * @return List(String) of suggestions if solr is able to provide some
      * @throws SolrSearcherException
      */
     public List<String> getSpellcheckSuggestions(String query) throws SolrSearcherException {
-        if (query!= null && !query.isEmpty()) {
+        if (query != null && !query.isEmpty()) {
             return solrConverter.getSpellcheckSuggestions(query);
         }
         return null;
@@ -155,38 +161,27 @@ public class SearchService {
 
     /**
      * Returns one specific Entry by DbId
+     *
      * @param id StId or DbId
      * @return Entry Object
      */
     public EnrichedEntry getEntryById(String id) throws EnricherException, SolrSearcherException {
         if (id != null && !id.isEmpty()) {
             IEnricher enricher = new Enricher(host, currentDatabase, user, password, port);
-            if (id.toUpperCase().startsWith("R")) {
-                Entry entry = solrConverter.getEntryById(id.split("\\.")[0]);
-                if (entry!= null) {
-                    return enricher.enrichEntry(entry.getDbId());
-                }
-            } else {
-                return enricher.enrichEntry(id);
-            }
+            return enricher.enrichEntry(id);
         }
         return null;
     }
 
     /**
      * Returns one specific Entry by DbId
+     *
      * @param id StId or DbId
      * @return Entry Object
      */
     public EnrichedEntry getEntryById(Integer version, String id) throws EnricherException, SolrSearcherException {
-
-        IEnricher enricher = new Enricher(host,  database + version, user, password, port);
-        if (id.toUpperCase().startsWith("R")) {
-            Entry entry = solrConverter.getEntryById(id.split("\\.")[0]);
-            if (entry!=null) {
-                return enricher.enrichEntry(entry.getDbId());
-            }
-        } else {
+        if (id != null && !id.isEmpty()) {
+            IEnricher enricher = new Enricher(host, database + version, user, password, port);
             return enricher.enrichEntry(id);
         }
         return null;
@@ -195,6 +190,7 @@ public class SearchService {
     /**
      * This Method gets multiple entries for a specific query while considering the filter information
      * the entries will be returned grouped into types and sorted by relevance (depending on the chosen solr properties)
+     *
      * @param queryObject QueryObject (query, species, types, keywords, compartments, start, rows)
      *                    start specifies the starting point (offset) and rows the amount of entries returned in total
      * @return GroupedResult
@@ -208,7 +204,5 @@ public class SearchService {
         }
     }
 
-    public void setSolrConverter(ISolrConverter solrConverter) {
-        this.solrConverter = solrConverter;
-    }
+
 }

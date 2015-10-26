@@ -17,7 +17,7 @@ import java.util.List;
  * @author Florian Korninger (fkorn@ebi.ac.uk)
  * @version 1.0
  */
-public class GeneralAttributeEnricher extends Enricher{
+public class GeneralAttributeEnricher extends Enricher {
 
     private static final String PUBMED_URL = "http://www.ncbi.nlm.nih.gov/pubmed/";
 
@@ -26,20 +26,20 @@ public class GeneralAttributeEnricher extends Enricher{
 
         try {
             List<String> names = getAttributes(instance, ReactomeJavaConstants.name);
-            if (names!= null && !names.isEmpty()) {
+            if (names != null && !names.isEmpty()) {
                 if (names.size() >= 1) {
                     enrichedEntry.setName(names.get(0));
                     if (names.size() > 1) {
                         enrichedEntry.setSynonyms(names.subList(1, names.size() - 1));
                     }
-                }else {
-                    enrichedEntry.setName(instance.getDisplayName());
                 }
+            } else {
+                enrichedEntry.setName(instance.getDisplayName());
             }
-            if (hasValue(instance, ReactomeJavaConstants.stableIdentifier)){
+            if (hasValue(instance, ReactomeJavaConstants.stableIdentifier)) {
                 enrichedEntry.setStId((String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier));
             }
-            enrichedEntry.setSpecies(getAttributeDisplayName(instance,ReactomeJavaConstants.species));
+            enrichedEntry.setSpecies(getAttributeDisplayName(instance, ReactomeJavaConstants.species));
             List<?> summationInstances = instance.getAttributeValuesList(ReactomeJavaConstants.summation);
             List<String> summations = new ArrayList<String>();
             for (Object summationInstance : summationInstances) {
@@ -68,6 +68,7 @@ public class GeneralAttributeEnricher extends Enricher{
 
     /**
      * Returns a list of literature for a given instance
+     *
      * @param instance GkInstance
      * @return List of Literature Objects
      * @throws EnricherException
@@ -100,6 +101,7 @@ public class GeneralAttributeEnricher extends Enricher{
 
     /**
      * Returns a list of disease information related to an instance
+     *
      * @param instance GkInstance
      * @return List of Disease Objects
      * @throws EnricherException
@@ -121,7 +123,7 @@ public class GeneralAttributeEnricher extends Enricher{
                 return diseases;
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
-                throw new EnricherException(e.getMessage() , e);
+                throw new EnricherException(e.getMessage(), e);
             }
         }
         return null;

@@ -34,14 +34,22 @@ public class PathwayBrowserTreeGenerator extends Enricher {
      */
     public Set<Node> generateGraphForGivenGkInstance(GKInstance instance) throws Exception {
         /*Node is called graph because its structure is building the graph*/
-        Node graph = new Node();
-        graph.setStId(getStableIdentifier(instance));
-        graph.setName(instance.getDisplayName());
-        graph.setType(instance.getSchemClass().getName());
-        graph.setSpecies(getAttributeDisplayName(instance, ReactomeJavaConstants.species));
-        graph.setDiagram(hasDiagram(instance.getDBID()));
-        recursion(instance, graph);
-        Set<Node> leaves = graph.getLeaves();
+        Node graph;
+
+        /**
+         * Regulations are not Entities that can be shown in the Pathway Browser, therefore
+         * we are using the Regulator as the entry point for generating the graph.
+         * Nevertheless the first step of the recursion will only go to Regulations.
+         */
+        if(instance.getSchemClass().isa(ReactomeJavaConstants.Regulation)) {
+            GKInstance regulator = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.regulator);
+            graph = createNodeFromInstance(regulator);
+            skipNodes(regulator, graph, ReactomeJavaConstants.regulator);
+        } else {
+            graph = createNodeFromInstance(instance);
+            recursion(instance, graph);
+        }
+            Set<Node> leaves = graph.getLeaves();
         return buildTreesFromLeaves(leaves);
     }
 
@@ -138,14 +146,19 @@ public class PathwayBrowserTreeGenerator extends Enricher {
     private Node getOrCreateNode(GKInstance instance) throws Exception {
         Node node = nodeMap.get(getStableIdentifier(instance));
         if (node == null) {
-            node = new Node();
-            node.setName(instance.getDisplayName());
-            node.setStId(getStableIdentifier(instance));
-            node.setSpecies(getAttributeDisplayName(instance,ReactomeJavaConstants.species));
-            node.setType(instance.getSchemClass().getName());
-            node.setDiagram(hasDiagram(instance.getDBID()));
+            node = createNodeFromInstance(instance);
             nodeMap.put(node.getStId(), node);
         }
+        return node;
+    }
+
+    private Node createNodeFromInstance(GKInstance instance) throws Exception {
+        Node node = new Node();
+        node.setStId(getStableIdentifier(instance));
+        node.setName(instance.getDisplayName());
+        node.setType(instance.getSchemClass().getName());
+        node.setSpecies(getAttributeDisplayName(instance, ReactomeJavaConstants.species));
+        node.setDiagram(hasDiagram(instance.getDBID()));
         return node;
     }
 

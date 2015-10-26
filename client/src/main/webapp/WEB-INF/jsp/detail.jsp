@@ -53,7 +53,7 @@
 
             <ul class="list overflowList paddingleft">
                 <c:forEach var="derivedEwas" items="${entry.referenceEntity.derivedEwas}">
-                    <li><a href="../detail/${derivedEwas.dbId}" class="" title="Show Details" rel="nofollow">${derivedEwas.name} (${derivedEwas.compartment})</a></li>
+                    <li><a href="../detail/${derivedEwas.stId}" class="" title="Show Details" rel="nofollow">${derivedEwas.name} (${derivedEwas.compartment})</a></li>
                 </c:forEach>
             </ul>
         </c:if>
@@ -116,7 +116,7 @@
                     <tr>
                         <td><strong>Reverse Reaction</strong></td>
                         <td>
-                            <a href="../detail/${entry.reverseReaction.dbId}" class="" title="show Reactome ${entry.reverseReaction.dbId}" rel="nofollow">${entry.reverseReaction.name}</a>
+                            <a href="../detail/${entry.reverseReaction.stId}" class="" title="show Reactome ${entry.reverseReaction.stId}" rel="nofollow">${entry.reverseReaction.name}</a>
                         </td>
                     </tr>
                 </c:if>
@@ -197,7 +197,7 @@
                     <td>
                         <ul class="list overflowAuto">
                             <c:forEach var="input" items="${entry.input}">
-                                <li><a href="../detail/${input.dbId}" class="" title="Show Details" rel="nofollow">${input.name} <c:if test="${not empty input.species}">(${input.species})</c:if></a></li>
+                                <li><a href="../detail/${input.stId}" class="" title="Show Details" rel="nofollow">${input.name} <c:if test="${not empty input.species}">(${input.species})</c:if></a></li>
                             </c:forEach>
                         </ul>
                     </td>
@@ -208,7 +208,7 @@
                     <td><strong>Output entries</strong></td>
                     <td><ul class="list overflowList">
                         <c:forEach var="output" items="${entry.output}">
-                            <li><a href="../detail/${output.dbId}" class="" title="Show Details" rel="nofollow">${output.name}<c:if test="${not empty output.species}">(${output.species})</c:if></a></li>
+                            <li><a href="../detail/${output.stId}" class="" title="Show Details" rel="nofollow">${output.name}<c:if test="${not empty output.species}">(${output.species})</c:if></a></li>
                         </c:forEach>
                     </ul></td>
                 </tr>
@@ -218,7 +218,7 @@
                     <td><strong>Components entries</strong></td>
                     <td><ul class="list overflowList">
                         <c:forEach var="component" items="${entry.components}">
-                            <li><a href="../detail/${component.dbId}" class="" title="show Reactome" rel="nofollow">${component.name} <c:if test="${not empty component.species}">(${component.species})</c:if></a></li>
+                            <li><a href="../detail/${component.stId}" class="" title="show Reactome" rel="nofollow">${component.name} <c:if test="${not empty component.species}">(${component.species})</c:if></a></li>
                         </c:forEach>
                     </ul></td>
                 </tr>
@@ -228,7 +228,7 @@
                     <td><strong>CandidateSet entries</strong></td>
                     <td><ul  class="list overflowList">
                         <c:forEach var="candidates" items="${entry.candidates}">
-                            <li><a href="../detail/${candidates.dbId}" class="" title="show Reactome ${candidates.dbId}" rel="nofollow">${candidates.name} <c:if test="${not empty candidates.species}">(${candidates.species})</c:if></a></li>
+                            <li><a href="../detail/${candidates.stId}" class="" title="show Reactome ${candidates.stId}" rel="nofollow">${candidates.name} <c:if test="${not empty candidates.species}">(${candidates.species})</c:if></a></li>
                         </c:forEach>
                     </ul></td>
                 </tr>
@@ -238,7 +238,7 @@
                     <td><strong>Member</strong></td>
                     <td><ul class="list overflowList">
                         <c:forEach var="member" items="${entry.member}">
-                            <li><a href="../detail/${member.dbId}" class="" title="show Reactome ${member.dbId}" rel="nofollow">${member.name} <c:if test="${not empty member.species}">(${member.species})</c:if></a></li>
+                            <li><a href="../detail/${member.stId}" class="" title="show Reactome ${member.stId}" rel="nofollow">${member.name} <c:if test="${not empty member.species}">(${member.species})</c:if></a></li>
                         </c:forEach>
                     </ul></td>
                 </tr>
@@ -248,7 +248,7 @@
                     <td><strong>repeatedUnits</strong></td>
                     <td><ul class="list overflowList">
                         <c:forEach var="repeatedUnit" items="${entry.repeatedUnits}">
-                            <li><a href="../detail/${repeatedUnit.dbId}" class="" title="show Reactome ${repeatedUnit.dbId}" rel="nofollow">${repeatedUnit.name}</a></li>
+                            <li><a href="../detail/${repeatedUnit.stId}" class="" title="show Reactome ${repeatedUnit.stId}" rel="nofollow">${repeatedUnit.name}</a></li>
                         </c:forEach>
                     </ul></td>
                 </tr>
@@ -258,7 +258,7 @@
                     <td><strong>EntityOnOtherCell</strong></td>
                     <td><ul class="list overflowList">
                         <c:forEach var="entityOnOtherCell" items="${entry.entityOnOtherCell}">
-                            <li><a href="../detail/${entityOnOtherCell.dbId}" class="" title="show Reactome ${entityOnOtherCell.dbId}" rel="nofollow">${entityOnOtherCell.name}</a></li>
+                            <li><a href="../detail/${entityOnOtherCell.stId}" class="" title="show Reactome ${entityOnOtherCell.stId}" rel="nofollow">${entityOnOtherCell.name}</a></li>
                         </c:forEach>
                     </ul></td>
                 </tr>
@@ -284,7 +284,7 @@
                         <td>
                             <ul class="list overflowList">
                                 <c:forEach var="entityReferenceList" items="${referrers.value}">
-                                    <li><c:if test="${not empty entityReferenceList.name}"><a href="../detail/${entityReferenceList.dbId}" class="" title="Show Details" rel="nofollow">${entityReferenceList.name}</a></c:if></li>
+                                    <li><c:if test="${not empty entityReferenceList.name}"><a href="../detail/${entityReferenceList.stId}" class="" title="Show Details" rel="nofollow">${entityReferenceList.name}</a></c:if></li>
                                 </c:forEach>
                             </ul>
                         </td>
@@ -310,7 +310,7 @@
                 <c:forEach var="catalystActivity" items="${entry.catalystActivities}">
                     <tr>
                         <c:if test="${not empty catalystActivity.physicalEntity}">
-                            <td><a href="../detail/${catalystActivity.physicalEntity.dbId}" class="" title="show Reactome ${catalystActivity.physicalEntity.dbId}" rel="nofollow">${catalystActivity.physicalEntity.name}</a></td>
+                            <td><a href="../detail/${catalystActivity.physicalEntity.stId}" class="" title="show Reactome ${catalystActivity.physicalEntity.stId}" rel="nofollow">${catalystActivity.physicalEntity.name}</a></td>
                         </c:if>
                         <c:if test="${not empty catalystActivity.activity}">
                             <td><a href="${catalystActivity.activity.database.url}" class=""  title="show ${catalystActivity.activity.database.name}" rel="nofollow">${catalystActivity.activity.name} (${catalystActivity.activity.accession})</a></td>
@@ -319,7 +319,7 @@
                             <td>
                                 <ul class="list overflowList">
                                     <c:forEach var="activeUnit" items="${catalystActivity.activeUnit}">
-                                        <li><a href="../detail/${activeUnit.dbId}" class="" title="show Reactome ${activeUnit.dbId}" rel="nofollow">${activeUnit.name}</a></li>
+                                        <li><a href="../detail/${activeUnit.stId}" class="" title="show Reactome ${activeUnit.stId}" rel="nofollow">${activeUnit.name}</a></li>
                                     </c:forEach>
                                 </ul>
                             </td>
@@ -457,7 +457,7 @@
                         <td>
                             <ul class="list overflowList">
                                 <c:forEach var="value" items="${regulation.value}" varStatus="loop">
-                                    <li><c:if test="${not empty value.regulator.dbId}"><a href="../detail/${value.regulator.dbId}" class="" title="Show Details" rel="nofollow">${value.regulator.name}<c:if test="${not empty value.regulator.species}"> (${value.regulator.species})</c:if></a></c:if></li>
+                                    <li><c:if test="${not empty value.regulator.stId}"><a href="../detail/${value.regulator.stId}" class="" title="Show Details" rel="nofollow">${value.regulator.name}<c:if test="${not empty value.regulator.species}"> (${value.regulator.species})</c:if></a></c:if></li>
                                 </c:forEach>
                             </ul>
                         </td>
@@ -486,7 +486,7 @@
                         <td>
                             <ul class="list overflowList">
                                 <c:forEach var="value" items="${regulation.value}" varStatus="loop">
-                                    <li><c:if test="${not empty value.regulatedEntity.dbId}"><a href="../detail/${value.regulatedEntity.dbId}" class="" title="Show Details" rel="nofollow">${value.regulatedEntity.name}<c:if test="${not empty value.regulatedEntity.species}"> (${value.regulatedEntity  .species})</c:if></a></c:if></li>
+                                    <li><c:if test="${not empty value.regulatedEntity.stId}"><a href="../detail/${value.regulatedEntity.stId}" class="" title="Show Details" rel="nofollow">${value.regulatedEntity.name}<c:if test="${not empty value.regulatedEntity.species}"> (${value.regulatedEntity  .species})</c:if></a></c:if></li>
                                 </c:forEach>
                             </ul>
                         </td>
@@ -519,13 +519,13 @@
                 <c:if test="${not empty regulation.regulatedEntity}">
                     <tr>
                         <td><strong>Regulated entity</strong></td>
-                        <td><a href="../detail/${regulation.regulatedEntity.dbId}" class="" title="Show Details" rel="nofollow">${regulation.regulatedEntity.name}</a></td>
+                        <td><a href="../detail/${regulation.regulatedEntity.stId}" class="" title="Show Details" rel="nofollow">${regulation.regulatedEntity.name}</a></td>
                     </tr>
                 </c:if>
                 <c:if test="${not empty regulation.regulator}">
                     <tr>
                         <td><strong>Regulator</strong></td>
-                        <td><a href="../detail/${regulation.regulator.dbId}" class="" title="Show Details" rel="nofollow">${regulation.regulator.name}</a></td>
+                        <td><a href="../detail/${regulation.regulator.stId}" class="" title="Show Details" rel="nofollow">${regulation.regulator.name}</a></td>
                     </tr>
                 </c:if>
                 </tbody>
@@ -553,7 +553,7 @@
                     <tr>
                         <td><c:if test="${not empty modifiedResidue.name}">${modifiedResidue.name}</c:if></td>
                         <td><c:if test="${not empty modifiedResidue.coordinate}">${modifiedResidue.coordinate}</c:if></td>
-                        <td><c:if test="${not empty modifiedResidue.modification.name}"><a href="../detail/${modifiedResidue.modification.dbId}" class="" title="Show Details" rel="nofollow">${modifiedResidue.modification.name}</a></c:if></td>
+                        <td><c:if test="${not empty modifiedResidue.modification.name}"><a href="../detail/${modifiedResidue.modification.stId}" class="" title="Show Details" rel="nofollow">${modifiedResidue.modification.name}</a></c:if></td>
                         <td><c:if test="${not empty modifiedResidue.psiMod.name}"><a href="${modifiedResidue.psiMod.database.url}" class=""  title="Show Details" rel="nofollow">${modifiedResidue.psiMod.name} </a></c:if></td>
                         <td><c:if test="${not empty modifiedResidue.psiMod.identifier}">${modifiedResidue.psiMod.identifier}</c:if></td>
                         <td><c:if test="${not empty modifiedResidue.psiMod.definition}">${modifiedResidue.psiMod.definition}</c:if></td>
@@ -607,7 +607,7 @@
                         <td>
                             <ul class="list overflowList">
                                 <c:forEach var="inferredFrom" items="${entry.inferredFrom}">
-                                    <li><a href="../detail/${inferredFrom.dbId}" class="" title="Show Details" rel="nofollow">${inferredFrom.name} (${inferredFrom.species})</a></li>
+                                    <li><a href="../detail/${inferredFrom.stId}" class="" title="Show Details" rel="nofollow">${inferredFrom.name} (${inferredFrom.species})</a></li>
                                 </c:forEach>
                             </ul>
                         </td>
@@ -619,7 +619,7 @@
                         <td>
                             <ul class="list overflowList">
                                 <c:forEach var="inferredTo" items="${entry.inferredTo}">
-                                    <li><a href="../detail/${inferredTo.dbId}" class="" title="Show Details" rel="nofollow">${inferredTo.name} (${inferredTo.species})</a></li>
+                                    <li><a href="../detail/${inferredTo.stId}" class="" title="Show Details" rel="nofollow">${inferredTo.name} (${inferredTo.species})</a></li>
                                 </c:forEach>
                             </ul>
                         </td>
@@ -631,7 +631,7 @@
                         <td>
                             <ul class="list overflowList">
                                 <c:forEach var="orthologousEvents" items="${entry.orthologousEvents}">
-                                    <li><a href="../detail/${orthologousEvents.dbId}" class="" title="Show Details" rel="nofollow">${orthologousEvents.name} (${orthologousEvents.species})</a></li>
+                                    <li><a href="../detail/${orthologousEvents.stId}" class="" title="Show Details" rel="nofollow">${orthologousEvents.name} (${orthologousEvents.species})</a></li>
                                 </c:forEach>
                             </ul>
                         </td>

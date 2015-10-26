@@ -42,20 +42,14 @@ public class Enricher implements IEnricher  {
 
     /**
      * Only public method available to generate a entry from the database
-     * @param dbId can only accept dbId of an entry, MySql adapter cannot use stID
+     * @param id MySql Adapter will fetch instance for given StId old_StId or DbId
      * @return EnrichedEntry
      * @throws EnricherException
      */
     @Override
-    public EnrichedEntry enrichEntry(String dbId) throws EnricherException {
-        Long id;
+    public EnrichedEntry enrichEntry(String id) throws EnricherException {
         try {
-            id = Long.valueOf(dbId);
-        }catch (NumberFormatException e){
-            return null;
-        }
-        try {
-            GKInstance instance = dba.fetchInstance(id);
+            GKInstance instance = getInstance(id);
             if (instance != null) {
                 EnrichedEntry enrichedEntry = new EnrichedEntry();
                 new GeneralAttributeEnricher().setGeneralAttributes(instance, enrichedEntry);
@@ -515,7 +509,7 @@ public class Enricher implements IEnricher  {
         if (instance != null) {
             try {
                 EntityReference physicalEntity = new EntityReference();
-                physicalEntity.setDbId(instance.getDBID());
+                physicalEntity.setStId(getStableIdentifier(instance));
                 physicalEntity.setName(getAttributeString(instance, ReactomeJavaConstants.name));
                 if (hasValue(instance, ReactomeJavaConstants.species)) {
                     physicalEntity.setSpecies(((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.species)).getDisplayName());
@@ -531,4 +525,23 @@ public class Enricher implements IEnricher  {
         }
         return null;
     }
+
+    private GKInstance getInstance(String identifier) throws Exception {
+        identifier = identifier.trim().split("\\.")[0];
+        if (identifier.startsWith("REACT")){
+            return getInstance(dba.fetchInstanceByAttribute(ReactomeJavaConstants.StableIdentifier, "oldIdentifier", "=", identifier));
+        }else if (identifier.startsWith("R-")) {
+            return getInstance(dba.fetchInstanceByAttribute(ReactomeJavaConstants.StableIdentifier, ReactomeJavaConstants.identifier, "=", identifier));
+        } else {
+            return dba.fetchInstance(Long.parseLong(identifier));
+        }
+    }
+
+    private GKInstance getInstance(Collection<GKInstance> target) throws Exception {
+        if(target==null || target.size()!=1) throw new Exception("Many options have been found fot the specified identifier");
+        GKInstance stId = target.iterator().next();
+        return (GKInstance) dba.fetchInstanceByAttribute(ReactomeJavaConstants.DatabaseObject, ReactomeJavaConstants.stableIdentifier, "=", stId).iterator().next();
+    }
+
+
 }

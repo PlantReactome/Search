@@ -4,12 +4,14 @@ import java.util.Comparator;
 
 /**
  * Internal Model for Reactome Entries
+ *
  * @author Florian Korninger (fkorn@ebi.ac.uk)
  * @version 1.0
  */
 public class EntityReference implements Comparator<EnrichedEntry> {
     private String name;
-    private Long dbId;
+    private String stId;
+
     private String species;
     private String compartment;
 
@@ -21,12 +23,12 @@ public class EntityReference implements Comparator<EnrichedEntry> {
         this.name = name;
     }
 
-    public Long getDbId() {
-        return dbId;
+    public String getStId() {
+        return stId;
     }
 
-    public void setDbId(Long dbId) {
-        this.dbId = dbId;
+    public void setStId(String stId) {
+        this.stId = stId;
     }
 
     public String getSpecies() {
@@ -48,8 +50,8 @@ public class EntityReference implements Comparator<EnrichedEntry> {
 
     @Override
     public int compare(EnrichedEntry o1, EnrichedEntry o2) {
-        if (o1!= null && o2!=null) {
-            if (o1.getName()!= null && o1.getName()!=null) {
+        if (o1 != null && o2 != null) {
+            if (o1.getName() != null && o1.getName() != null) {
                 return o1.getName().compareTo(o2.getName());
             }
         }

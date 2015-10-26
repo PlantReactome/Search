@@ -71,7 +71,7 @@ public class Converter {
             if (hasValues(instance, ReactomeJavaConstants.regulatedEntity)) {
                 GKInstance regulatedEntity = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.regulatedEntity);
                 if(hasValue(regulatedEntity, ReactomeJavaConstants.stableIdentifier)) {
-                    document.setRegulatedEntityId((String) regulatedEntity.getAttributeValue(ReactomeJavaConstants.stableIdentifier));
+                    document.setRegulatedEntityId(getStableIdentifier(regulatedEntity));
                 } else {
                     document.setRegulatedEntityId(String.valueOf(regulatedEntity.getDBID()));
                 }
@@ -84,7 +84,7 @@ public class Converter {
             if (hasValues(instance, ReactomeJavaConstants.regulator)) {
                 GKInstance regulator = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.regulator);
                 if(hasValue(regulator, ReactomeJavaConstants.stableIdentifier)) {
-                    document.setRegulatorId((String) regulator.getAttributeValue(ReactomeJavaConstants.stableIdentifier));
+                    document.setRegulatorId(getStableIdentifier(regulator));
                 } else {
                     document.setRegulatorId(String.valueOf(regulator.getDBID()));
                 }
@@ -98,6 +98,14 @@ public class Converter {
             logger.error(e.getMessage(), e);
         }
     }
+
+    private String getStableIdentifier(GKInstance instance) throws Exception {
+        if (hasValue(instance, ReactomeJavaConstants.stableIdentifier)){
+            return (String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier);
+        }
+        return null;
+    }
+
     private List<String> loadFile(String fileName) {
         try {
             List<String> list = new ArrayList<>();
@@ -179,7 +187,7 @@ public class Converter {
 
         try {
             if (hasValues(instance, ReactomeJavaConstants.stableIdentifier)){
-                document.setStId((String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier));
+                document.setStId(getStableIdentifier(instance));
                 try {
                     document.setOldStId((String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue("oldIdentifier"));
                 }catch (Exception e){

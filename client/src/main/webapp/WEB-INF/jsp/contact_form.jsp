@@ -9,8 +9,9 @@
         <input type="hidden" name="url" id="url" value="${url}"/>
 
         <div class="field">
-            <label for="mailAddress"><p>From:</p></label>
-            <input type="email" id="mailAddress" name="mailAddress" size="80" class="search"/>
+            <label for="mailAddress"><p>From*:</p></label>
+            <input type="email" id="mailAddress" name="mailAddress" size="80" class="search" placeholder="your-mail@domain.com"/>
+            <span id="mail-req"></span>
         </div>
         <div class="field">
             <label for="to"><p>To:</p></label>
@@ -30,7 +31,7 @@
             <%--<input type="text" id="subject" name="subject" class="search" value="${subject}" readonly/>--%>
         </div>
         <div class="fieldarea">
-            <label for="message"><p>Message:</p></label>
+            <label for="message"><p>Message*:</p></label>
             <c:choose>
 
                 <c:when test="${not empty message}">
@@ -40,7 +41,7 @@
                     <textarea id="message" name="message" class="search" rows="5" cols="80">Dear Helpdesk,&#13;&#10;Reactome does not process my request properly.</textarea>
                 </c:otherwise>
             </c:choose>
-
+            <span id="message-req"></span>
         </div>
         <div class="button-send">
             <p>
@@ -48,34 +49,68 @@
             </p>
         </div>
     </form>
-    <p>
-        <span id="msg"/></p>
+    <p><span id="msg"/></p>
 
 </div>
 <script type="text/javascript">
     $(document).ready(function () {
-
         $('#send').click(function () {
-            $('#send').prop("disabled", true);
-            var formData = $("#contact_form");
-            $.ajax({
-                url: formData.attr("action"),
-                type: "POST",
-                data: formData.serialize(),
-                success: function (data, textStatus, jqXHR) {
-                    formData.remove();
+            $("#mailmsg").replaceWith("<span id='mail-req'></span>");
+            $("#mailmsg").replaceWith("<span id='message-req'></span>");
 
-                    $("#msg").replaceWith("<span id='msg'><h5>Thank you for contacting us.&nbsp;We will get back to you shortly.</h5></span>");
-                    $("#msg").addClass("contact-msg-success");
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    $('#send').prop("disabled", false);
-                    $("#msg").replaceWith("<span id='msg'>Could not send your email. Try again or Please email us at <a href='mailto:help@reactome.org'>help@reactome.org</a></span>");
-                    $("#msg").addClass("contact-msg-error");
-                }
-            });
+            var email = $('#mailAddress').val();
+            var ok = true;
+            if(email == "" ) {
+                $("#mail-req").replaceWith("<span id='mail-req'>Email Address is required</span>");
+                $("#mail-req").addClass("contact-msg-error");
+                ok = false;
+            }
+            if($('#message').val() == "" ) {
+                $("#message-req").replaceWith("<span id='message-req'>Message is required</span>");
+                $("#message-req").addClass("contact-msg-error");
+                ok = false;
+            }
 
+            if(!isEmailValid(email)){
+                ok = false;
+            }
+
+            if(ok){
+                $("#mailmsg").replaceWith("<span id='mail-req'></span>");
+                $("#mailmsg").replaceWith("<span id='message-req'></span>");
+
+                $('#send').prop("disabled", true);
+                var formData = $("#contact_form");
+                $.ajax({
+                    url: formData.attr("action"),
+                    type: "POST",
+                    data: formData.serialize(),
+                    success: function (data, textStatus, jqXHR) {
+                        formData.remove();
+
+                        $("#msg").replaceWith("<span id='msg'><h5>Thank you for contacting us.&nbsp;We will get back to you shortly.</h5></span>");
+                        $("#msg").addClass("contact-msg-success");
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        $('#send').prop("disabled", false);
+                        $("#msg").replaceWith("<span id='msg'>Could not send your email. Try again or Please email us at <a href='mailto:help@reactome.org'>help@reactome.org</a></span>");
+                        $("#msg").addClass("contact-msg-error");
+                    }
+                });
+            }
         });
     });
 
+    function isEmailValid(mail){
+        var status = true;
+        var emailRegEx = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+        if(mail != "" ) {
+            if (mail.search(emailRegEx) == -1) {
+                $("#mail-req").replaceWith("<span id='mail-req'>Malformed Email Address.</span>");
+                $("#mail-req").addClass("contact-msg-error");
+                status = false;
+            }
+        }
+        return status;
+    }
 </script>

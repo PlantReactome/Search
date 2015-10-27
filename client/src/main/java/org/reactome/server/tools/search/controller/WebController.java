@@ -61,12 +61,20 @@ class WebController {
     private static final String TITLE = "title";
 
     private static final String MAIL_SUBJECT = "subject";
-    private static final String MAIL_SUBJECT_PLACEHOLDER = "No results found for";
+    private static final String MAIL_SUBJECT_PLACEHOLDER = "[SEARCH] No results found for ";
 
     private static final String MAIL_MESSAGE = "message";
-    private static String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI have searched for %s and I could not find it.";
+    private static String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI have searched for \"%s\" and I could not find it.";
 
     private static String defaultSubject;
+
+    // PAGES REDIRECT
+    private static final String PAGE_DETAIL = "detail";
+    private static final String PAGE_NODETAILSFOUND = "nodetailsfound";
+    private static final String PAGE_NORESULTSFOUND = "noresultsfound";
+    private static final String PAGE_EBIADVANCED = "ebiadvanced";
+    private static final String PAGE_EBISEARCHER = "ebisearcher";
+
 
     @Value("${mail_error_dest}")
     private String mailErrorDest; // E
@@ -103,7 +111,7 @@ class WebController {
         model.addAttribute(KEYWORDS_FACET, facetMapping.getKeywordFacet());
         model.addAttribute(COMPARTMENTS_FACET, facetMapping.getCompartmentFacet());
         model.addAttribute(TITLE, "advanced Search");
-        return "ebiadvanced";
+        return PAGE_EBIADVANCED;
     }
 
     /**
@@ -135,11 +143,10 @@ class WebController {
         if (entry != null) {
             model.addAttribute(ENTRY, entry);
             model.addAttribute(TITLE, entry.getName() + " (" + entry.getSpecies() + ")");
-            return "detail";
+            return PAGE_DETAIL;
         } else {
-            autoFillContactForm(model, id);
-
-            return "noresultsfound";
+            autoFillDetailsPage(model, id);
+            return PAGE_NODETAILSFOUND;
         }
     }
 
@@ -170,12 +177,12 @@ class WebController {
         if (entry != null) {
             model.addAttribute(ENTRY, entry);
             model.addAttribute(TITLE, entry.getName());
-            return "detail";
+            return PAGE_DETAIL;
         } else {
 
-            autoFillContactForm(model, id);
+            autoFillDetailsPage(model, id);
 
-            return "noresultsfound";
+            return PAGE_NODETAILSFOUND;
         }
     }
 
@@ -244,7 +251,7 @@ class WebController {
                     model.addAttribute(MAX_PAGE, (int) Math.ceil(resultCount / rows));
                     model.addAttribute(GROUPED_RESULT, groupedResult);
                 }
-                return "ebisearcher";
+                return PAGE_EBISEARCHER;
             } else {
                 facetMapping = searchService.getFacetingInformation(new Query(q, null, null, null, null));
                 if (facetMapping != null && facetMapping.getTotalNumFount() > 0) {
@@ -265,7 +272,7 @@ class WebController {
                         model.addAttribute(MAX_PAGE, (int) Math.ceil(resultCount / rows));
                         model.addAttribute(GROUPED_RESULT, groupedResult);
                     }
-                    return "ebisearcher";
+                    return PAGE_EBISEARCHER;
                 } else {
                     // Generating spellcheck suggestions if no faceting informatioon was found, while using no filters
                     model.addAttribute(SUGGESTIONS, searchService.getSpellcheckSuggestions(q));
@@ -275,7 +282,7 @@ class WebController {
 
         autoFillContactForm(model, q);
 
-        return "noresultsfound";
+        return PAGE_NORESULTSFOUND;
     }
 
     @RequestMapping(value = "/contact", method = RequestMethod.POST)
@@ -285,7 +292,7 @@ class WebController {
                    @RequestParam String message,
                    @RequestParam String exception,
                    @RequestParam String url,
-                   @RequestParam String source) {
+                   @RequestParam String source) throws Exception {
 
         String to = mailSupportDest;
         if (source.equals("E")) {
@@ -302,6 +309,7 @@ class WebController {
         mailService.send(to, mailAddress, defaultSubject, message);
 
         return "success";
+
     }
 
     /**
@@ -377,9 +385,28 @@ class WebController {
 
 
     public void autoFillContactForm(ModelMap model, String search) {
-        defaultSubject = MAIL_SUBJECT_PLACEHOLDER + " " + search;
+        model.addAttribute(Q, search);
+
+        try {
+            List<String> suggestions = searchService.getSpellcheckSuggestions(search);
+            model.addAttribute(SUGGESTIONS, suggestions);
+
+        } catch (SolrSearcherException e) {
+            logger.error("Error building suggestions on autoFillContactForm.");
+        }
+
+        defaultSubject = MAIL_SUBJECT_PLACEHOLDER + search;
         model.addAttribute(MAIL_SUBJECT, defaultSubject);
 
         model.addAttribute(MAIL_MESSAGE, String.format(MAIL_MESSAGE_PLACEHOLDER, search));
+
+        model.addAttribute(TITLE, "No results found for " + search);
+
+    }
+
+    public void autoFillDetailsPage(ModelMap model, String search) {
+        model.addAttribute(Q, search);
+        model.addAttribute(TITLE, "No details found for " + search);
+
     }
 }

@@ -65,7 +65,7 @@ public class Enricher implements IEnricher  {
                 return enrichedEntry;
             }
         } catch (Exception e) {
-            logger.error("Error occurred when trying to fetch Instance by dbId", e);
+            logger.error("Error occurred when trying to fetch Instance by dbId");
 //            throw new EnricherException("Error occurred when trying to fetch Instance by dbId", e);
         }
         return null;
@@ -538,7 +538,8 @@ public class Enricher implements IEnricher  {
     }
 
     private GKInstance getInstance(Collection<GKInstance> target) throws Exception {
-        if(target==null || target.size()!=1) throw new Exception("Many options have been found fot the specified identifier");
+        if(target == null) throw new Exception("No entity found");
+        if(target.size()!=1) throw new Exception("Many options have been found for the specified identifier");
         GKInstance stId = target.iterator().next();
         return (GKInstance) dba.fetchInstanceByAttribute(ReactomeJavaConstants.DatabaseObject, ReactomeJavaConstants.stableIdentifier, "=", stId).iterator().next();
     }

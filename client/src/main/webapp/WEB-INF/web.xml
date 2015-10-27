@@ -37,20 +37,19 @@
         <!--<error-code>400</error-code>-->
         <!--<location>/WEB-INF/jsp/generic_error.jsp</location>-->
     <!--</error-page>-->
-    <!--<error-page>-->
-        <!--<error-code>404</error-code>-->
-        <!--<location>/WEB-INF/jsp/generic_error.jsp</location>-->
-    <!--</error-page>-->
     <error-page>
-        <!--<error-code>500</error-code>-->
+        <error-code>404</error-code>
+        <location>/wordpress/404.php</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
         <location>/WEB-INF/jsp/generic_error.jsp</location>
     </error-page>
+    <error-page>
+        <exception-type>org.springframework.web.bind.MissingServletRequestParameterException</exception-type>
+        <location>/wordpress/404.php</location>
+    </error-page>
 
-    <!--<error-page>-->
-        <!--<exception-type>java.lang.Throwable</exception-type>-->
-        <!--<location>/WEB-INF/jsp/generic_error.jsp</location>-->
-    <!--</error-page>-->
-    <!-- -->
     <servlet>
         <servlet-name>Content</servlet-name>
         <servlet-class>uk.ac.ebi.pride.web.util.servlet.proxy.ProxyServlet</servlet-class>

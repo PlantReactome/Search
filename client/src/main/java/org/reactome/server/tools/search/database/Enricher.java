@@ -112,8 +112,10 @@ public class Enricher implements IEnricher  {
     protected String getStableIdentifier(GKInstance instance) throws Exception {
         if (hasValue(instance, ReactomeJavaConstants.stableIdentifier)){
             return (String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier);
+        }else{
+            logger.error("No StableIdentifier for " + instance.getDBID() + " [" + instance.getDisplayName() + "]");
+            return instance.getDBID() + "";
         }
-        return null;
     }
 
     /**

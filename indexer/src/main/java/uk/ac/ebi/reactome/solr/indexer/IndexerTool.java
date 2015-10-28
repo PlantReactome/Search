@@ -49,7 +49,7 @@ public class IndexerTool {
                         "The solr user")
                         , new FlaggedOption("solrpassword", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'a', "solrpassword",
                         "The password to connect to solr")
-                        , new FlaggedOption("solrurl", JSAP.STRING_PARSER, "localhost:8983/solr/reactome", JSAP.REQUIRED, 's', "solrurl",
+                        , new FlaggedOption("solrurl", JSAP.STRING_PARSER, "http://localhost:8983/solr/reactome", JSAP.REQUIRED, 's', "solrurl",
                         "Url of the running Solr server")
                         , new FlaggedOption("output", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'o', "output",
                         "XML output file for the EBeye")

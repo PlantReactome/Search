@@ -38,7 +38,7 @@ public class IndexerTool {
                 "A tool for generating a Solr Index", //TODO
                 new Parameter[]{
                         new FlaggedOption("host", JSAP.STRING_PARSER, "localhost", JSAP.NOT_REQUIRED, 'h', "host",
-                                "The database host")
+                        "The database host")
                         , new FlaggedOption("database", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'd', "database",
                         "The reactome database name to connect to")
                         , new FlaggedOption("dbuser", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 'u', "dbuser",
@@ -59,6 +59,13 @@ public class IndexerTool {
                         "Requests verbose output.")
                         , new FlaggedOption("addInterval", JSAP.INTEGER_PARSER, "100", JSAP.NOT_REQUIRED, 'i', "addInterval",
                         "Release version number")
+                        , new FlaggedOption("mail-smtp", JSAP.STRING_PARSER, "smtp.oicr.on.ca", JSAP.NOT_REQUIRED, 'm', "mail-smtp",
+                        "SMTP Mail host")
+                        , new FlaggedOption("mail-port", JSAP.INTEGER_PARSER, "25", JSAP.NOT_REQUIRED, 't', "mail-port",
+                        "SMTP Mail port")
+                        , new FlaggedOption("mail-destination", JSAP.STRING_PARSER, "reactome-developer@reactome.org", JSAP.NOT_REQUIRED, 'f', "mail-destination",
+                        "Mail Destination")
+
                 }
         );
 
@@ -88,6 +95,7 @@ public class IndexerTool {
         SolrClient solrClient = getSolrClient(user, password, url);
 
         Indexer indexer = new Indexer(dba, solrClient, addInterval, output, release, verbose);
+        MailUtil mail = new MailUtil(config.getString("mail-smtp"), config.getInt("mail-port"));
 
         try {
             indexer.index();
@@ -102,7 +110,7 @@ public class IndexerTool {
             }
 
             // Send an email by the end of indexer.
-            MailUtil.sendMail(FROM,"[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + minutes + "minutes " + seconds + "seconds");
+            mail.send(FROM, config.getString("mail-destination"), "[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + minutes + "minutes " + seconds + "seconds");
 
         } catch (IndexerException e) {
             StringWriter sw = new StringWriter();
@@ -116,7 +124,8 @@ public class IndexerTool {
             body.append("\n");
             body.append("Stacktrace: " + exceptionAsString);
 
-            MailUtil.sendMail(FROM, "[SearchIndexer] The Solr indexer has thrown exception", body.toString() );
+            // Send an error notification by the end of indexer.
+            mail.send(FROM, config.getString("mail-destination"), "[SearchIndexer] The Solr indexer has thrown exception", body.toString() );
         }
     }
 

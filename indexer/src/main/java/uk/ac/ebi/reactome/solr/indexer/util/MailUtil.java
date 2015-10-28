@@ -8,7 +8,6 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -20,25 +19,15 @@ public class MailUtil {
 
     private static final Logger logger = Logger.getLogger(MailUtil.class);
 
-    private static Properties properties;
+    private Properties properties;
 
-    private static final String FROM = "reactome@reactome.org";
-
-    private static final String TO = "reactome-default@reactome.org";
-
-    static {
-        loadProperties();
+    public MailUtil(String host, Integer port){
+        properties = new Properties();
+        properties.setProperty("mail.smpt.host", host);
+        properties.setProperty("mail.smtp.port", String.valueOf(port));
     }
 
-    public static void sendMail(String subject, String text) {
-        sendMail(FROM, properties.getProperty("mail.dest", TO), subject, text);
-    }
-
-    public static void sendMail(String from, String subject, String text) {
-        sendMail(from, properties.getProperty("mail.dest", TO), subject, text);
-    }
-
-    public static void sendMail(String from, String to, String subject, String text) {
+    public void send(String from, String to, String subject, String text) {
 
         // Get the default Session object.
         Session session = Session.getDefaultInstance(properties);
@@ -66,22 +55,5 @@ public class MailUtil {
             logger.error("Error sending notification message");
         }
     }
-
-    private static void loadProperties() {
-        if (properties == null) {
-            properties = new Properties();
-        }
-
-        try {
-            final InputStream stream = MailUtil.class.getResourceAsStream("/mail.properties");
-            properties.load(stream);
-
-            stream.close();
-        } catch (Exception e) {
-            logger.error("Could not read mail.properties. Email will not work properly.");
-        }
-
-    }
-
 }
 

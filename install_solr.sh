@@ -92,7 +92,7 @@ bash ./install_solr_service.sh solr-$_SOLR_VERSION.tgz -d $_SOLR_HOME -p $_SOLR_
 echo "Check if solr is running..."
 service solr status
 
-_BRANCH=refactoring
+_BRANCH=master
 _SOLR_CONF_GIT="https://github.com/reactome/Search/archive/$_BRANCH.zip"
 
 

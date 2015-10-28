@@ -55,20 +55,21 @@
 <script type="text/javascript">
     $(document).ready(function () {
         $('#send').click(function () {
-            $("#mailmsg").replaceWith("<span id='mail-req'></span>");
-            $("#mailmsg").replaceWith("<span id='message-req'></span>");
-
             var email = $('#mailAddress').val();
             var ok = true;
             if(email == "" ) {
                 $("#mail-req").replaceWith("<span id='mail-req'>Email Address is required</span>");
                 $("#mail-req").addClass("contact-msg-error");
                 ok = false;
+            }else {
+                $("#mail-req").replaceWith("<span id='mail-req'></span>");
             }
             if($('#message').val() == "" ) {
                 $("#message-req").replaceWith("<span id='message-req'>Message is required</span>");
                 $("#message-req").addClass("contact-msg-error");
                 ok = false;
+            }else {
+                $("#message-req").replaceWith("<span id='message-req'></span>");
             }
 
             if(!isEmailValid(email)){
@@ -76,8 +77,8 @@
             }
 
             if(ok){
-                $("#mailmsg").replaceWith("<span id='mail-req'></span>");
-                $("#mailmsg").replaceWith("<span id='message-req'></span>");
+                $("#mail-req").replaceWith("<span id='mail-req'></span>");
+                $("#message-req").replaceWith("<span id='message-req'></span>");
 
                 $('#send').prop("disabled", true);
                 var formData = $("#contact_form");

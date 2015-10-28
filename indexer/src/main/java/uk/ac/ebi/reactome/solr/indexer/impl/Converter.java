@@ -102,6 +102,8 @@ public class Converter {
     private String getStableIdentifier(GKInstance instance) throws Exception {
         if (hasValue(instance, ReactomeJavaConstants.stableIdentifier)){
             return (String) ((GKInstance) instance.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).getAttributeValue(ReactomeJavaConstants.identifier);
+        } else {
+            logger.error("No ST_ID for " + instance.getDBID() + " >> " + instance.getDisplayName());
         }
         return null;
     }

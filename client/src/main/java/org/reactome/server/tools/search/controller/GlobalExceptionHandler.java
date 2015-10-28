@@ -6,7 +6,6 @@ import org.reactome.server.tools.search.exception.SolrSearcherException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -34,26 +33,6 @@ class GlobalExceptionHandler {
     private static final String TITLE = "title";
 
     private static final String PAGE = "generic_error";
-
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ModelAndView handleMyException(Exception exception, HttpServletRequest request) {
-
-        ModelAndView model = new ModelAndView(PAGE);
-        model.addObject(EXCEPTION, "BAD");
-        model.addObject(URL, request.getRequestURL());
-
-        model.addObject(SUBJECT, "BAD");
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("BAD");
-
-
-        model.addObject(MESSAGE, sb.toString());
-
-        model.addObject(TITLE, " BAD ");
-
-        return model;
-    }
 
 //    @ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR, reason="EnricherException occurred")
     @ExceptionHandler(EnricherException.class)

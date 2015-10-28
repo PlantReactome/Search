@@ -4,10 +4,10 @@
 <c:import url="header.jsp"/>
 <div class="ebi-content">
     <div class="grid_24">
-        <h2>No details found for ${q}</h2>
+        <h2>No details found for ${search}</h2>
 
         <div class="no-results-div" style="margin-bottom: 200px;">
-            <p class="alert">Sorry we could not find any entry matching '${q}'</p>
+            <p class="alert">Sorry we could not find any entry matching '${search}'</p>
         </div>
     </div>
     <div class="clear"></div>

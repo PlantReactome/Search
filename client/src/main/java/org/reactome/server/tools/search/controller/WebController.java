@@ -405,7 +405,7 @@ class WebController {
     }
 
     public void autoFillDetailsPage(ModelMap model, String search) {
-        model.addAttribute(Q, search);
+        model.addAttribute("search", search);
         model.addAttribute(TITLE, "No details found for " + search);
 
     }

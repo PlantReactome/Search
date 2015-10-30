@@ -17,12 +17,12 @@ where:
     -h  Program help/usage
     -i  Solr Password
     -c  Solr Core name. DEFAULT: reactome
-    -d  Solr Home directory. DEFAULT: /home/solr
+    -d  Solr Home directory. DEFAULT: /usr/local/reactomes/Reactome/production/Solr
     -v  Solr Version. DEFAULT: 5.3.1
     -p  Solr Port. DEFAULT: 8983
     -u  Solr User. DEFAULT: admin"
 
-_SOLR_HOME="/home/solr"
+_SOLR_HOME="/usr/local/reactomes/Reactome/production/Solr"
 _SOLR_VERSION="5.3.1"
 _SOLR_PORT=8983
 _SOLR_USER="admin"

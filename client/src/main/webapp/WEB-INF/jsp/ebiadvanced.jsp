@@ -5,7 +5,7 @@
 <div class="ebi-content">
     <div class="grid_23 padding">
         <h2>Advanced search</h2>
-        <form id="adv-search" action="./query" method="get">
+        <form id="adv-search" action="/content/query" method="get">
             <div class="advSearchBox">
                 <br>
                 <p>This parser supports full <a href="http://lucene.apache.org/core/2_9_4/queryparsersyntax.html">Lucene QueryParser syntax</a>  including:</p>

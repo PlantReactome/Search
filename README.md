@@ -1,11 +1,11 @@
 # Search
 #### What is Reactome Search ?
-Reactome Search is a project that optimizes the 'searches' in the Reactome Website. Based on Apache Lucene Solr, the database is indexed by Apache Solr 5.3.1 and it is fully configured and parametrized accordingly to meet the our needs and requirements.
+Reactome Search is a project that optimizes the 'searches' in Reactome Website. Based on Apache Lucene, reactome database is fully indexed by Apache Solr. SolR is versatil, so it's configured and parametrized to face our needs and requirements, deliverying a high performance result list.
 The Search project is spit into 'Indexer' and 'Search':
-  * Indexer: query GKInstance (MySql database) and indexer the whole database in Solr Model
-  * Search: Spring MVC Application which queries Solr documents in order to optimize the searching for Reactome Pathway Browser.
+  * Indexer: query GKInstance (MySql database) and indexer the whole database in SolR Model
+  * Search: Spring MVC Application which queries SolR documents in order to optimize the searching for Reactome Pathway Browser.
 
-#### How do I easily setup a new Apache Solr instance for Reactome ?
+#### How do I easily setup a new Apache SolR instance for Reactome ?
   <ol>
   <li>Download all-in-one script setup https://github.com/reactome/Search/blob/refactoring/install_solr.sh</li>
   <li>Open terminal</li>
@@ -68,6 +68,11 @@ git clone https://github.com/reactome/Search.git
 mvn clean package
 ```
   </li>
+  <li>Indexer Help: --help
+```
+java -jar target/Indexer-[version]-jar-with-dependencies.jar --help
+```
+  </li>
   <li>Execute indexer
   
   command help (ensure special characters are escaped):
@@ -76,10 +81,8 @@ java -jar target/Indexer-[version]-jar-with-dependencies.jar
      -d dbname 
      -u dbuser 
      -p dbpass 
-     -s http://<solrurl>:<solrport>/solr/solrcore 
      -e solr_user
      -a solr_password
-     -r reactomedata-currentversion 
      -v
 ```
 e.g
@@ -89,13 +92,12 @@ java -jar target/Indexer-[version]-jar-with-dependencies.jar
      -d reactome 
      -u reactome 
      -p reactome 
-     -s http://localhost:8983/solr/reactome
      -e admin
      -a reacpass
-     -r 49 
      -v
 ```
-
+You can specify any other parameter in order to modify the default values.
+    
   </li>
  </ol>
  

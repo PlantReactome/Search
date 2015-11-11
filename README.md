@@ -70,7 +70,7 @@ mvn clean package
   </li>
   <li>Execute indexer
   
-  command help:
+  command help (ensure special characters are escaped):
 ```
 java -jar target/Indexer-[version]-jar-with-dependencies.jar 
      -d dbname 

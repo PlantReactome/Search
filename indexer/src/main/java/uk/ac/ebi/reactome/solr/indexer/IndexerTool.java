@@ -57,7 +57,7 @@ public class IndexerTool {
                         "Release version number")
                         , new QualifiedSwitch("verbose", JSAP.BOOLEAN_PARSER, null, JSAP.NOT_REQUIRED, 'v', "verbose",
                         "Requests verbose output.")
-                        , new FlaggedOption("addInterval", JSAP.INTEGER_PARSER, "100", JSAP.NOT_REQUIRED, 'i', "addInterval",
+                        , new FlaggedOption("addInterval", JSAP.INTEGER_PARSER, "1000", JSAP.NOT_REQUIRED, 'i', "addInterval",
                         "Release version number")
                         , new FlaggedOption("mail-smtp", JSAP.STRING_PARSER, "smtp.oicr.on.ca", JSAP.NOT_REQUIRED, 'm', "mail-smtp",
                         "SMTP Mail host")
@@ -88,7 +88,7 @@ public class IndexerTool {
         );
 
         File output = null;
-        if (config.getString("outout") != null) {
+        if (config.getString("output") != null) { // There was a typo here causing the issue on ebeye.xml wasn't created. Fixed
             output = new File(config.getString("output"));
         }
 

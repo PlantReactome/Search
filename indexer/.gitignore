@@ -1,3 +1,4 @@
 log/*
 indexer.log
+indexer.log.*
 ebeye.xml

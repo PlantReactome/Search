@@ -6,6 +6,8 @@ import org.reactome.server.tools.search.domain.Node;
 import org.reactome.server.tools.search.exception.EnricherException;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Class for Generating Trees containing all possible Links of an Entry to the Pathway Browser
@@ -49,7 +51,32 @@ public class PathwayBrowserTreeGenerator extends Enricher {
             graph = createNodeFromInstance(instance);
             recursion(instance, graph);
         }
-            Set<Node> leaves = graph.getLeaves();
+
+        Set<String> topLevelPathways = loadFrontPage();
+
+        /**
+         * At this point the tree is upside down, so the leaves are the top-level pathway
+         * The following steps verify if the each leaf is a TopLevel Pathway.
+         * If so, then it will build the whole tree.
+         */
+        Set<Node> leaves = graph.getLeaves();
+
+        Pattern p = Pattern.compile("([0-9]+)");
+
+        /**
+         * Using Iteratior in order to avoid ConcurrentModificationException in the Set.
+         */
+        Iterator<Node> it = leaves.iterator();
+        while (it.hasNext()) {
+            Node top = it.next();
+            Matcher m = p.matcher(top.getStId());
+            if (m.find()) {
+                if(!topLevelPathways.contains(m.group(1))) {
+                    it.remove();
+                }
+            }
+        }
+
         return buildTreesFromLeaves(leaves);
     }
 

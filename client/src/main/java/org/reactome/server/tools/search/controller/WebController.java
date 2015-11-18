@@ -64,7 +64,7 @@ class WebController {
     private static final String MAIL_SUBJECT_PLACEHOLDER = "[SEARCH] No results found for ";
 
     private static final String MAIL_MESSAGE = "message";
-    private static String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI have searched for \"%s\" and I could not find it.";
+    private static String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI have searched for \"%s\" and I could not find it.\n\nThank you.\n\n";
 
     private static String defaultSubject;
 

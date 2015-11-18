@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Queries the MySql database and converts entry to a local object
@@ -546,5 +548,37 @@ public class Enricher implements IEnricher  {
         return (GKInstance) dba.fetchInstanceByAttribute(ReactomeJavaConstants.DatabaseObject, ReactomeJavaConstants.stableIdentifier, "=", stId).iterator().next();
     }
 
+    /**
+     * The FrontPage data schema holds all the TopLevelPathways.
+     * In the search only TopLevelPathways should be listed
+     *
+     * @return Set of FrontPages.
+     * @throws Exception
+     */
+    protected Set<String> loadFrontPage() throws Exception {
+        Set<String> topLevelPathway = new HashSet<>();
+        Collection<?> frontPage = dba.fetchInstancesByClass(ReactomeJavaConstants.FrontPage);
+        GKInstance instance = (GKInstance) frontPage.iterator().next();
+        Collection<GKInstance> instances = instance.getAttributeValuesList(ReactomeJavaConstants.frontPageItem);
+
+        /**
+         * Matching only the number in the stable identifier, because in the
+         * FrontPage model there aren't top level pathways for all species.
+         * The IDs are the same for the species.
+         */
+        Pattern p = Pattern.compile("([0-9]+)");
+
+        for (GKInstance gki : instances) {
+            String stId = getStableIdentifier(gki);
+            Matcher m = p.matcher(stId);
+
+            if (m.find()) {
+                String s = m.group(1);
+                topLevelPathway.add(s);
+            }
+        }
+
+        return topLevelPathway;
+    }
 
 }

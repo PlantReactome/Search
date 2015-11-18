@@ -250,10 +250,22 @@ public class Converter {
             List<CrossReference> crossReferences = new ArrayList<>();
             for (Object object : crossReferenceInstanceList) {
                 GKInstance crossReferenceInstance = (GKInstance) object;
-                String id = (String) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.identifier);
-                String db = ((GKInstance) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDisplayName();
+                //String id = (String) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.identifier);
+                //String db = ((GKInstance) crossReferenceInstance.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).getDisplayName();
+
+                // In the crossReferenceInstance.getDisplayName is made by db and id
+                // Possible fix for NPE in Production (We didn't get this is dev)
+                // I ran the indexer on my local and it ended up successfully. They also run in Release and we received the email with success process
+                String composedDisplayName = crossReferenceInstance.getDisplayName();
+
+                // e.g ZINC:02392265 where db=ZINC and ID=02392265
+                String[] displayName = composedDisplayName.split(":");
+                String db = displayName[0];
+                String id = displayName[1];
+
                 identifiers.add(id);
                 identifiers.add(db + ":" + id);
+
                 CrossReference crossReference = new CrossReference();
                 crossReference.setDbName(db);
                 crossReference.setId(id);
@@ -262,7 +274,8 @@ public class Converter {
             document.setCrossReferences(identifiers);
             document.setAllCrossReferences(crossReferences);
         }catch (Exception e) {
-            e.printStackTrace();  // rework
+            logger.error(e.getMessage(),e);
+            //e.printStackTrace();  // rework
         }
     }
 

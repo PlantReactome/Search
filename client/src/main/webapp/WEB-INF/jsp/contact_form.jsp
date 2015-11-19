@@ -38,7 +38,7 @@
                     <textarea id="message" name="message" class="search" rows="5" cols="80">${message}</textarea>
                 </c:when>
                 <c:otherwise>
-                    <textarea id="message" name="message" class="search" rows="5" cols="80">Dear Helpdesk,&#13;&#10;Reactome does not process my request properly.</textarea>
+                    <textarea id="message" name="message" class="search" rows="5" cols="80">Dear Helpdesk,&#13;&#10;Reactome does not process my request properly.&#13;&#10;Thank you&#13;&#10;</textarea>
                 </c:otherwise>
             </c:choose>
             <span id="message-req"></span>

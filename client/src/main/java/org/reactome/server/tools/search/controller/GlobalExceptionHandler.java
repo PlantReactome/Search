@@ -75,6 +75,9 @@ class GlobalExceptionHandler {
         sb.append("An unexpected error has occurred during my search.");
         sb.append("\n\n");
         sb.append("<< Please add more information >>");
+        sb.append("\n\n");
+        sb.append("Thank you");
+        sb.append("\n\n");
 
         model.addObject(MESSAGE, sb.toString());
 

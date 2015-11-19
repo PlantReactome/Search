@@ -1,7 +1,7 @@
 # Search
 #### What is Reactome Search ?
 Reactome Search is a project that optimizes the 'searches' in Reactome Website. Based on Apache Lucene, reactome database is fully indexed by Apache Solr. SolR is versatil, so it's configured and parametrized to face our needs and requirements, deliverying a high performance result list.
-The Search project is spit into 'Indexer' and 'Search':
+The Search project is split into 'Indexer' and 'Search':
   * Indexer: query GKInstance (MySql database) and indexer the whole database in SolR Model
   * Search: Spring MVC Application which queries SolR documents in order to optimize the searching for Reactome Pathway Browser.
 

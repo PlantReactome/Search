@@ -212,7 +212,6 @@ class WebController {
                          @RequestParam(required = false) Integer page,
                          ModelMap model) throws SolrSearcherException {
         if (q != null && !q.isEmpty()) {
-            q = filterQuery(q);
             if (cluster == null) {
                 cluster = false;
             }
@@ -363,20 +362,6 @@ class WebController {
             return checkedList;
         }
         return null;
-    }
-
-    private String filterQuery(String q) {
-        //Massaging the query parameter to remove dots in Reactome stable identifiers
-        StringBuilder sb = new StringBuilder();
-        for (String token : q.split("\\s+")) {
-            if (token.toUpperCase().contains("R-")) {
-                sb.append(token.split("\\.")[0]);
-            } else {
-                sb.append(token);
-            }
-            sb.append(" ");
-        }
-        return sb.toString().trim();
     }
 
     public void setSearchService(SearchService searchService) {

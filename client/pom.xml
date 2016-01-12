@@ -137,6 +137,13 @@
             <version>1.4.7</version>
         </dependency>
 
+        <!-- Reactome Interactor-core -->
+        <dependency>
+            <groupId>org.reactome.server.tools</groupId>
+            <artifactId>interactor-core</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
     <properties>

@@ -2,6 +2,7 @@ package org.reactome.server.tools.search.controller;
 
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
+import org.reactome.server.tools.interactors.model.Interaction;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.EnricherException;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
@@ -173,6 +174,11 @@ class WebController {
 //        model.addAttribute(TYPES, checkOutputIntegrity(types));
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
+        if(id.startsWith("EBI")) {
+            List<Interaction> interactions = searchService.getInteractions(id);
+            return "SOMEPAGE";
+        }
+
         EnrichedEntry entry = searchService.getEntryById(id);
         if (entry != null) {
             model.addAttribute(ENTRY, entry);

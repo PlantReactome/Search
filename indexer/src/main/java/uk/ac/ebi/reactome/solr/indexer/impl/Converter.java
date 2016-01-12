@@ -132,7 +132,7 @@ public class Converter {
      */
     private void setGeneralAttributes(IndexDocument document, GKInstance instance) {
 
-        document.setDbId(instance.getDBID());
+        document.setDbId(instance.getDBID().toString());
         setNameAndSynonyms(document, instance);
         if (keywords!=null) {
             document.setKeywords(getKeywordsFromName(document.getName()));

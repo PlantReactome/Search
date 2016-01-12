@@ -12,7 +12,7 @@ import java.util.List;
 public class IndexDocument {
 
     @Field
-    private Long dbId;
+    private String dbId;
     @Field
     private String stId;
     @Field
@@ -253,11 +253,11 @@ public class IndexDocument {
         this.regulator = regulator;
     }
 
-    public Long getDbId() {
+    public String getDbId() {
         return dbId;
     }
 
-    public void setDbId(Long dbId) {
+    public void setDbId(String dbId) {
         this.dbId = dbId;
     }
 

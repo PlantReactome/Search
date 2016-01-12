@@ -8,14 +8,17 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.reactome.server.tools.interactors.model.Interaction;
+import org.reactome.server.tools.interactors.model.Interactor;
+import org.reactome.server.tools.interactors.parser.IntactParser;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
 import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * This class is responsible for establishing connection to Solr
@@ -44,6 +47,9 @@ public class Indexer {
             "education.";
 
     private static final Logger logger = Logger.getLogger(Indexer.class);
+
+    private static final Set<String> accessions = new HashSet<>();
+
 
     public Indexer(MySQLAdaptor dba, SolrClient solrClient, int addInterval, File ebeye, String release, Boolean verbose) {
 
@@ -78,6 +84,9 @@ public class Indexer {
             }
             commitSolrServer();
 
+            /** Interactor **/
+            entriesCount += indexInteractors();
+
         } catch (Exception e) {
             logger.error(e);
             throw new IndexerException(e);
@@ -85,6 +94,135 @@ public class Indexer {
             closeSolrServer();
         }
 
+    }
+
+    private void createAccessionSet() throws IndexerException {
+        Collection<?> instances;
+        try {
+            instances = dba.fetchInstancesByClass(ReactomeJavaConstants.referenceEntity);
+            for (Object object : instances) {
+                GKInstance instance = (GKInstance) object;
+                if (instance.getSchemClass().isValidAttribute(ReactomeJavaConstants.identifier)) {
+                    String identifier = (String) instance.getAttributeValue(ReactomeJavaConstants.identifier);
+                    if (identifier != null && !identifier.isEmpty()) {
+                        accessions.add(identifier);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Fetching Instances by ClassName from the Database caused an errer", e);
+            throw new IndexerException("Fetching Instances by ClassName from the Database caused an errer", e);
+        }
+    }
+
+    private int indexInteractors() throws IndexerException {
+
+        createAccessionSet();
+
+        int numberOfDocuments = 0;
+
+        try {
+
+            List<IndexDocument> collection = new ArrayList<>();
+
+            IntactParser parser = new IntactParser();
+
+
+            String intactFile = parser.downloadFile();
+
+            String inputLine;
+            BufferedReader br = new BufferedReader(new FileReader(intactFile));
+
+            /**
+             * First line is a header. Calling readLine will point the cursor to the next line.
+             */
+            br.readLine();
+
+            /** Intact Identifiers **/
+            // intact:EBI-7122727|intact:EBI-7122766|intact:EBI-7122684|intact:EBI-7121552
+
+            while ((inputLine = br.readLine()) != null) {
+                String[] content = inputLine.split("\\t");
+
+                /** Parse the line **/
+                Interaction interaction = parser.interactionFromFile(content);
+
+                IndexDocument interactionIndexDocument = createIndexDocumentFromInteraction(interaction);
+
+                collection.add(interactionIndexDocument);
+                numberOfDocuments++;
+                if (numberOfDocuments % addInterval == 0 && !collection.isEmpty()) {
+                    addDocumentsToSolrServer(collection);
+                    collection.clear();
+                    logger.info(numberOfDocuments + " interactors have now been added to Solr");
+                    if (verbose) {
+                        System.out.println(numberOfDocuments + " interactors have now been added to Solr");
+                    }
+                }
+            }
+
+            if (!collection.isEmpty()) {
+                addDocumentsToSolrServer(collection);
+                logger.info(numberOfDocuments + " interactors have now been added to Solr");
+                if (verbose) {
+                    System.out.println(numberOfDocuments + " interactors have now been added to Solr");
+                }
+            }
+
+        } catch (IOException e) {
+            throw new IndexerException(e);
+        }
+
+
+        return numberOfDocuments;
+    }
+
+    private IndexDocument createIndexDocumentFromInteraction(Interaction interaction) {
+        IndexDocument indexDocument = new IndexDocument();
+
+        String accessionA = interaction.getInteractorA().getAcc();
+        String accessionB = interaction.getInteractorB().getAcc();
+
+        boolean hasAccessionA = false;
+        boolean hasAccessionB = false;
+
+        if (accessions.contains(accessionA)){
+            hasAccessionA = true;
+        }
+
+        if(accessions.contains(accessionB)) {
+            hasAccessionB = true;
+        }
+
+        if(hasAccessionA ^ hasAccessionB) {
+            if(! hasAccessionA){
+                indexDocument = createDocument(interaction.getInteractorA());
+            }else {
+                indexDocument = createDocument(interaction.getInteractorB());
+            }
+        }
+
+        return indexDocument;
+    }
+
+    /**
+     *
+     * @param interactor
+     * @return
+     */
+    private IndexDocument createDocument(Interactor interactor) {
+        IndexDocument indexDocument = new IndexDocument();
+
+        indexDocument.setDbId(interactor.getIntactId());
+        indexDocument.setName(interactor.getAlias());
+        indexDocument.setType("Interactor");
+        indexDocument.setExactType("Interactor");
+
+        List<String> referenceIdentifiersList = new ArrayList<>(1);
+        referenceIdentifiersList.add(interactor.getAcc());
+        indexDocument.setReferenceIdentifiers(referenceIdentifiersList);
+
+        return indexDocument;
     }
 
     /**

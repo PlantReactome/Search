@@ -114,6 +114,15 @@ public class IndexDocument {
     @Field
     private List<String> referenceGeneNames;
 
+    @Field
+    private List<String> reactomeInteractorIds;
+    @Field
+    private List<String> interactionsIds;
+    @Field
+    private List<Double> scores;
+    @Field
+    private List<String> reactomeInteractorNames;
+
 
     // Auto Generated Getters Setters
 
@@ -475,5 +484,37 @@ public class IndexDocument {
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
+    }
+
+    public List<String> getReactomeInteractorIds() {
+        return reactomeInteractorIds;
+    }
+
+    public void setReactomeInteractorIds(List<String> reactomeInteractorIds) {
+        this.reactomeInteractorIds = reactomeInteractorIds;
+    }
+
+    public List<String> getInteractionsIds() {
+        return interactionsIds;
+    }
+
+    public void setInteractionsIds(List<String> interactionsIds) {
+        this.interactionsIds = interactionsIds;
+    }
+
+    public List<Double> getScores() {
+        return scores;
+    }
+
+    public void setScores(List<Double> scores) {
+        this.scores = scores;
+    }
+
+    public List<String> getReactomeInteractorNames() {
+        return reactomeInteractorNames;
+    }
+
+    public void setReactomeInteractorNames(List<String> reactomeInteractorNames) {
+        this.reactomeInteractorNames = reactomeInteractorNames;
     }
 }

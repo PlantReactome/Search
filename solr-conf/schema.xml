@@ -49,6 +49,12 @@
         <field name="referenceOtherIdentifier"      	type="keyword_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
         <field name="referenceGeneNames" 		type="text_field"	indexed="true" 	stored="false" 	omitNorms="false"   required="false" 	multiValued="true"/>
         <field name="spellcheck" 			type="suggest_field"	indexed="true" 	stored="false" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+        
+        <field name="reactomeInteractorIds" 		type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+        <field name="interactionsIds" 			type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+        <field name="scores" 				type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+        <field name="reactomeInteractorNames" 		type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+
     </fields>
 
     <copyField source="name" dest="name_exact"/>

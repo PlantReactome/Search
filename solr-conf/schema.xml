@@ -53,6 +53,7 @@
         <field name="reactomeInteractorIds" 		type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
         <field name="interactionsIds" 			type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
         <field name="scores" 				type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
+        <field name="interactorAccessions"		type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
         <field name="reactomeInteractorNames" 		type="stored_value"	    indexed="false" stored="true" 	omitNorms="true"   	required="false" 	multiValued="true"/>
 
     </fields>

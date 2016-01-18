@@ -519,6 +519,21 @@
         </arr>
     </requestHandler>
 
+
+   <requestHandler name="/intactdetail" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="echoParams">explicit</str>
+            <str name="defType">edismax</str>
+            <int name="start">0</int>
+            <int name="rows">1</int>
+            <str name="mm">100%</str>
+            <str name="df">dbId</str>
+            <str name="qf">dbId^1.0</str>
+            <str name="fq">exactType:Interactor</str>
+        </lst>
+    </requestHandler>
+
+
     <requestHandler name="/update" class="solr.UpdateRequestHandler"></requestHandler>
 
     <!-- Field Analysis Request Handler analyses the filed given in the query-->

@@ -63,6 +63,7 @@ public class Indexer {
      * Reactome Ids and names (ReactomeSummary) and their reference Entity accession identifier
      */
     private Map<String, ReactomeSummary> accessionMap = new HashMap<>();
+    private Map<Integer, String> taxonomyMap = new HashMap<>();
 
     public Indexer(MySQLAdaptor dba, SolrClient solrClient, int addInterval, File ebeye, String release, Boolean verbose) {
 
@@ -98,9 +99,7 @@ public class Indexer {
             commitSolrServer();
 
             /** Interactor **/
-            int interactorsCount = indexInteractors();
-
-            System.out.println("Entries Count: " + interactorsCount);
+            indexInteractors();
 
             commitSolrServer();
 
@@ -214,6 +213,7 @@ public class Indexer {
              * Querying interactor database and retrieve all unique accession identifiers of intact-micluster file
              */
             List<String> accessionsList = interactorService.getAllAccessions();
+            createTaxonomyMap();
 
             /**
              * Removing accession identifier that are not Uniprot/CHEBI accession Identifier.
@@ -233,6 +233,8 @@ public class Indexer {
              * Get Interactions for all accessions that are not in Reactome.
              */
             Map<String, List<Interaction>> interactions = interactionService.getInteractions(accessionsNoReactome, "intact");
+
+            logger.info("Accessions not in Reactome: " + accessionsNoReactome.size());
 
             for (String accKey : interactions.keySet()) {
                 Set<InteractorSummary> interactorSummarySet = new HashSet<>();
@@ -275,7 +277,23 @@ public class Indexer {
         return numberOfDocuments;
     }
 
-    /**
+    private void createTaxonomyMap() {
+
+        Collection<?> instances;
+        try {
+            instances = dba.fetchInstancesByClass(ReactomeJavaConstants.Species);
+            for (Object object : instances) {
+                GKInstance instance = (GKInstance) object;
+                GKInstance crossReference = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.crossReference);
+                String[] name = crossReference.getDisplayName().split(":");
+                taxonomyMap.put(Integer.parseInt(name[1]), instance.getDisplayName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+        /**
      * Creating interactor document
      * @param interactorA
      * @param interactorSummarySet
@@ -284,31 +302,38 @@ public class Indexer {
     private IndexDocument createDocument(Interactor interactorA, Set<InteractorSummary> interactorSummarySet) {
 
         IndexDocument document = new IndexDocument();
-        document.setDbId(interactorA.getIntactId());
+        document.setDbId(interactorA.getAcc());
         document.setName(interactorA.getAlias());
         document.setType("Interactor");
         document.setExactType("Interactor");
         List<String> referenceIdentifiersList = new ArrayList<>(1);
         referenceIdentifiersList.add(interactorA.getAcc());
         document.setReferenceIdentifiers(referenceIdentifiersList);
+        String species = "Entries without species";
+        if (taxonomyMap.containsKey(interactorA.getTaxid())) {
+            species = taxonomyMap.get(interactorA.getTaxid());
+        }
+        document.setSpecies(species);
 
         List<String> interactionIds = new ArrayList<>();
+        List<String> accessions = new ArrayList<>();
         List<String> reactomeIds = new ArrayList<>();
         List<String> reactomeNames = new ArrayList<>();
         List<Double> scores = new ArrayList<>();
 
         for (InteractorSummary interactorSummary : interactorSummarySet) {
-            reactomeIds.add(interactorSummary.getReactomeSummary().getReactomeId().toString());
-            reactomeNames.add(interactorSummary.getReactomeSummary().getReactomeName().toString());
+            reactomeIds.add(ReactomeSummary.parseList(interactorSummary.getReactomeSummary().getReactomeId()));
+            reactomeNames.add(ReactomeSummary.parseList(interactorSummary.getReactomeSummary().getReactomeName()));
             interactionIds.add(interactorSummary.getInteractionId());
             scores.add(interactorSummary.getScore());
+            accessions.add(interactorSummary.getAccession());
         }
 
         document.setInteractionsIds(interactionIds);
         document.setReactomeInteractorIds(reactomeIds);
         document.setReactomeInteractorNames(reactomeNames);
         document.setScores(scores);
-
+        document.setInteractorAccessions(accessions);
         return document;
 
     }

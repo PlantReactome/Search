@@ -121,6 +121,8 @@ public class IndexDocument {
     @Field
     private List<Double> scores;
     @Field
+    private List<String> interactorAccessions;
+    @Field
     private List<String> reactomeInteractorNames;
 
 
@@ -508,6 +510,14 @@ public class IndexDocument {
 
     public void setScores(List<Double> scores) {
         this.scores = scores;
+    }
+
+    public List<String> getInteractorAccessions() {
+        return interactorAccessions;
+    }
+
+    public void setInteractorAccessions(List<String> interactorAccessions) {
+        this.interactorAccessions = interactorAccessions;
     }
 
     public List<String> getReactomeInteractorNames() {

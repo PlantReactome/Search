@@ -1,9 +1,6 @@
 package org.reactome.server.tools.search.solr;
 
-import org.reactome.server.tools.search.domain.Entry;
-import org.reactome.server.tools.search.domain.FacetMapping;
-import org.reactome.server.tools.search.domain.GroupedResult;
-import org.reactome.server.tools.search.domain.Query;
+import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
 
 import java.util.List;
@@ -19,14 +16,21 @@ import java.util.List;
 public interface ISolrConverter {
 
     FacetMapping getFacetingInformation(Query query) throws SolrSearcherException;
+
     FacetMapping getFacetingInformation() throws SolrSearcherException;
 
     List<String> getAutocompleteSuggestions(String query) throws SolrSearcherException;
+
     List<String> getSpellcheckSuggestions(String query) throws SolrSearcherException;
 
     Entry getEntryById(String id) throws SolrSearcherException;
+
     GroupedResult getEntries(Query query) throws SolrSearcherException;
+
     GroupedResult getClusteredEntries(Query query) throws SolrSearcherException;
+
+    InteractorEntry getIntactDetail(String accession) throws SolrSearcherException;
+
 }
 
 

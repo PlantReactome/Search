@@ -2,7 +2,10 @@ package org.reactome.server.tools.search.controller;
 
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
-import org.reactome.server.tools.interactors.model.Interaction;
+import org.reactome.server.tools.interactors.model.InteractionResource;
+import org.reactome.server.tools.interactors.model.InteractorResource;
+import org.reactome.server.tools.interactors.service.InteractionResourceService;
+import org.reactome.server.tools.interactors.service.InteractorResourceService;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.EnricherException;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
@@ -16,8 +19,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Spring WEB Controller
@@ -67,21 +73,37 @@ class WebController {
     private static final String MAIL_MESSAGE = "message";
     private static String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI have searched for \"%s\" and I could not find it.\n\nThank you.\n\n";
 
+    private static final String INTERACTOR_RESOURCES_MAP = "interactorResourceMap";
+    private static final String INTERACTION_RESOURCES_MAP = "interactionResourceMap";
+
     private static String defaultSubject;
 
     // PAGES REDIRECT
     private static final String PAGE_DETAIL = "detail";
+    private static final String PAGE_INTACT = "intact";
+
     private static final String PAGE_NODETAILSFOUND = "nodetailsfound";
     private static final String PAGE_NORESULTSFOUND = "noresultsfound";
     private static final String PAGE_EBIADVANCED = "ebiadvanced";
     private static final String PAGE_EBISEARCHER = "ebisearcher";
 
+    private static final String INTERACTION_RESOURCE_NAME = "intact";
+    private static final String INTACT_URL = "intactUrl";
+    private static final String INTERACTION_DEFAULT_URL = "http://www.ebi.ac.uk/intact/interaction/##ID##";
 
     @Value("${mail_error_dest}")
     private String mailErrorDest; // E
 
     @Value("${mail_support_dest}")
     private String mailSupportDest; // W
+
+    //private InteractionService interactionService = InteractionService.getInstance();
+
+    private InteractionResourceService interactionResourceService = InteractionResourceService.getInstance();
+    private InteractorResourceService interactorResourceService = InteractorResourceService.getInstance();
+
+    private Map<Long, InteractorResource> interactorResourceMap = new HashMap<>();
+    private Map<Long, InteractionResource> interactionResourceMap = new HashMap<>();
 
     /**
      * Method for autocompletion
@@ -174,15 +196,16 @@ class WebController {
 //        model.addAttribute(TYPES, checkOutputIntegrity(types));
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
-        if(id.startsWith("EBI")) {
-            List<Interaction> interactions = searchService.getInteractions(id);
-            return "SOMEPAGE";
-        }
+        cacheResources();
+
 
         EnrichedEntry entry = searchService.getEntryById(id);
         if (entry != null) {
             model.addAttribute(ENTRY, entry);
             model.addAttribute(TITLE, entry.getName());
+            model.addAttribute(INTERACTION_RESOURCES_MAP, interactionResourceMap);
+            model.addAttribute(INTERACTOR_RESOURCES_MAP, interactorResourceMap);
+
             return PAGE_DETAIL;
         } else {
 
@@ -191,6 +214,38 @@ class WebController {
             return PAGE_NODETAILSFOUND;
         }
     }
+
+
+    /**
+     * Shows detailed information of an entry
+     *
+     * @param id    StId or DbId
+     *              //     * @param q,species,types,compartments,keywords parameters to save existing query and facets
+     * @param model SpringModel
+     * @return Detailed page
+     * @throws EnricherException
+     * @throws SolrSearcherException
+     */
+    @RequestMapping(value = "/detail/interactor/{id:.*}", method = RequestMethod.GET)
+    public String interactorDetail(@PathVariable String id,
+                         ModelMap model) throws EnricherException, SolrSearcherException {
+
+        InteractorEntry entry = searchService.getIntactDetail(id);
+        if (entry != null) {
+            model.addAttribute(ENTRY, entry);
+            model.addAttribute(TITLE, entry.getName());
+            model.addAttribute(INTACT_URL, getIntactUrl());
+
+            return PAGE_INTACT;
+        } else {
+
+            autoFillDetailsPage(model, id);
+
+            return PAGE_NODETAILSFOUND;
+        }
+    }
+
+
 
 //    //    quick and ugly fix
 //    @ResponseStatus(value= HttpStatus.NOT_FOUND, reason="IOException occurred")
@@ -399,5 +454,42 @@ class WebController {
         model.addAttribute("search", search);
         model.addAttribute(TITLE, "No details found for " + search);
 
+    }
+
+    /**
+     * These resources are the same all the time.
+     * In order to speed up the query result and less memory usage, I decided to keep the resource out of the query
+     * and keep a cache with them. Thus we avoid having the same information for all result.
+     *
+     * This method set the map class attribute.
+     */
+    private void cacheResources(){
+        cacheInteractionResources();
+        cacheInteractorResources();
+    }
+
+    private void cacheInteractorResources(){
+        try {
+            interactorResourceMap = interactorResourceService.getAllMappedById();
+        } catch (SQLException e) {
+            logger.error("An error has occurred while querying InteractorResource: " + e.getMessage(), e);
+        }
+    }
+
+    private void cacheInteractionResources(){
+        try {
+            interactionResourceMap = interactionResourceService.getAllMappedById();
+        } catch (SQLException e) {
+            logger.error("An error has occurred while querying InteractionResource: " + e.getMessage(), e);
+        }
+    }
+
+    private String getIntactUrl(){
+        try {
+            return interactionResourceService.getByName(INTERACTION_RESOURCE_NAME).getUrl();
+        } catch (SQLException e) {
+            logger.error("An error has occurred while querying InteractionResource: " + e.getMessage(), e);
+        }
+        return INTERACTION_DEFAULT_URL;
     }
 }

@@ -39,6 +39,9 @@
                                                 <c:when test="${entry.species == 'Entries without species'}" >
                                                     <a href="./detail/${entry.id}" class="" title="Show Details" rel="nofollow">${entry.name} <span>${entry.compartmentNames}</span></a>
                                                 </c:when>
+                                                <c:when test="${entry.exactType == 'Interactor'}" >
+                                                    <a href="./detail/interactor/${entry.id}" class="" title="Show Interactor Details" rel="nofollow">${entry.name}</a>
+                                                </c:when>
                                                 <c:otherwise>
                                                     <a href="./detail/${entry.id}" class="" title="Show Details" rel="nofollow">${entry.name} <span>(${entry.species})</span></a>
                                                 </c:otherwise>

@@ -1,4 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@taglib prefix="mytag" uri="/WEB-INF/tags/customTag.tld"%>
 
 <c:import url="header.jsp"/>
@@ -647,6 +648,61 @@
             </table>
         </div>
     </c:if>
+
+
+    <!-- INTERACTORS TABLE -->
+    <c:if test="${not empty entry.interactionList}">
+        <div class="grid_23  padding">
+            <h5>Interactions</h5>
+            <div class="wrap">
+                <table class="fixedTable">
+                    <thead>
+                        <tr class="tableHead">
+                            <td>Interaction Score</td>
+                            <td>Interactor Accession</td>
+                            <td>Interactor Name</td>
+                            <td>Interaction ID</td>
+                        </tr>
+                    </thead>
+                </table>
+                <div class="inner_table_div">
+                    <table>
+                        <c:forEach var="interaction" items="${entry.interactionList}">
+                            <tr>
+                                <td>${interaction.intactScore}</td>
+                                <td>
+                                    <!-- Parse the Interactor URL -->
+                                    <c:set var="interactorResource" value="${interactorResourceMap[interaction.interactorB.interactorResourceId]}" />
+                                    <c:choose>
+                                        <%-- Accessions do not have resource (even in intact portal) --%>
+                                        <c:when test="${interactorResource.name == 'undefined'}">
+                                            ${interaction.interactorB.acc}
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="${fn:replace(interactorResource.url, '##ID##', interaction.interactorB.acc)}"
+                                               title="Show ${interaction.interactorB.acc}"
+                                               rel="nofollow">${interaction.interactorB.acc}</a>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>${interaction.interactorB.alias}</td>
+                                <td>
+                                    <c:if test="${fn:length(interaction.interactionDetailsList) gt 0}">
+                                        <!-- Get the url from the map and replace the ID -->
+                                        <a href="${fn:replace(interactionResourceMap[interaction.interactionResourceId].url, '##ID##', interaction.interactionDetailsList[0].interactionAc)}"
+                                           title="Show ${interaction.interactionDetailsList[0].interactionAc}"
+                                           rel="nofollow">${interaction.interactionDetailsList[0].interactionAc}</a>
+                                    </c:if>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </c:if>
+
+
 
 </div>
 <div class="clear"></div>

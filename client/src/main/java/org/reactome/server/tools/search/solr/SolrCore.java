@@ -46,6 +46,7 @@ public class SolrCore {
     private final static String FACET_REQUEST_HANDLER       =  "/facet";
     private final static String TOTAL_FACET_REQUEST_HANDLER =  "/facetall";
     private final static String SPELLCHECK_REQUEST_HANDLER  =  "/spellcheck";
+    private final static String INTACT_REQUEST_HANDLER      =  "/intactdetail";
 
     private final static String SOLR_SPELLCHECK_QUERY       =  "spellcheck.q";
     private final static String SOLR_GROUP_OFFSET           =  "group.offset";
@@ -106,6 +107,14 @@ public class SolrCore {
 
         QueryResponse queryResponse = querysolrClient(solrQuery);
         return queryResponse.getResults().getNumFound() > 0;
+    }
+
+    public QueryResponse intactDetail(String query) throws SolrSearcherException {
+        SolrQuery parameters = new SolrQuery();
+
+        parameters.setRequestHandler(INTACT_REQUEST_HANDLER);
+        parameters.setQuery(query);
+        return querysolrClient(parameters);
     }
 
     /**

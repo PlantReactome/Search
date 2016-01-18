@@ -456,3 +456,40 @@ select {
 .generic-error-div h4 {
     color: #05194C !important;
 }
+
+.wrap {
+    /*width: 352px;*/
+    margin-bottom: 30px;
+}
+
+.wrap table {
+    /*border: 0px solid !important;*/
+    width: 300px;
+    table-layout: fixed;
+}
+
+.wrap .fixedTable {
+    margin-bottom: 0px;
+    border-bottom: 0px;
+}
+
+.wrap .fixedTable td {
+    width: 20%;
+}
+
+.wrap .inner_table_div {
+    /*border: 0px solid !important;*/
+    height: 200px;
+    overflow-y: auto;
+    border-top: 0px solid;
+    margin-top: 0px;
+}
+
+.wrap .inner_table_div table {
+    border-top: 0px solid;
+    margin-top: 0px;
+}
+
+.wrap .inner_table_div table td{
+    width: 20%;
+}

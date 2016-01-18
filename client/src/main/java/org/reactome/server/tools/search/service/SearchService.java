@@ -5,7 +5,6 @@ import org.reactome.server.tools.interactors.model.Interaction;
 import org.reactome.server.tools.interactors.service.InteractionService;
 import org.reactome.server.tools.search.database.Enricher;
 import org.reactome.server.tools.search.database.IEnricher;
-import org.reactome.server.tools.search.database.InteractorEnricher;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.EnricherException;
 import org.reactome.server.tools.search.exception.SearchServiceException;
@@ -18,10 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Search Service acts as api between the Controller and Solr / Database
@@ -43,6 +39,8 @@ public class SearchService {
     private static String password;
     private static Integer port;
 
+    private InteractionService interactionService = InteractionService.getInstance();
+
     /**
      * Constructor for Spring Dependency Injection and loading MavenProperties
      *
@@ -53,7 +51,6 @@ public class SearchService {
     }
 
     private void loadProperties() throws SearchServiceException {
-
         try {
             Properties databaseProperties = new Properties();
             databaseProperties.load(getClass().getResourceAsStream("/web.properties"));
@@ -69,23 +66,6 @@ public class SearchService {
         }
     }
 
-    public List<Interaction> getInteractions(String intactId){
-        InteractionService interactionService = InteractionService.getInstance();
-        try {
-            Map<String, List<Interaction>> interactionMap = interactionService.getInteractionsByIntactId(intactId, "intact");
-            List<Interaction> interactions = interactionMap.get(intactId);
-
-            InteractorEnricher interactorEnricher = new InteractorEnricher(host, database, user, password, port);
-            interactorEnricher.notclear(interactions);
-            // InteractorA is the one we are querying -- always the same.
-
-        } catch (InvalidInteractionResourceException | SQLException e) {
-            e.printStackTrace();
-        } catch (EnricherException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
 
 
@@ -185,6 +165,18 @@ public class SearchService {
         return null;
     }
 
+    public InteractorEntry getIntactDetail(String query) throws SolrSearcherException {
+        if (query != null && !query.isEmpty()) {
+            InteractorEntry entry = solrConverter.getIntactDetail(query);
+            Collections.sort(entry.getInteractions());
+            Collections.reverse(entry.getInteractions());
+
+            return entry;
+        }
+        return null;
+    }
+
+
     /**
      * Returns one specific Entry by DbId
      *
@@ -194,8 +186,25 @@ public class SearchService {
     public EnrichedEntry getEntryById(String id) throws EnricherException, SolrSearcherException {
         if (id != null && !id.isEmpty()) {
             IEnricher enricher = new Enricher(host, currentDatabase, user, password, port);
-            return enricher.enrichEntry(id);
+            EnrichedEntry enrichedEntry = enricher.enrichEntry(id);
+
+            ReferenceEntity referenceEntity = enrichedEntry.getReferenceEntity();
+            if(referenceEntity != null) {
+                String acc = referenceEntity.getReferenceIdentifier();
+                if (acc != null) {
+                    try {
+                        Map<String, List<Interaction>> interactionsMap = interactionService.getInteractions(acc, "intact");
+
+                        enrichedEntry.setInteractionList(interactionsMap.get(acc));
+
+                    } catch (InvalidInteractionResourceException | SQLException e) {
+                        logger.error("Error retrieving interactions from Database");
+                    }
+                }
+            }
+            return enrichedEntry;
         }
+
         return null;
     }
 

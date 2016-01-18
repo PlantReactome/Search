@@ -1,5 +1,7 @@
 package org.reactome.server.tools.search.domain;
 
+import org.reactome.server.tools.interactors.model.Interaction;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +55,8 @@ public class EnrichedEntry extends Entry {
     public Set<Node> getLocationsPathwayBrowser() {
         return locationsPathwayBrowser;
     }
+
+    public List<Interaction> interactionList;
 
     public void setLocationsPathwayBrowser(Set<Node> locationsPathwayBrowser) {
         this.locationsPathwayBrowser = locationsPathwayBrowser;
@@ -264,5 +268,13 @@ public class EnrichedEntry extends Entry {
 
     public void setModifiedResidues(List<ModifiedResidue> modifiedResidues) {
         this.modifiedResidues = modifiedResidues;
+    }
+
+    public List<Interaction> getInteractionList() {
+        return interactionList;
+    }
+
+    public void setInteractionList(List<Interaction> interactionList) {
+        this.interactionList = interactionList;
     }
 }

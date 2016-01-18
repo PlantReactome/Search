@@ -125,6 +125,19 @@ public class SolrConverter implements ISolrConverter {
         return getFacetMap(solrCore.getFacetingInformation(queryObject), queryObject);
     }
 
+    public InteractorEntry getIntactDetail(String accession) throws SolrSearcherException {
+        if (accession != null && !accession.isEmpty()) {
+            QueryResponse response = solrCore.intactDetail(accession);
+            List<SolrDocument> solrDocuments = response.getResults();
+            if (solrDocuments != null && !solrDocuments.isEmpty() && solrDocuments.get(0)!=null){
+                return buildInteractorEntry(solrDocuments.get(0));
+            }
+        }
+        logger.warn("no Entry found for this id" + accession);
+        return null;
+    }
+
+
     /**
      * Converts single SolrResponseEntry to Object Entry (Model)
      * @param id can be dbId of stId
@@ -267,6 +280,43 @@ public class SolrConverter implements ISolrConverter {
         }
         return null;
     }
+
+    private InteractorEntry buildInteractorEntry(SolrDocument solrDocument) {
+        if (solrDocument != null && !solrDocument.isEmpty()) {
+            InteractorEntry interactorEntry = new InteractorEntry();
+            interactorEntry.setAccession((String) solrDocument.getFieldValue(DB_ID));
+            interactorEntry.setName((String)solrDocument.getFieldValue(NAME));
+            List<Object> reactomeInteractorIds = (List<Object>)solrDocument.getFieldValues("reactomeInteractorIds");
+            List<Object> reactomeInteractorNames = (List<Object>)solrDocument.getFieldValues("reactomeInteractorNames");
+            List<Object> scores = (List<Object>)solrDocument.getFieldValues("scores");
+            List<Object> interactionIds = (List<Object>)solrDocument.getFieldValues("interactionsIds");
+            List<Object> accessions = (List<Object>)solrDocument.getFieldValues("interactorAccessions");
+
+
+            List<Interaction> interactionList = new ArrayList<>(interactionIds.size());
+            for(int i = 0; i < interactionIds.size(); i++) {
+                Interaction interaction = new Interaction();
+                interaction.setInteractionId((String) interactionIds.get(i));
+                interaction.setScore(Double.parseDouble((String) scores.get(i)));
+                interaction.setAccession((String) accessions.get(i));
+                String[] reactomeNames = ((String)reactomeInteractorNames.get(i)).split("#");
+                String[] reactomeIds = ((String)reactomeInteractorIds.get(i)).split("#");
+                List<InteractorReactomeEntry> reactomeEntries = new ArrayList<>();
+                for(int j = 0; j < reactomeIds.length; j++) {
+                    reactomeEntries.add(new InteractorReactomeEntry(reactomeIds[j], reactomeNames[j]));
+                }
+                interaction.setInteractorReactomeEntries(reactomeEntries);
+                interactionList.add(interaction);
+            }
+
+            interactorEntry.setInteractions(interactionList);
+
+            return interactorEntry;
+        }
+
+        return null;
+    }
+
 
     /**
      * Method for the construction of an entry from a SolrDocument, taking into account available highlighting information

@@ -42,4 +42,20 @@
 
     </bean>
 
+    <!-- Configuration for the Interactors-Core components -->
+    <bean id="interactorsDB" class="org.reactome.server.tools.interactors.database.InteractorsDatabase">
+        <constructor-arg name="fileName" value="${interactors.static.db}"/>
+    </bean>
+
+    <bean id="interactionResourceService" class="org.reactome.server.tools.interactors.service.InteractionResourceService">
+        <constructor-arg name="database" ref="interactorsDB"/>
+    </bean>
+    <bean id="interactorResourceService" class="org.reactome.server.tools.interactors.service.InteractorResourceService">
+        <constructor-arg name="database" ref="interactorsDB"/>
+    </bean>
+    <bean id="interactionService" class="org.reactome.server.tools.interactors.service.InteractionService">
+        <constructor-arg name="database" ref="interactorsDB"/>
+    </bean>
+
+
 </beans>

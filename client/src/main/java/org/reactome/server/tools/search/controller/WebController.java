@@ -87,7 +87,7 @@ class WebController {
     private static final String PAGE_EBIADVANCED = "ebiadvanced";
     private static final String PAGE_EBISEARCHER = "ebisearcher";
 
-    private static final String INTERACTION_RESOURCE_NAME = "intact";
+    private static final String INTERACTION_RESOURCE_NAME = "static";
     private static final String INTACT_URL = "intactUrl";
     private static final String INTERACTION_DEFAULT_URL = "http://www.ebi.ac.uk/intact/interaction/##ID##";
 
@@ -99,8 +99,11 @@ class WebController {
 
     //private InteractionService interactionService = InteractionService.getInstance();
 
-    private InteractionResourceService interactionResourceService = InteractionResourceService.getInstance();
-    private InteractorResourceService interactorResourceService = InteractorResourceService.getInstance();
+    @Autowired
+    private InteractionResourceService interactionResourceService;
+
+    @Autowired
+    private InteractorResourceService interactorResourceService;
 
     private Map<Long, InteractorResource> interactorResourceMap = new HashMap<>();
     private Map<Long, InteractionResource> interactionResourceMap = new HashMap<>();

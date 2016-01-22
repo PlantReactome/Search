@@ -39,7 +39,8 @@ public class SearchService {
     private static String password;
     private static Integer port;
 
-    private InteractionService interactionService = InteractionService.getInstance();
+    @Autowired
+    private InteractionService interactionService;
 
     /**
      * Constructor for Spring Dependency Injection and loading MavenProperties

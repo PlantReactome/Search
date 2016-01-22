@@ -6,10 +6,6 @@ import java.util.List;
 /**
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
-
-/**
- *
- */
 public class ReactomeSummary {
 
     private List<String> reactomeId;

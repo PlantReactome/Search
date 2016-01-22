@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.gk.persistence.MySQLAdaptor;
+import org.reactome.server.tools.interactors.database.InteractorsDatabase;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
 import uk.ac.ebi.reactome.solr.indexer.impl.Indexer;
 import uk.ac.ebi.reactome.solr.indexer.util.MailUtil;
@@ -65,6 +66,8 @@ public class IndexerTool {
                         "SMTP Mail port")
                         , new FlaggedOption("mail-destination", JSAP.STRING_PARSER, "reactome-developer@reactome.org", JSAP.NOT_REQUIRED, 'f', "mail-destination",
                         "Mail Destination")
+                        , new FlaggedOption("interactors-database-path", JSAP.STRING_PARSER, "/Users/reactome/interactors/interactors.db", JSAP.NOT_REQUIRED, 'g', "interactors-database-path",
+                        "Interactor Database Path")
 
                 }
         );
@@ -94,7 +97,15 @@ public class IndexerTool {
 
         SolrClient solrClient = getSolrClient(user, password, url);
 
-        Indexer indexer = new Indexer(dba, solrClient, addInterval, output, release, verbose);
+        String database = config.getString("interactors-database-path");
+        InteractorsDatabase interactorsDatabase = null;
+        try {
+            interactorsDatabase = new InteractorsDatabase(database);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        Indexer indexer = new Indexer(dba, solrClient, addInterval, output, release, verbose, interactorsDatabase);
         MailUtil mail = new MailUtil(config.getString("mail-smtp"), config.getInt("mail-port"));
 
         try {

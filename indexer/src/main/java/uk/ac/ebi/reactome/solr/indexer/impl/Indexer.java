@@ -8,6 +8,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.reactome.server.tools.interactors.database.InteractorsDatabase;
 import org.reactome.server.tools.interactors.exception.InvalidInteractionResourceException;
 import org.reactome.server.tools.interactors.model.Interaction;
 import org.reactome.server.tools.interactors.model.Interactor;
@@ -50,8 +51,8 @@ public class Indexer {
             "analysis of pathway knowledge to support basic research, genome analysis, modeling, systems biology and " +
             "education.";
 
-    private InteractorService interactorService = InteractorService.getInstance();
-    private InteractionService interactionService = InteractionService.getInstance();
+    private InteractorService interactorService;
+    private InteractionService interactionService;
 
     /**
      * Collection that holds accessions from IntAct that are not in Reactome Data.
@@ -65,7 +66,7 @@ public class Indexer {
     private Map<String, ReactomeSummary> accessionMap = new HashMap<>();
     private Map<Integer, String> taxonomyMap = new HashMap<>();
 
-    public Indexer(MySQLAdaptor dba, SolrClient solrClient, int addInterval, File ebeye, String release, Boolean verbose) {
+    public Indexer(MySQLAdaptor dba, SolrClient solrClient, int addInterval, File ebeye, String release, Boolean verbose, InteractorsDatabase interactorsDatabase) {
 
         logger.setLevel(Level.INFO);
         Indexer.dba = dba;
@@ -78,6 +79,9 @@ public class Indexer {
         if (xml) {
             marshaller = new Marshaller(ebeye, EBEYE_NAME, EBEYE_DESCRIPTION, release);
         }
+
+        this.interactorService = new InteractorService(interactorsDatabase);
+        this.interactionService = new InteractionService(interactorsDatabase);
     }
 
     public void index() throws IndexerException {
@@ -140,8 +144,6 @@ public class Indexer {
     /**
      * This method is populating the global attribute accessionMap.
      *
-     * @param accessionList
-     * @return
      * @throws IndexerException
      */
     private void createAccessionSet(List<String> accessionList) throws IndexerException {
@@ -199,7 +201,6 @@ public class Indexer {
      * Save a document containing an interactor that IS NOT in Reactome and a List of Interactions
      * with Reactome proteins
      *
-     * @return
      * @throws IndexerException
      */
     private int indexInteractors() throws IndexerException {
@@ -232,7 +233,7 @@ public class Indexer {
             /**
              * Get Interactions for all accessions that are not in Reactome.
              */
-            Map<String, List<Interaction>> interactions = interactionService.getInteractions(accessionsNoReactome, "intact");
+            Map<String, List<Interaction>> interactions = interactionService.getInteractions(accessionsNoReactome, "static");
 
             logger.info("Accessions not in Reactome: " + accessionsNoReactome.size());
 
@@ -293,11 +294,8 @@ public class Indexer {
         }
     }
 
-        /**
+    /**
      * Creating interactor document
-     * @param interactorA
-     * @param interactorSummarySet
-     * @return
      */
     private IndexDocument createDocument(Interactor interactorA, Set<InteractorSummary> interactorSummarySet) {
 
@@ -353,8 +351,8 @@ public class Indexer {
         try {
             instances = dba.fetchInstancesByClass(className);
         } catch (Exception e) {
-            logger.error("Fetching Instances by ClassName from the Database caused an errer", e);
-            throw new IndexerException("Fetching Instances by ClassName from the Database caused an errer", e);
+            logger.error("Fetching Instances by ClassName from the Database caused an error", e);
+            throw new IndexerException("Fetching Instances by ClassName from the Database caused an error", e);
         }
         int numberOfDocuments = 0;
         List<IndexDocument> collection = new ArrayList<>();
@@ -404,7 +402,7 @@ public class Indexer {
         if (documents != null && !documents.isEmpty()) {
             try {
                 solrClient.addBeans(documents);
-                logger.info(documents.size() + " Documents succsessfully added to Sorl");
+                logger.info(documents.size() + " Documents successfully added to Solr");
             } catch (IOException | SolrServerException | HttpSolrClient.RemoteSolrException e) {
                 for (IndexDocument document : documents) {
                     try {
@@ -433,8 +431,8 @@ public class Indexer {
             commitSolrServer();
             logger.info("Solr index has been cleaned");
         } catch (SolrServerException | IOException e) {
-            logger.error("an error occured while cleaning the SolrServer", e);
-            throw new IndexerException("an error occured while cleaning the SolrServer", e);
+            logger.error("an error occurred while cleaning the SolrServer", e);
+            throw new IndexerException("an error occurred while cleaning the SolrServer", e);
         }
     }
 
@@ -446,14 +444,14 @@ public class Indexer {
             solrClient.close();
             logger.info("SolrServer shutdown");
         } catch (IOException e) {
-            logger.error("an error occured while closing the SolrServer", e);
+            logger.error("an error occurred while closing the SolrServer", e);
         }
     }
 
     /**
      * Commits Data that has been added till now to Solr Server
      *
-     * @throws IndexerException not comiting could mean that this Data will not be added to Solr
+     * @throws IndexerException not committing could mean that this Data will not be added to Solr
      */
     private void commitSolrServer() throws IndexerException {
         try {

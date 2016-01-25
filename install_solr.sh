@@ -31,7 +31,8 @@ _SOLR_PASSWORD=""
 _SOLR_CORE="reactome"
 _GIT_BRANCH="master"
 
-while getopts ‘:d:v:p:u:i:c:h:b’ option; do
+# :h (help) should be at the very end of the while loop
+while getopts ‘:d:v:p:u:i:c:b:h’ option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -95,7 +96,7 @@ bash ./install_solr_service.sh solr-$_SOLR_VERSION.tgz -d $_SOLR_HOME -p $_SOLR_
 
 echo "Check if solr is running..."
 service solr status
-
+echo $_GIT_BRANCH   
 #_BRANCH=master
 _SOLR_CONF_GIT="https://github.com/reactome/Search/archive/$_GIT_BRANCH.zip"
 

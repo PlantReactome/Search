@@ -31,7 +31,7 @@ public class IndexerTool {
     private static final Logger logger = Logger.getLogger(IndexerTool.class);
     private static final String FROM = "reactome-indexer@reactome.org";
 
-    public static void main(String[] args) throws JSAPException, SQLException {
+    public static void main(String[] args) throws JSAPException, SQLException, IndexerException {
         long startTime = System.currentTimeMillis();
 
         SimpleJSAP jsap = new SimpleJSAP(
@@ -66,7 +66,7 @@ public class IndexerTool {
                         "SMTP Mail port")
                         , new FlaggedOption("mail-destination", JSAP.STRING_PARSER, "reactome-developer@reactome.org", JSAP.NOT_REQUIRED, 'f', "mail-destination",
                         "Mail Destination")
-                        , new FlaggedOption("interactors-database-path", JSAP.STRING_PARSER, "/Users/reactome/interactors/interactors.db", JSAP.NOT_REQUIRED, 'g', "interactors-database-path",
+                        , new FlaggedOption("interactors-database-path", JSAP.STRING_PARSER, null, JSAP.REQUIRED, 'g', "interactors-database-path",
                         "Interactor Database Path")
 
                 }
@@ -98,6 +98,11 @@ public class IndexerTool {
         SolrClient solrClient = getSolrClient(user, password, url);
 
         String database = config.getString("interactors-database-path");
+        File databaseFile = new File(database);
+        if(!databaseFile.exists()){
+            throw new IndexerException("Interactor database does not exist");
+        }
+
         InteractorsDatabase interactorsDatabase = null;
         try {
             interactorsDatabase = new InteractorsDatabase(database);

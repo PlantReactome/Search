@@ -11,7 +11,7 @@
 #  
 #-----------------------------------------------------------
 
-usage="$(basename "$0") -i <password>  [-c <solr_core_name> -d <solr_home> —v <solr_version> -p <port> -u <user>] -- program to auto setup the Apache Lucene Solr in Reactome environment.
+usage="$(basename "$0") -i <password>  [-c <solr_core_name> -d <solr_home> —v <solr_version> -p <port> -u <user> -b <git_branch>] -- program to auto setup the Apache Lucene Solr in Reactome environment.
 
 where:
     -h  Program help/usage
@@ -20,7 +20,8 @@ where:
     -d  Solr Home directory. DEFAULT: /usr/local/reactomes/Reactome/production/Solr
     -v  Solr Version. DEFAULT: 5.3.1
     -p  Solr Port. DEFAULT: 8983
-    -u  Solr User. DEFAULT: admin"
+    -u  Solr User. DEFAULT: admin
+    -b  GitHub Branch. DEFAULT: master"
 
 _SOLR_HOME="/usr/local/reactomes/Reactome/production/Solr"
 _SOLR_VERSION="5.3.1"
@@ -28,8 +29,9 @@ _SOLR_PORT=8983
 _SOLR_USER="admin"
 _SOLR_PASSWORD=""
 _SOLR_CORE="reactome"
+_GIT_BRANCH=“master"
 
-while getopts ':d:v:p:u:i:c:h' option; do
+while getopts ‘:d:v:p:u:i:c:h:b’ option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -45,6 +47,8 @@ while getopts ':d:v:p:u:i:c:h' option; do
     i) _SOLR_PASSWORD=$OPTARG
        ;; 
     c) _SOLR_CORE=$OPTARG
+       ;;
+    c) _GIT_BRANCH=$OPTARG
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
@@ -92,31 +96,31 @@ bash ./install_solr_service.sh solr-$_SOLR_VERSION.tgz -d $_SOLR_HOME -p $_SOLR_
 echo "Check if solr is running..."
 service solr status
 
-_BRANCH=master
-_SOLR_CONF_GIT="https://github.com/reactome/Search/archive/$_BRANCH.zip"
+#_BRANCH=master
+_SOLR_CONF_GIT="https://github.com/reactome/Search/archive/$_GIT_BRANCH.zip"
 
 
 echo "Downloading Solr Reactome configuration files..."
 wget $_SOLR_CONF_GIT
-if [ ! -f $_BRANCH.zip ]; then
+if [ ! -f $_GIT_BRANCH.zip ]; then
 	echo "Could not download Solr configuration files. Please check $_SOLR_CONF_GIT"
 	rm solr-$_SOLR_VERSION.tgz
 	rm install_solr_service.sh 
 	exit 1;
 fi
 
-unzip -q $_BRANCH.zip -d .
+unzip -q $_GIT_BRANCH.zip -d .
 
 #create and service solr status wont work anymore after setting authentication to the jetty server
 echo "Creating Solr core..."
-su - solr -c "/opt/solr/bin/solr create -c $_SOLR_CORE -d $_CWD/Search-$_BRANCH/solr-conf"
+su - solr -c "/opt/solr/bin/solr create -c $_SOLR_CORE -d $_CWD/Search-$_GIT_BRANCH/solr-conf"
 
 #echo "Increasing solr heap..."
 #sed -i "s/^\(SOLR_HEAP\s*=\s*\).*$/\1\"1024m\"/" $_SOLR_HOME/solr.in.sh 
 
 echo "Enabling Solr admin authentication in Jetty..."
-cp Search-$_BRANCH/solr-jetty-conf/jetty.xml /opt/solr-$_SOLR_VERSION/server/etc/
-cp Search-$_BRANCH/solr-jetty-conf/webdefault.xml /opt/solr-$_SOLR_VERSION/server/etc/
+cp Search-$_GIT_BRANCH/solr-jetty-conf/jetty.xml /opt/solr-$_SOLR_VERSION/server/etc/
+cp Search-$_GIT_BRANCH/solr-jetty-conf/webdefault.xml /opt/solr-$_SOLR_VERSION/server/etc/
 
 #_OBF_PASSWORD=echo -n $_SOLR_PASSWORD | md5sum
 cat > realm.properties << EOF1
@@ -130,7 +134,7 @@ service solr restart
 rm realm.properties
 rm solr-$_SOLR_VERSION.tgz
 rm install_solr_service.sh
-rm $_BRANCH.zip
-rm -r Search-$_BRANCH
+rm $_GIT_BRANCH.zip
+rm -r Search-$_GIT_BRANCH
 
 echo "Done!"

@@ -36,15 +36,20 @@
                                                 <img src="./resources/images/isDisease.png" title="Disease related entry" width="13" height="14" alt=""/>
                                             </c:if>
                                             <c:choose>
-                                                <c:when test="${entry.species == 'Entries without species'}" >
-                                                    <a href="./detail/${entry.id}" class="" title="Show Details" rel="nofollow">${entry.name} <span>${entry.compartmentNames}</span></a>
-                                                </c:when>
-                                                <c:when test="${entry.exactType == 'Interactor'}" >
-                                                    <a href="./detail/interactor/${entry.id}" class="" title="Show Interactor Details" rel="nofollow">${entry.name}</a>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <a href="./detail/${entry.id}" class="" title="Show Details" rel="nofollow">${entry.name} <span>(${entry.species})</span></a>
-                                                </c:otherwise>
+
+                                                    <c:when test="${entry.exactType == 'Interactor'}" >
+                                                        <a href="./detail/interactor/${entry.id}" class="" title="Show Interactor Details" rel="nofollow">${entry.name}</a>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <c:choose>
+                                                        <c:when test="${entry.species == 'Entries without species'}" >
+                                                            <a href="./detail/${entry.id}" class="" title="Show Details" rel="nofollow">${entry.name} <span>${entry.compartmentNames}</span></a>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <a href="./detail/${entry.id}" class="" title="Show Details" rel="nofollow">${entry.name} <span>(${entry.species})</span></a>
+                                                        </c:otherwise>
+                                                        </c:choose>
+                                                    </c:otherwise>
                                             </c:choose>
                                         </h4>
                                     </div>
@@ -59,7 +64,7 @@
                                         </c:if>
                                         <c:if test="${not empty entry.referenceIdentifier}">
                                             <%--<span>Primary external reference: ${entry.databaseName} <a href="${entry.referenceURL}" class="" title="show: ${entry.databaseName}" rel="nofollow">${entry.referenceName}: ${entry.referenceIdentifier}</a></span>--%>
-                                            <span>Primary external reference: ${entry.databaseName} <a href="${entry.referenceURL}" class="" title="show: ${entry.databaseName}" rel="nofollow">${entry.referenceName}: ${entry.referenceIdentifier}</a></span>
+                                            <span>Primary external reference: ${entry.databaseName} <a href=FisdfsdfsdfRL}" class="" title="show: ${entry.databaseName}" rel="nofollow">${entry.referenceName}: ${entry.referenceIdentifier}</a></span>
                                             <br>
                                         </c:if>
                                         <%--<c:if test="${not empty entry.referenceName}">--%>

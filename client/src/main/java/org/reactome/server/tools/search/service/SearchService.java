@@ -39,6 +39,8 @@ public class SearchService {
     private static String password;
     private static Integer port;
 
+    private static final String STATIC_INTERACTOR_RESOURCE = "static";
+
     @Autowired
     private InteractionService interactionService;
 
@@ -194,7 +196,7 @@ public class SearchService {
                 String acc = referenceEntity.getReferenceIdentifier();
                 if (acc != null) {
                     try {
-                        Map<String, List<Interaction>> interactionsMap = interactionService.getInteractions(acc, "intact");
+                        Map<String, List<Interaction>> interactionsMap = interactionService.getInteractions(acc, STATIC_INTERACTOR_RESOURCE);
 
                         enrichedEntry.setInteractionList(interactionsMap.get(acc));
 

@@ -29,7 +29,7 @@ _SOLR_PORT=8983
 _SOLR_USER="admin"
 _SOLR_PASSWORD=""
 _SOLR_CORE="reactome"
-_GIT_BRANCH=“master"
+_GIT_BRANCH="master"
 
 while getopts ‘:d:v:p:u:i:c:h:b’ option; do
   case "$option" in
@@ -48,7 +48,7 @@ while getopts ‘:d:v:p:u:i:c:h:b’ option; do
        ;; 
     c) _SOLR_CORE=$OPTARG
        ;;
-    c) _GIT_BRANCH=$OPTARG
+    b) _GIT_BRANCH=$OPTARG
        ;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2

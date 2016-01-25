@@ -252,6 +252,7 @@ public class Indexer {
                         summary.setAccession(interaction.getInteractorB().getAcc());
                         summary.setScore(interaction.getIntactScore());
                         summary.setInteractionId(interaction.getInteractionDetailsList().get(0).getInteractionAc());
+
                         interactorSummarySet.add(summary);
                     }
                 }
@@ -307,6 +308,8 @@ public class Indexer {
         List<String> referenceIdentifiersList = new ArrayList<>(1);
         referenceIdentifiersList.add(interactorA.getAcc());
         document.setReferenceIdentifiers(referenceIdentifiersList);
+        document.setReferenceURL(getUrl(interactorA.getAcc()));
+
         String species = "Entries without species";
         if (taxonomyMap.containsKey(interactorA.getTaxid())) {
             species = taxonomyMap.get(interactorA.getTaxid());
@@ -332,8 +335,20 @@ public class Indexer {
         document.setReactomeInteractorNames(reactomeNames);
         document.setScores(scores);
         document.setInteractorAccessions(accessions);
+
         return document;
 
+    }
+
+    private String getUrl(String acc) {
+        String url = "http://identifiers.org/";
+        if(acc.toUpperCase().contains("CHEBI")){
+            url = url + "chebi/" + acc;
+        }else {
+            url = url + "uniprot/" + acc;
+        }
+
+        return url;
     }
 
     /**

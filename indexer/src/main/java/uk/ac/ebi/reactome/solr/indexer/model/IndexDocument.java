@@ -112,6 +112,8 @@ public class IndexDocument {
     @Field
     private List<String> referenceOtherIdentifier;
     @Field
+    private List<String> referenceSecondaryIdentifier;
+    @Field
     private List<String> referenceGeneNames;
 
     @Field
@@ -526,5 +528,13 @@ public class IndexDocument {
 
     public void setReactomeInteractorNames(List<String> reactomeInteractorNames) {
         this.reactomeInteractorNames = reactomeInteractorNames;
+    }
+
+    public List<String> getReferenceSecondaryIdentifier() {
+        return referenceSecondaryIdentifier;
+    }
+
+    public void setReferenceSecondaryIdentifier(List<String> referenceSecondaryIdentifier) {
+        this.referenceSecondaryIdentifier = referenceSecondaryIdentifier;
     }
 }

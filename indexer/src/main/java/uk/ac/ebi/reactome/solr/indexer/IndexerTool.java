@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Creates the Solr documents and the ebeye.xml file
@@ -118,15 +119,26 @@ public class IndexerTool {
 
             long stopTime = System.currentTimeMillis();
             long ms = stopTime - startTime;
-            int seconds = (int) (ms / 1000) % 60;
-            int minutes = (int) ((ms / (1000 * 60)) % 60);
+
+            String elapsedTime = String.format("%02d:%02d:%02d",
+                                                TimeUnit.MILLISECONDS.toHours(ms),
+                                                TimeUnit.MILLISECONDS.toMinutes(ms) -
+                                                    TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms)),
+                                                TimeUnit.MILLISECONDS.toSeconds(ms) -
+                                                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms)));
+
+            long hour = TimeUnit.MILLISECONDS.toHours(ms);
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(ms) -
+                    TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms));
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(ms) -
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms));
 
             if (verbose) {
-                System.out.println("Indexing was successful within: " + minutes + "minutes " + seconds + "seconds ");
+                System.out.println("Indexing was successful within: " + hour + "hour(s) " + minutes + "minute(s) " + seconds + "second(s) ");
             }
 
             // Send an email by the end of indexer.
-            mail.send(FROM, config.getString("mail-destination"), "[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + minutes + "minutes " + seconds + "seconds");
+            mail.send(FROM, config.getString("mail-destination"), "[SearchIndexer] The Solr indexer has been created", "The Solr Indexer has ended successfully within: " + hour + "hour(s) " + minutes + "minute(s) " + seconds + "second(s) ");
 
         } catch (IndexerException e) {
             StringWriter sw = new StringWriter();

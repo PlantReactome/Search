@@ -207,8 +207,8 @@
             <!-- boost query to ensure human entries rank higher than the corresponding computationally inferred entries-->
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
-                oldStId^90.0
-                stId^80.0
+                oldStId^100.0
+                stId^100.0
                 name_exact^2000000.0
                 name^2000000.0
                 keywords^0.1
@@ -229,10 +229,11 @@
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
-                referenceName^1.0
-                referenceIdentifiers^1.0
-                referenceSynonyms^710
-                referenceOtherIdentifier^510
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+		referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -274,8 +275,8 @@
             <!--no search results returned because we are only interested in faceting information-->
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
-                oldStId^90.0
-                stId^80.0
+                oldStId^100.0
+                stId^100.0
                 name_exact^2000000.0
                 name^2000000.0
                 keywords^0.1
@@ -296,10 +297,11 @@
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
-                referenceName^1.0
-                referenceIdentifiers^1.0
-                referenceSynonyms^710
-                referenceOtherIdentifier^510
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+		referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -328,10 +330,10 @@
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
 
-            <str name="qf">
+            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
-                oldStId^90.0
-                stId^80.0
+                oldStId^100.0
+                stId^100.0
                 name_exact^2000000.0
                 name^2000000.0
                 keywords^0.1
@@ -352,10 +354,11 @@
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
-                referenceName^1.0
-                referenceIdentifiers^1.0
-                referenceSynonyms^710
-                referenceOtherIdentifier^510
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+		referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0
@@ -402,10 +405,10 @@
             <str name="tie">0.1</str>
             <str name="bq">species_facet:"Homo sapiens"^0.8</str>
 
-            <str name="qf">
+            <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
-                oldStId^90.0
-                stId^80.0
+                oldStId^100.0
+                stId^100.0
                 name_exact^2000000.0
                 name^2000000.0
                 keywords^0.1
@@ -426,10 +429,11 @@
                 goBiologicalProcessAccessions^1.0
                 goCellularComponentAccessions^1.0
                 goMolecularFunctionAccession^1.0
-                referenceName^1.0
-                referenceIdentifiers^1.0
-                referenceSynonyms^710
-                referenceOtherIdentifier^510
+                referenceName^100.0
+                referenceIdentifiers^100.0
+                referenceSynonyms^50
+                referenceOtherIdentifier^1.0
+		referenceSecondaryIdentifier^20
                 referenceGeneNames^1.0
                 crossReferences^1.0
                 referenceCrossReferences^1.0

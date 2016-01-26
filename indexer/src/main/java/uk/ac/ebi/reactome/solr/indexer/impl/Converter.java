@@ -480,6 +480,10 @@ public class Converter {
                 document.setReferenceOtherIdentifier(referenceEntity.getAttributeValuesList(ReactomeJavaConstants.otherIdentifier));
             }
 
+            if (hasValues(referenceEntity, ReactomeJavaConstants.secondaryIdentifier)){
+                document.setReferenceSecondaryIdentifier(referenceEntity.getAttributeValuesList(ReactomeJavaConstants.secondaryIdentifier));
+            }
+
             if (hasValue(referenceEntity, ReactomeJavaConstants.referenceDatabase)){
                 GKInstance referenceDatabase = (GKInstance) referenceEntity.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
                 String db = (String) referenceDatabase.getAttributeValue(ReactomeJavaConstants.name);

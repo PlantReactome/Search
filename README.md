@@ -20,7 +20,8 @@ install_solr.sh -i <password>
                  -d <solr_home> 
                  —v <solr_version> 
                  -p <port> 
-                 -u <user>] 
+                 -u <user>
+                 -b <git_branch>] 
                  -- program to auto setup the Apache Lucene Solr in Reactome environment.
 where:
     -h  Program help/usage
@@ -30,6 +31,7 @@ where:
     -v  Solr Version. DEFAULT: 5.3.1
     -p  Solr Port. DEFAULT: 8983
     -u  Solr User. DEFAULT: admin
+    -b  GitHub Branch. DEFAUL: master
 ```
   </li>
   <li>

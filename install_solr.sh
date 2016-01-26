@@ -112,6 +112,9 @@ fi
 
 unzip -q $_GIT_BRANCH.zip -d .
 
+#Deleting existing core
+wget http://localhost:$_SOLR_PORT/solr/admin/cores?action=UNLOAD\&core=$_SOLR_CORE\&deleteIndex=true
+
 #create and service solr status wont work anymore after setting authentication to the jetty server
 echo "Creating Solr core..."
 su - solr -c "/opt/solr/bin/solr create -c $_SOLR_CORE -d $_CWD/Search-$_GIT_BRANCH/solr-conf"

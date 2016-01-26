@@ -6,16 +6,18 @@ Default local profile
         <log4j.root>~/search/log</log4j.root>
         <log4j.level>TRACE</log4j.level>
 
+        <interactors.SQLite>/Users/reactome/interactors/interactors.db</interactors.SQLite>
+
         <reactome.host>localhost</reactome.host>
-        <reactome.database>reactome</reactome.database>
-        <reactome.currentDatabase>reactome</reactome.currentDatabase>
-        <reactome.user>reactome</reactome.user>
-        <reactome.password>reactome</reactome.password>
+        <reactome.database>##DATABASE_NAME##</reactome.database>
+        <reactome.currentDatabase>##CURRENT_DB##</reactome.currentDatabase>
+        <reactome.user>##USER##</reactome.user>
+        <reactome.password>##PASSWORD##</reactome.password>
         <reactome.port>3306</reactome.port>
 
         <solr.url>http://localhost:8983/solr/reactome</solr.url>
-        <solr.user></solr.user>
-        <solr.password></solr.password>
+        <solr.user>##SOLR_USER##</solr.user>
+        <solr.password>##SOLR_PASSWORD##</solr.password>
         <template.server>http://dev2.reactome.org/</template.server>
 
         <!-- Mail Configuration -->

@@ -1,5 +1,6 @@
 package uk.ac.ebi.reactome.solr.indexer.impl;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
@@ -8,12 +9,15 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.reactome.server.tools.interactors.database.InteractorsDatabase;
 import org.reactome.server.tools.interactors.exception.InvalidInteractionResourceException;
 import org.reactome.server.tools.interactors.model.Interaction;
 import org.reactome.server.tools.interactors.model.Interactor;
 import org.reactome.server.tools.interactors.service.InteractionService;
 import org.reactome.server.tools.interactors.service.InteractorService;
+import org.reactome.server.tools.interactors.util.InteractorConstant;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
 import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 import uk.ac.ebi.reactome.solr.indexer.model.InteractorSummary;
@@ -21,6 +25,9 @@ import uk.ac.ebi.reactome.solr.indexer.model.ReactomeSummary;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -88,19 +95,19 @@ public class Indexer {
 
         try {
             cleanSolrIndex();
-            if (xml) {
-                marshaller.writeHeader();
-            }
-            int entriesCount = 0;
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
-            commitSolrServer();
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
-            commitSolrServer();
-            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
-            if (xml) {
-                marshaller.writeFooter(entriesCount);
-            }
-            commitSolrServer();
+//            if (xml) {
+//                marshaller.writeHeader();
+//            }
+//            int entriesCount = 0;
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
+//            commitSolrServer();
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
+//            commitSolrServer();
+//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
+//            if (xml) {
+//                marshaller.writeFooter(entriesCount);
+//            }
+//            commitSolrServer();
 
             /** Interactor **/
             indexInteractors();
@@ -147,6 +154,7 @@ public class Indexer {
      * @throws IndexerException
      */
     private void createAccessionSet(List<String> accessionList) throws IndexerException {
+        int progress = 0;
 
         /**
          * Making a copy of the original accession list. Accessions that exist in Reactome will be removed from this
@@ -157,7 +165,14 @@ public class Indexer {
         Collection<?> instances;
         try {
             instances = dba.fetchInstancesByClass(ReactomeJavaConstants.ReferenceEntity);
+            logger.info("Retrieving accessions from Reactome -- Accession list has [" + accessionList.size() + "] entries and [" + instances.size() + "] ReferenceEntities");
             for (Object object : instances) {
+
+                progress++;
+                if(progress % 15000 == 0){
+                    logger.info("  >> querying accessions in GKInstance [" + progress + "]");
+                }
+
                 GKInstance instance = (GKInstance) object;
                 if (!instance.getSchemClass().isValidAttribute(ReactomeJavaConstants.identifier)) continue;
 
@@ -190,9 +205,12 @@ public class Indexer {
                     }
                 }
             }
+
+            logger.info("  >> querying accessions in GKInstance [" + progress + "]");
+
         } catch (Exception e) {
-            logger.error("Fetching Instances by ClassName from the Database caused an errer", e);
-            throw new IndexerException("Fetching Instances by ClassName from the Database caused an errer", e);
+            logger.error("Fetching Instances by ClassName from the Database caused an error", e);
+            throw new IndexerException("Fetching Instances by ClassName from the Database caused an error", e);
         }
 
     }
@@ -204,7 +222,7 @@ public class Indexer {
      * @throws IndexerException
      */
     private int indexInteractors() throws IndexerException {
-        logger.info("Start addind interactor into Solr");
+        logger.info("Start adding interactor into Solr");
 
         int numberOfDocuments = 0;
         try {
@@ -213,7 +231,10 @@ public class Indexer {
             /**
              * Querying interactor database and retrieve all unique accession identifiers of intact-micluster file
              */
+            logger.info("Getting all accessions from Interactors Database");
             List<String> accessionsList = interactorService.getAllAccessions();
+
+            logger.info("Creating taxonomy map querying Reactome Database");
             createTaxonomyMap();
 
             /**
@@ -232,11 +253,13 @@ public class Indexer {
 
             /**
              * Get Interactions for all accessions that are not in Reactome.
+             * Keep in mind that we are only saving interactions having score higher than InteractorConstant.MINIMUM_VALID_SCORE
              */
-            Map<String, List<Interaction>> interactions = interactionService.getInteractions(accessionsNoReactome, "static");
+            Map<String, List<Interaction>> interactions = interactionService.getInteractions(accessionsNoReactome, InteractorConstant.STATIC);
 
-            logger.info("Accessions not in Reactome: " + accessionsNoReactome.size());
+            logger.info("Preparing SolR documents for Interactors [" + interactions.size() + "]");
 
+            int preparingSolrDocuments = 0;
             for (String accKey : interactions.keySet()) {
                 Set<InteractorSummary> interactorSummarySet = new HashSet<>();
                 for (Interaction interaction : interactions.get(accKey)) {
@@ -263,14 +286,21 @@ public class Indexer {
 
                     numberOfDocuments++;
                 }
+
+                preparingSolrDocuments++;
+                if(preparingSolrDocuments % 1000 == 0){
+                    logger.info("  >> preparing interactors Solr Documents [" + preparingSolrDocuments + "]");
+                }
             }
+
+            logger.info("  >> preparing interactors Solr Documents [" + preparingSolrDocuments + "]");
 
             /**
              * Save the indexDocument into Solr.
              */
             addDocumentsToSolrServer(collection);
 
-            logger.info(numberOfDocuments + " Interactor have now been added to Solr");
+            logger.info(numberOfDocuments + " Interactor(s) have now been added to Solr");
 
         } catch (InvalidInteractionResourceException | SQLException e) {
             throw new IndexerException(e);
@@ -310,9 +340,11 @@ public class Indexer {
         document.setReferenceIdentifiers(referenceIdentifiersList);
         document.setReferenceURL(getUrl(interactorA.getAcc()));
 
-        String species = "Entries without species";
+        String species;
         if (taxonomyMap.containsKey(interactorA.getTaxid())) {
             species = taxonomyMap.get(interactorA.getTaxid());
+        } else {
+            species = getTaxonomyLineage(interactorA.getTaxid(), interactorA.getTaxid());
         }
         document.setSpecies(species);
 
@@ -337,6 +369,44 @@ public class Indexer {
         document.setInteractorAccessions(accessions);
 
         return document;
+
+    }
+
+    public String getTaxonomyLineage(Integer taxId, Integer original){
+        if(taxId == 1 || taxId == 0){
+            return "Entries without species";
+        }
+
+        InputStream response;
+        try {
+            String urlString = "http://rest.ensembl.org/taxonomy/id/" + taxId;
+            URL url = new URL(urlString);
+            URLConnection conn = url.openConnection();
+
+            conn.setRequestProperty("Content-Type", "application/json");
+            response = conn.getInputStream();
+            String StringFromInputStream = IOUtils.toString(response, "UTF-8");
+            JSONObject jsonObject = new JSONObject(StringFromInputStream);
+
+            int parentTaxid = jsonObject.getJSONObject("parent").getInt("id");
+
+            if (taxonomyMap.containsKey(parentTaxid)){
+
+                String species = taxonomyMap.get(parentTaxid);
+                taxonomyMap.put(original, species);
+                return species;
+            }
+
+            response.close();
+            /**
+             * taking too long to execute.
+             */
+//            getTaxonomyLineage(parentTaxid,original);
+
+        }catch (IOException | JSONException e){
+            e.printStackTrace();
+        }
+        return "Entries without species";
 
     }
 

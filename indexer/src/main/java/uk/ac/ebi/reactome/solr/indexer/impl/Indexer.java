@@ -95,19 +95,19 @@ public class Indexer {
 
         try {
             cleanSolrIndex();
-//            if (xml) {
-//                marshaller.writeHeader();
-//            }
-//            int entriesCount = 0;
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
-//            commitSolrServer();
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
-//            commitSolrServer();
-//            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
-//            if (xml) {
-//                marshaller.writeFooter(entriesCount);
-//            }
-//            commitSolrServer();
+            if (xml) {
+                marshaller.writeHeader();
+            }
+            int entriesCount = 0;
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Event);
+            commitSolrServer();
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.PhysicalEntity);
+            commitSolrServer();
+            entriesCount += indexSchemaClass(ReactomeJavaConstants.Regulation);
+            if (xml) {
+                marshaller.writeFooter(entriesCount);
+            }
+            commitSolrServer();
 
             /** Interactor **/
             indexInteractors();

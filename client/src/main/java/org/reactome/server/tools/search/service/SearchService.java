@@ -3,6 +3,7 @@ package org.reactome.server.tools.search.service;
 import org.reactome.server.tools.interactors.exception.InvalidInteractionResourceException;
 import org.reactome.server.tools.interactors.model.Interaction;
 import org.reactome.server.tools.interactors.service.InteractionService;
+import org.reactome.server.tools.interactors.util.InteractorConstant;
 import org.reactome.server.tools.search.database.Enricher;
 import org.reactome.server.tools.search.database.IEnricher;
 import org.reactome.server.tools.search.domain.*;
@@ -38,8 +39,6 @@ public class SearchService {
     private static String user;
     private static String password;
     private static Integer port;
-
-    private static final String STATIC_INTERACTOR_RESOURCE = "static";
 
     @Autowired
     private InteractionService interactionService;
@@ -196,7 +195,7 @@ public class SearchService {
                 String acc = referenceEntity.getReferenceIdentifier();
                 if (acc != null) {
                     try {
-                        Map<String, List<Interaction>> interactionsMap = interactionService.getInteractions(acc, STATIC_INTERACTOR_RESOURCE);
+                        Map<String, List<Interaction>> interactionsMap = interactionService.getInteractions(acc, InteractorConstant.STATIC);
 
                         enrichedEntry.setInteractionList(interactionsMap.get(acc));
 

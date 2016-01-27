@@ -73,10 +73,10 @@ fi;
 
 _CWD=$(pwd)
 
-echo "Deleting old solr installed instances..."
-
 echo "Stopping solr service"
-service solr stop 
+service solr stop
+
+echo "Deleting old solr installed instances..."
 rm -r /var/solr
 rm -r /opt/solr-*
 rm -r /opt/solr
@@ -96,10 +96,9 @@ bash ./install_solr_service.sh solr-$_SOLR_VERSION.tgz -d $_SOLR_HOME -p $_SOLR_
 
 echo "Check if solr is running..."
 service solr status
-echo $_GIT_BRANCH   
+
 #_BRANCH=master
 _SOLR_CONF_GIT="https://github.com/reactome/Search/archive/$_GIT_BRANCH.zip"
-
 
 echo "Downloading Solr Reactome configuration files..."
 wget $_SOLR_CONF_GIT
@@ -113,7 +112,8 @@ fi
 unzip -q $_GIT_BRANCH.zip -d .
 
 #Deleting existing core
-wget http://localhost:$_SOLR_PORT/solr/admin/cores?action=UNLOAD\&core=$_SOLR_CORE\&deleteIndex=true
+echo "Deleting Solr core..."
+curl http://localhost:$_SOLR_PORT/solr/admin/cores?action=UNLOAD\&core=$_SOLR_CORE\&deleteIndex=true
 
 #create and service solr status wont work anymore after setting authentication to the jetty server
 echo "Creating Solr core..."

@@ -6,6 +6,7 @@ import org.reactome.server.tools.interactors.model.InteractionResource;
 import org.reactome.server.tools.interactors.model.InteractorResource;
 import org.reactome.server.tools.interactors.service.InteractionResourceService;
 import org.reactome.server.tools.interactors.service.InteractorResourceService;
+import org.reactome.server.tools.interactors.util.InteractorConstant;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.EnricherException;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
@@ -87,7 +88,6 @@ class WebController {
     private static final String PAGE_EBIADVANCED = "ebiadvanced";
     private static final String PAGE_EBISEARCHER = "ebisearcher";
 
-    private static final String INTERACTION_RESOURCE_NAME = "static";
     private static final String INTACT_URL = "intactUrl";
     private static final String INTERACTION_DEFAULT_URL = "http://www.ebi.ac.uk/intact/interaction/##ID##";
 
@@ -96,8 +96,6 @@ class WebController {
 
     @Value("${mail_support_dest}")
     private String mailSupportDest; // W
-
-    //private InteractionService interactionService = InteractionService.getInstance();
 
     @Autowired
     private InteractionResourceService interactionResourceService;
@@ -489,7 +487,7 @@ class WebController {
 
     private String getIntactUrl(){
         try {
-            return interactionResourceService.getByName(INTERACTION_RESOURCE_NAME).getUrl();
+            return interactionResourceService.getByName(InteractorConstant.STATIC).getUrl();
         } catch (SQLException e) {
             logger.error("An error has occurred while querying InteractionResource: " + e.getMessage(), e);
         }

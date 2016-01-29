@@ -18,6 +18,7 @@ import org.reactome.server.tools.interactors.model.Interactor;
 import org.reactome.server.tools.interactors.service.InteractionService;
 import org.reactome.server.tools.interactors.service.InteractorService;
 import org.reactome.server.tools.interactors.util.InteractorConstant;
+import org.reactome.server.tools.interactors.util.Toolbox;
 import uk.ac.ebi.reactome.solr.indexer.exception.IndexerException;
 import uk.ac.ebi.reactome.solr.indexer.model.IndexDocument;
 import uk.ac.ebi.reactome.solr.indexer.model.InteractorSummary;
@@ -338,7 +339,8 @@ public class Indexer {
         List<String> referenceIdentifiersList = new ArrayList<>(1);
         referenceIdentifiersList.add(interactorA.getAcc());
         document.setReferenceIdentifiers(referenceIdentifiersList);
-        document.setReferenceURL(getUrl(interactorA.getAcc()));
+        document.setReferenceURL(Toolbox.getAccessionUrl(interactorA.getAcc()));
+        document.setDatabaseName(Toolbox.getDatabaseName(interactorA.getAcc()));
 
         String species;
         if (taxonomyMap.containsKey(interactorA.getTaxid())) {
@@ -408,17 +410,6 @@ public class Indexer {
         }
         return "Entries without species";
 
-    }
-
-    private String getUrl(String acc) {
-        String url = "http://identifiers.org/";
-        if(acc.toUpperCase().contains("CHEBI")){
-            url = url + "chebi/" + acc;
-        }else {
-            url = url + "uniprot/" + acc;
-        }
-
-        return url;
     }
 
     /**

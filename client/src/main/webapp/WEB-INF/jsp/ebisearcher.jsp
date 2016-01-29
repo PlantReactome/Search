@@ -64,7 +64,7 @@
                                         </c:if>
                                         <c:if test="${not empty entry.referenceIdentifier}">
                                             <%--<span>Primary external reference: ${entry.databaseName} <a href="${entry.referenceURL}" class="" title="show: ${entry.databaseName}" rel="nofollow">${entry.referenceName}: ${entry.referenceIdentifier}</a></span>--%>
-                                            <span>Primary external reference: ${entry.databaseName} <a href="${entry.referenceURL}" class="" title="show: ${entry.databaseName}" rel="nofollow">${entry.referenceName}: ${entry.referenceIdentifier}</a></span>
+                                            <span>Primary external reference: ${entry.databaseName} <a href="${entry.referenceURL}" class="" rel="nofollow">${entry.referenceName}: ${entry.referenceIdentifier}</a></span>
                                             <br>
                                         </c:if>
                                         <%--<c:if test="${not empty entry.referenceName}">--%>

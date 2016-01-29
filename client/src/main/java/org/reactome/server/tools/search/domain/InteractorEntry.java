@@ -10,6 +10,7 @@ public class InteractorEntry {
 
     private String accession;
     private String name;
+    private String url;
 
     private List<Interaction> interactions;
 
@@ -35,5 +36,13 @@ public class InteractorEntry {
 
     public void setInteractions(List<Interaction> interactions) {
         this.interactions = interactions;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

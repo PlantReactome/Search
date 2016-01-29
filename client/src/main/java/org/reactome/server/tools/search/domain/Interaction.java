@@ -12,6 +12,7 @@ public class Interaction implements Comparable<Interaction> {
     private Double score;
     private String interactionId;
     private String accession;
+    private String url;
 
     public List<InteractorReactomeEntry> getInteractorReactomeEntries() {
         return interactorReactomeEntries;
@@ -43,6 +44,14 @@ public class Interaction implements Comparable<Interaction> {
 
     public void setAccession(String accession) {
         this.accession = accession;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     @Override

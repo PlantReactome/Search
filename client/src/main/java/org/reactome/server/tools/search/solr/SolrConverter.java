@@ -3,6 +3,7 @@ package org.reactome.server.tools.search.solr;
 import org.apache.solr.client.solrj.response.*;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.reactome.server.tools.interactors.util.Toolbox;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
 import org.slf4j.Logger;
@@ -67,12 +68,12 @@ public class SolrConverter implements ISolrConverter {
      * @throws org.reactome.server.tools.search.exception.SolrSearcherException
      */
     public List<String> getAutocompleteSuggestions(String query) throws SolrSearcherException {
-        List<String> aux = new LinkedList<String>();
+        List<String> aux = new LinkedList<>();
         if (query!= null && !query.isEmpty()) {
             aux = suggestionHelper(solrCore.getAutocompleteSuggestions(query));
         }
 
-        List<String> rtn = new LinkedList<String>();
+        List<String> rtn = new LinkedList<>();
         if(aux!=null) {
             for (String q : aux) {
                 if (solrCore.existsQuery(q)) {
@@ -90,12 +91,12 @@ public class SolrConverter implements ISolrConverter {
      * @throws org.reactome.server.tools.search.exception.SolrSearcherException
      */
     public List<String> getSpellcheckSuggestions(String query) throws SolrSearcherException {
-        List<String> aux = new LinkedList<String>();
+        List<String> aux = new LinkedList<>();
         if (query!= null && !query.isEmpty()) {
             aux = suggestionHelper(solrCore.getSpellcheckSuggestions(query));
         }
 
-        List<String> rtn = new LinkedList<String>();
+        List<String> rtn = new LinkedList<>();
         if(aux!=null) {
             for (String q : aux) {
                 if (solrCore.existsQuery(q)) {
@@ -194,8 +195,8 @@ public class SolrConverter implements ISolrConverter {
         if (queryResponse!= null) {
             List<SolrDocument> solrDocuments = queryResponse.getResults();
             Map<String, Map<String, List<String>>> highlighting =  queryResponse.getHighlighting();
-            List<Result> resultList = new ArrayList<Result>();
-            List<Entry> entries = new ArrayList<Entry>();
+            List<Result> resultList = new ArrayList<>();
+            List<Entry> entries = new ArrayList<>();
 
             for (SolrDocument solrDocument : solrDocuments) {
                 Entry entry = buildEntry(solrDocument, highlighting);
@@ -236,8 +237,8 @@ public class SolrConverter implements ISolrConverter {
      */
     private FacetList getFacets (FacetField facetField, List<String> selectedItems) {
         if (facetField!=null) {
-            List<FacetContainer> selected = new ArrayList<FacetContainer>();
-            List<FacetContainer> available = new ArrayList<FacetContainer>();
+            List<FacetContainer> selected = new ArrayList<>();
+            List<FacetContainer> available = new ArrayList<>();
             for (FacetField.Count field : facetField.getValues()) {
                 if (selectedItems != null && selectedItems.contains(field.getName())) {
                     selected.add(new FacetContainer(field.getName(), field.getCount()));
@@ -261,7 +262,7 @@ public class SolrConverter implements ISolrConverter {
             FacetMapping facetMapping = new FacetMapping();
             List<FacetField> facetFields = queryResponse.getFacetFields();
             for (FacetField facetField : facetFields) {
-                List<FacetContainer> available = new ArrayList<FacetContainer>();
+                List<FacetContainer> available = new ArrayList<>();
                 List<FacetField.Count> fields = facetField.getValues();
                 for (FacetField.Count field : fields) {
                     available.add(new FacetContainer(field.getName(), field.getCount()));
@@ -284,8 +285,10 @@ public class SolrConverter implements ISolrConverter {
     private InteractorEntry buildInteractorEntry(SolrDocument solrDocument) {
         if (solrDocument != null && !solrDocument.isEmpty()) {
             InteractorEntry interactorEntry = new InteractorEntry();
-            interactorEntry.setAccession((String) solrDocument.getFieldValue(DB_ID));
+            String accession = (String) solrDocument.getFieldValue(DB_ID);
+            interactorEntry.setAccession(accession);
             interactorEntry.setName((String)solrDocument.getFieldValue(NAME));
+            interactorEntry.setUrl((String)solrDocument.getFieldValue(REFERENCE_URL));
             List<Object> reactomeInteractorIds = (List<Object>)solrDocument.getFieldValues("reactomeInteractorIds");
             List<Object> reactomeInteractorNames = (List<Object>)solrDocument.getFieldValues("reactomeInteractorNames");
             List<Object> scores = (List<Object>)solrDocument.getFieldValues("scores");
@@ -298,6 +301,7 @@ public class SolrConverter implements ISolrConverter {
                 Interaction interaction = new Interaction();
                 interaction.setInteractionId((String) interactionIds.get(i));
                 interaction.setScore(Double.parseDouble((String) scores.get(i)));
+                String accessionB = (String) accessions.get(i);
                 interaction.setAccession((String) accessions.get(i));
                 String[] reactomeNames = ((String)reactomeInteractorNames.get(i)).split("#");
                 String[] reactomeIds = ((String)reactomeInteractorIds.get(i)).split("#");
@@ -306,6 +310,7 @@ public class SolrConverter implements ISolrConverter {
                     reactomeEntries.add(new InteractorReactomeEntry(reactomeIds[j], reactomeNames[j]));
                 }
                 interaction.setInteractorReactomeEntries(reactomeEntries);
+                interaction.setUrl(Toolbox.getAccessionUrl(accessionB));
                 interactionList.add(interaction);
             }
 
@@ -349,7 +354,7 @@ public class SolrConverter implements ISolrConverter {
             entry.setRegulatedEntityId((String) solrDocument.getFieldValue(REGULATED_ENTITY_ID));
             if (solrDocument.containsKey(COMPARTMENTS)) {
                 Collection<Object> compartments = solrDocument.getFieldValues(COMPARTMENTS);
-                List<String> list = new ArrayList<String>();
+                List<String> list = new ArrayList<>();
                 for (Object compartment : compartments) {
                     list.add(compartment.toString());
                 }
@@ -457,10 +462,10 @@ public class SolrConverter implements ISolrConverter {
                         List<Group> groups = groupCommand.getValues();
                         Map<String, Map<String, List<String>>> highlighting =  queryResponse.getHighlighting();
                         int rowCounter = 0;
-                        List<Result> resultList = new ArrayList<Result>();
+                        List<Result> resultList = new ArrayList<>();
                         for (Group group : groups) {
                             SolrDocumentList solrDocumentList = group.getResult();
-                            List<Entry> entries = new ArrayList<Entry>();
+                            List<Entry> entries = new ArrayList<>();
                             for (SolrDocument solrDocument : solrDocumentList) {
                                 Entry entry = buildEntry(solrDocument, highlighting);
                                 entries.add(entry);
@@ -483,7 +488,7 @@ public class SolrConverter implements ISolrConverter {
      */
     private List<String> suggestionHelper(QueryResponse response) {
         if (response!= null && response.getSpellCheckResponse() != null) {
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             List<SpellCheckResponse.Collation> suggestions = response.getSpellCheckResponse().getCollatedResults();
             if (suggestions != null && !suggestions.isEmpty()) {
                 for (SpellCheckResponse.Collation suggestion : suggestions) {

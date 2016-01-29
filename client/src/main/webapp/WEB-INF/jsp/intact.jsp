@@ -7,9 +7,9 @@
 
   <div class="grid_23 padding">
     <h3>${entry.name}
-      <c:if test="${not empty entry.accession}">
-        <span> (${entry.accession})</span>
-      </c:if>
+      <%--<c:if test="${not empty entry.accession}">--%>
+        <%--<span> (${entry.accession})</span>--%>
+      <%--</c:if>--%>
     </h3>
   </div>
 
@@ -17,7 +17,7 @@
       <!-- INTERACTORS TABLE -->
       <c:if test="${not empty entry.interactions}">
         <div class="grid_23  padding">
-          <h5>Interactions</h5>
+          <h5>Interactions for <a href="${entry.url}" class="" title="Show ${entry.accession}" rel="nofollow">${entry.accession}</a></h5>
           <div class="wrap">
             <table class="fixedTable">
               <thead>
@@ -40,12 +40,12 @@
                          title="Show ${interaction.interactionId}"
                          rel="nofollow">${interaction.interactionId}</a>
                       </td>
-                    <td style="width: 6%">${interaction.accession}</td>
+                    <td style="width: 6%"><a href="${interaction.url}" class="" title="Show ${interaction.accession}" rel="nofollow">${interaction.accession}</a></td>
                     <td>
                       <c:forEach var="reactomeEntry" items="${interaction.interactorReactomeEntries}">
                         <ul  class="list overflowList">
                           <li>
-                            <a href="/content/detail/${reactomeEntry.reactomeId} " class="" title="Show Details" rel="nofollow">${reactomeEntry.reactomeName}<span> (${reactomeEntry.reactomeId})</span></a>
+                            <a href="/content/detail/${reactomeEntry.reactomeId}" class="" title="Show Details" rel="nofollow">${reactomeEntry.reactomeName}<span> (${reactomeEntry.reactomeId})</span></a>
                           </li>
                         </ul>
                       </c:forEach>

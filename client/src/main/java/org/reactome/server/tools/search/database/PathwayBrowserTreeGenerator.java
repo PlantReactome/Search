@@ -95,10 +95,10 @@ public class PathwayBrowserTreeGenerator extends Enricher {
             nodeFromReference(instance, node, ReactomeJavaConstants.input);
             nodeFromReference(instance, node, ReactomeJavaConstants.output);
             nodeFromReference(instance, node, ReactomeJavaConstants.hasEvent);
-            nodeFromReference(instance, node, ReactomeJavaConstants.activeUnit);
+            skipNodes(instance, node, ReactomeJavaConstants.activeUnit);
             nodeFromReference(instance, node, ReactomeJavaConstants.catalystActivity);
             skipNodes(instance, node, ReactomeJavaConstants.regulator);
-            skipNodes(instance, node, ReactomeJavaConstants.physicalEntity);
+            nodeFromAttributes(instance, node, ReactomeJavaConstants.physicalEntity);
             nodeFromAttributes(instance, node, ReactomeJavaConstants.regulatedEntity);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -137,10 +137,14 @@ public class PathwayBrowserTreeGenerator extends Enricher {
         if (hasValues(instance, fieldName)) {
             GKInstance regulatedEntityInstance = (GKInstance) instance.getAttributeValue(fieldName);
             if (regulatedEntityInstance != null) {
-                Node newNode = getOrCreateNode(regulatedEntityInstance);
-                node.addChild(newNode);
-                newNode.addParent(node);
-                recursion(regulatedEntityInstance, newNode);
+                if (regulatedEntityInstance.getSchemClass().isa(ReactomeJavaConstants.CatalystActivity)) {
+                    recursion(regulatedEntityInstance, node);
+                } else {
+                    Node newNode = getOrCreateNode(regulatedEntityInstance);
+                    node.addChild(newNode);
+                    newNode.addParent(node);
+                    recursion(regulatedEntityInstance, newNode);
+                }
             }
         }
     }

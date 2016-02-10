@@ -333,7 +333,17 @@ public class Indexer {
 
         IndexDocument document = new IndexDocument();
         document.setDbId(interactorA.getAcc());
-        document.setName(interactorA.getAlias());
+
+        /**
+         * In the interactors.db we are saving the alias null if it is the same as the accession
+         * Just assigning the acc in the name which is required here
+         */
+        if(interactorA.getAlias() != null) {
+            document.setName(interactorA.getAlias());
+        }else {
+            document.setName(interactorA.getAcc());
+        }
+
         document.setType("Interactor");
         document.setExactType("Interactor");
         List<String> referenceIdentifiersList = new ArrayList<>(1);

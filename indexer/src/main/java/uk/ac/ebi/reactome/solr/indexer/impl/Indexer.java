@@ -375,7 +375,7 @@ public class Indexer {
     }
 
     public String getTaxonomyLineage(Integer taxId, Integer original){
-        if(taxId == 1 || taxId == 0){
+        if(taxId == 1 || taxId == 0 || taxId == -1){
             return "Entries without species";
         }
 

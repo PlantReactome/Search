@@ -120,13 +120,6 @@ public class IndexerTool {
             long stopTime = System.currentTimeMillis();
             long ms = stopTime - startTime;
 
-            String elapsedTime = String.format("%02d:%02d:%02d",
-                                                TimeUnit.MILLISECONDS.toHours(ms),
-                                                TimeUnit.MILLISECONDS.toMinutes(ms) -
-                                                    TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms)),
-                                                TimeUnit.MILLISECONDS.toSeconds(ms) -
-                                                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms)));
-
             long hour = TimeUnit.MILLISECONDS.toHours(ms);
             long minutes = TimeUnit.MILLISECONDS.toMinutes(ms) -
                     TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms));
@@ -146,11 +139,11 @@ public class IndexerTool {
             String exceptionAsString = sw.toString();
             StringBuilder body = new StringBuilder();
             body.append("The Solr Indexer has not finished properly. Please check the following exception.\n\n");
-            body.append("Message: " + e.getMessage());
+            body.append("Message: ").append(e.getMessage());
             body.append("\n");
-            body.append("Cause: " + e.getCause());
+            body.append("Cause: ").append(e.getCause());
             body.append("\n");
-            body.append("Stacktrace: " + exceptionAsString);
+            body.append("Stacktrace: ").append(exceptionAsString);
 
             // Send an error notification by the end of indexer.
             mail.send(FROM, config.getString("mail-destination"), "[SearchIndexer] The Solr indexer has thrown exception", body.toString() );

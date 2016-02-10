@@ -1,4 +1,4 @@
 log/*
-indexer.log
-indexer.log.*
+ReactomeIndexer.log
+ReactomeIndexer.log.*
 ebeye.xml

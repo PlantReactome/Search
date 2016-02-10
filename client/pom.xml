@@ -142,12 +142,6 @@
             <groupId>org.reactome.server.tools</groupId>
             <artifactId>interactor-core</artifactId>
             <version>0.0.7-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-asm</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
     </dependencies>

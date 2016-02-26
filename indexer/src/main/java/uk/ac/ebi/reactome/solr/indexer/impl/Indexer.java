@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import org.reactome.server.tools.interactors.database.InteractorsDatabase;
 import org.reactome.server.tools.interactors.exception.InvalidInteractionResourceException;
 import org.reactome.server.tools.interactors.model.Interaction;
+import org.reactome.server.tools.interactors.model.InteractionDetails;
 import org.reactome.server.tools.interactors.model.Interactor;
 import org.reactome.server.tools.interactors.service.InteractionService;
 import org.reactome.server.tools.interactors.service.InteractorService;
@@ -275,7 +276,10 @@ public class Indexer {
                         summary.setReactomeSummary(accessionMap.get(interaction.getInteractorB().getAcc()));
                         summary.setAccession(interaction.getInteractorB().getAcc());
                         summary.setScore(interaction.getIntactScore());
-                        summary.setInteractionId(interaction.getInteractionDetailsList().get(0).getInteractionAc());
+
+                        for(InteractionDetails interactionDetails : interaction.getInteractionDetailsList()){
+                            summary.addInteractionEvidences(interactionDetails.getInteractionAc());
+                        }
 
                         interactorSummarySet.add(summary);
                     }
@@ -349,7 +353,7 @@ public class Indexer {
         List<String> referenceIdentifiersList = new ArrayList<>(1);
         referenceIdentifiersList.add(interactorA.getAcc());
         document.setReferenceIdentifiers(referenceIdentifiersList);
-        document.setReferenceURL(Toolbox.getAccessionUrl(interactorA.getAcc()));
+        document.setReferenceURL(Toolbox.getAccessionURL(interactorA.getAcc(), InteractorConstant.STATIC));
         document.setDatabaseName(Toolbox.getDatabaseName(interactorA.getAcc()));
 
         String species;
@@ -367,9 +371,11 @@ public class Indexer {
         List<Double> scores = new ArrayList<>();
 
         for (InteractorSummary interactorSummary : interactorSummarySet) {
-            reactomeIds.add(ReactomeSummary.parseList(interactorSummary.getReactomeSummary().getReactomeId()));
-            reactomeNames.add(ReactomeSummary.parseList(interactorSummary.getReactomeSummary().getReactomeName()));
-            interactionIds.add(interactorSummary.getInteractionId());
+            reactomeIds.add(parseList(interactorSummary.getReactomeSummary().getReactomeId()));
+            reactomeNames.add(parseList(interactorSummary.getReactomeSummary().getReactomeName()));
+
+            interactionIds.add(parseList(interactorSummary.getInteractionEvidences()));
+            //interactionIds.add(interactorSummary.getInteractionId());
             scores.add(interactorSummary.getScore());
             accessions.add(interactorSummary.getAccession());
         }
@@ -547,6 +553,28 @@ public class Indexer {
             logger.error("Error occurred while committing", e);
             throw new IndexerException("Could not commit", e);
         }
+    }
+
+    /**
+     * Saving a List into a multivalue field in SolR, but calling toString the final result will
+     * be a comma-separated list. When parsing this List in the client (splitting by comma) then it may split
+     * other identifiers which has comma as part of its name.
+     * e.g Reactome names has comma on it.
+     *   "[NUDC [cytosol], NUDC [nucleoplasm], p-S274,S326-NUDC [nucleoplasm]]"
+     *   This multivalued field has 3 values, but splitting them by comma will result in
+     *   4 values.
+     *
+     * This parser retrieve the list as String using # as delimiter.
+     */
+    private String parseList(List<String> list){
+        String delim = "";
+        StringBuilder sb = new StringBuilder();
+        for (String s : list) {
+            sb.append(delim);
+            delim = "#";
+            sb.append(s);
+        }
+        return sb.toString();
     }
 }
 

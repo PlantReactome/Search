@@ -4,6 +4,9 @@ package uk.ac.ebi.reactome.solr.indexer.model;
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Helper class
  */
@@ -12,7 +15,7 @@ public class InteractorSummary {
     private ReactomeSummary reactomeSummary;
     private String accession;
     private Double score;
-    private String interactionId;
+    private List<String> interactionEvidences;
 
     public ReactomeSummary getReactomeSummary() {
         return reactomeSummary;
@@ -38,12 +41,15 @@ public class InteractorSummary {
         this.score = score;
     }
 
-    public String getInteractionId() {
-        return interactionId;
+    public List<String> getInteractionEvidences() {
+        return interactionEvidences;
     }
 
-    public void setInteractionId(String interactionId) {
-        this.interactionId = interactionId;
+    public void addInteractionEvidences(String name){
+        if(interactionEvidences == null){
+            interactionEvidences = new ArrayList<>();
+        }
+        interactionEvidences.add(name);
     }
 
     @Override

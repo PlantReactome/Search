@@ -33,45 +33,44 @@ class RestController {
     @Autowired
     private SearchService searchService;
 
-//    public RestController(SearchService searchService) {
-//        this.searchService = searchService;
-//
-//    }
-
     //    http://localhost:8080/search_service/detail/REACT_578.2
     @RequestMapping(value="/detail/{id:.*}", method = RequestMethod.GET)
-    public @ResponseBody EnrichedEntry getEntry(@PathVariable String id) throws Exception {
+    @ResponseBody
+    public EnrichedEntry getEntry(@PathVariable String id) throws Exception {
          return searchService.getEntryById(id);
     }
 
     @RequestMapping(value="/detail/v{version}/{id:.*}", method = RequestMethod.GET)
-    public @ResponseBody EnrichedEntry getEntryByVersion(@PathVariable String id,
+    @ResponseBody
+    public EnrichedEntry getEntryByVersion(@PathVariable String id,
                                                          @PathVariable Integer version) throws Exception {
         return searchService.getEntryById(version, id);
     }
 
     @RequestMapping(value = "/spellcheck", method = RequestMethod.GET)
-    public  @ResponseBody List<String> spellcheckSuggestions(@RequestParam ( required = true ) String query) throws SolrSearcherException {
+    @ResponseBody
+    public List<String> spellcheckSuggestions(@RequestParam ( required = true ) String query) throws SolrSearcherException {
         return searchService.getSpellcheckSuggestions(query);
     }
 
     // http://localhost:8080/json/suggester?query=apop
     @RequestMapping(value = "/suggest", method = RequestMethod.GET)
-    public  @ResponseBody List<String> suggesterSuggestions(@RequestParam ( required = true ) String query) throws SolrSearcherException {
+    @ResponseBody
+    public List<String> suggesterSuggestions(@RequestParam ( required = true ) String query) throws SolrSearcherException {
         return searchService.getAutocompleteSuggestions(query);
     }
 
     //localhost:8080/json/facet
     @RequestMapping(value = "/facet", method = RequestMethod.GET)
-    public  @ResponseBody
-    FacetMapping facet() throws SolrSearcherException {
+    @ResponseBody
+    public FacetMapping facet() throws SolrSearcherException {
             return searchService.getTotalFacetingInformation();
     }
 
     //http://localhost:8080/json/facet_query?query=apoptosis&species=%22Homo%20sapiens%22&species=%22Bos%20taurus%22
     @RequestMapping(value = "/facet_query", method = RequestMethod.GET)
-    public  @ResponseBody
-    FacetMapping facet_type(@RequestParam ( required = true ) String query,
+    @ResponseBody
+    public FacetMapping facet_type(@RequestParam ( required = true ) String query,
                                               @RequestParam ( required = false ) List<String> species,
                                               @RequestParam ( required = false ) List<String> types,
                                               @RequestParam ( required = false ) List<String> compartments,
@@ -82,7 +81,8 @@ class RestController {
 
     //http://localhost:8080/json/search?query=apoptosis&species=Homo%20sapiens,%20Bos%20taurus
     @RequestMapping(value = "/search", method = RequestMethod.GET)
-    public @ResponseBody GroupedResult getResult (@RequestParam( required = true ) String query,
+    @ResponseBody
+    public GroupedResult getResult (@RequestParam( required = true ) String query,
                                             @RequestParam ( required = false ) List<String> species,
                                             @RequestParam ( required = false ) List<String> types,
                                             @RequestParam ( required = false ) List<String> compartments,

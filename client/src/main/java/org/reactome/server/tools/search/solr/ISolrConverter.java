@@ -29,7 +29,7 @@ public interface ISolrConverter {
 
     GroupedResult getClusteredEntries(Query query) throws SolrSearcherException;
 
-    InteractorEntry getIntactDetail(String accession) throws SolrSearcherException;
+    InteractorEntry getInteractionDetail(String accession) throws SolrSearcherException;
 
 }
 

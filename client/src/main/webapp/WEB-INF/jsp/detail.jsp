@@ -658,10 +658,10 @@
                 <table class="fixedTable">
                     <thead>
                         <tr class="tableHead">
-                            <td>Interaction Score</td>
+                            <td>Confidence Score</td>
                             <td>Interactor Accession</td>
                             <td>Interactor Name</td>
-                            <td>Interaction ID</td>
+                            <td>Evidences</td>
                         </tr>
                     </thead>
                 </table>
@@ -687,12 +687,14 @@
                                 </td>
                                 <td>${interaction.interactorB.alias}</td>
                                 <td>
-                                    <c:if test="${fn:length(interaction.interactionDetailsList) gt 0}">
-                                        <!-- Get the url from the map and replace the ID -->
-                                        <a href="${fn:replace(interactionResourceMap[interaction.interactionResourceId].url, '##ID##', interaction.interactionDetailsList[0].interactionAc)}"
-                                           title="Show ${interaction.interactionDetailsList[0].interactionAc}"
-                                           rel="nofollow">${interaction.interactionDetailsList[0].interactionAc}</a>
-                                    </c:if>
+                                    <c:choose>
+                                        <c:when test="${fn:length(interaction.interactionDetailsList) == 0}">
+                                            ${fn:length(interaction.interactionDetailsList)}
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="${evidencesUrlMap[interaction.interactorB.acc]}" title="Open evidences" rel="nofollow" target="_blank">${fn:length(interaction.interactionDetailsList)}</a>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                             </tr>
                         </c:forEach>

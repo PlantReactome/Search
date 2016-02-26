@@ -18,7 +18,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Search Service acts as api between the Controller and Solr / Database
@@ -68,9 +71,6 @@ public class SearchService {
         }
     }
 
-
-
-
     /**
      * Gets Faceting information for a specific query + filters.
      * This Method will query solr once again if the number of selected filters and found facets differ
@@ -90,7 +90,7 @@ public class SearchService {
             // with the next filtering or querying it is necessary to remove those from the filtering process and repeat the faceting step
             if (queryObject.getSpecies() != null && facetMapping.getSpeciesFacet().getSelected().size() != queryObject.getSpecies().size()) {
                 correctFacets = false;
-                List<String> species = new ArrayList<String>();
+                List<String> species = new ArrayList<>();
                 for (FacetContainer container : facetMapping.getSpeciesFacet().getSelected()) {
                     species.add(container.getName());
                 }
@@ -98,7 +98,7 @@ public class SearchService {
             }
             if (queryObject.getTypes() != null && facetMapping.getTypeFacet().getSelected().size() != queryObject.getTypes().size()) {
                 correctFacets = false;
-                List<String> types = new ArrayList<String>();
+                List<String> types = new ArrayList<>();
                 for (FacetContainer container : facetMapping.getTypeFacet().getSelected()) {
                     types.add(container.getName());
                 }
@@ -106,7 +106,7 @@ public class SearchService {
             }
             if (queryObject.getKeywords() != null && facetMapping.getKeywordFacet().getSelected().size() != queryObject.getKeywords().size()) {
                 correctFacets = false;
-                List<String> keywords = new ArrayList<String>();
+                List<String> keywords = new ArrayList<>();
                 for (FacetContainer container : facetMapping.getKeywordFacet().getSelected()) {
                     keywords.add(container.getName());
                 }
@@ -114,7 +114,7 @@ public class SearchService {
             }
             if (queryObject.getCompartment() != null && facetMapping.getCompartmentFacet().getSelected().size() != queryObject.getCompartment().size()) {
                 correctFacets = false;
-                List<String> compartments = new ArrayList<String>();
+                List<String> compartments = new ArrayList<>();
                 for (FacetContainer container : facetMapping.getCompartmentFacet().getSelected()) {
                     compartments.add(container.getName());
                 }
@@ -167,9 +167,9 @@ public class SearchService {
         return null;
     }
 
-    public InteractorEntry getIntactDetail(String query) throws SolrSearcherException {
+    public InteractorEntry getInteractionDetail(String query) throws SolrSearcherException {
         if (query != null && !query.isEmpty()) {
-            InteractorEntry entry = solrConverter.getIntactDetail(query);
+            InteractorEntry entry = solrConverter.getInteractionDetail(query);
             Collections.sort(entry.getInteractions());
             Collections.reverse(entry.getInteractions());
 
@@ -195,9 +195,9 @@ public class SearchService {
                 String acc = referenceEntity.getReferenceIdentifier();
                 if (acc != null) {
                     try {
-                        Map<String, List<Interaction>> interactionsMap = interactionService.getInteractions(acc, InteractorConstant.STATIC);
+                        List<Interaction> interactionsList = interactionService.getInteractions(acc, InteractorConstant.STATIC);
 
-                        enrichedEntry.setInteractionList(interactionsMap.get(acc));
+                        enrichedEntry.setInteractionList(interactionsList);
 
                     } catch (InvalidInteractionResourceException | SQLException e) {
                         logger.error("Error retrieving interactions from Database");

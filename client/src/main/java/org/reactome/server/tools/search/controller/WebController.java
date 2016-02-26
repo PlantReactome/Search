@@ -2,11 +2,12 @@ package org.reactome.server.tools.search.controller;
 
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
-import org.reactome.server.tools.interactors.model.InteractionResource;
+import org.reactome.server.tools.interactors.model.Interaction;
+import org.reactome.server.tools.interactors.model.InteractionDetails;
 import org.reactome.server.tools.interactors.model.InteractorResource;
-import org.reactome.server.tools.interactors.service.InteractionResourceService;
 import org.reactome.server.tools.interactors.service.InteractorResourceService;
 import org.reactome.server.tools.interactors.util.InteractorConstant;
+import org.reactome.server.tools.interactors.util.Toolbox;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.EnricherException;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
@@ -72,24 +73,21 @@ class WebController {
     private static final String MAIL_SUBJECT_PLACEHOLDER = "[SEARCH] No results found for ";
 
     private static final String MAIL_MESSAGE = "message";
-    private static String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI have searched for \"%s\" and I could not find it.\n\nThank you.\n\n";
 
     private static final String INTERACTOR_RESOURCES_MAP = "interactorResourceMap";
-    private static final String INTERACTION_RESOURCES_MAP = "interactionResourceMap";
+    private static final String EVIDENCES_URL_MAP = "evidencesUrlMap";
+
 
     private static String defaultSubject;
 
     // PAGES REDIRECT
     private static final String PAGE_DETAIL = "detail";
-    private static final String PAGE_INTACT = "intact";
+    private static final String PAGE_INTERACTOR = "interactor";
 
     private static final String PAGE_NODETAILSFOUND = "nodetailsfound";
     private static final String PAGE_NORESULTSFOUND = "noresultsfound";
     private static final String PAGE_EBIADVANCED = "ebiadvanced";
     private static final String PAGE_EBISEARCHER = "ebisearcher";
-
-    private static final String INTACT_URL = "intactUrl";
-    private static final String INTERACTION_DEFAULT_URL = "http://www.ebi.ac.uk/intact/interaction/##ID##";
 
     @Value("${mail_error_dest}")
     private String mailErrorDest; // E
@@ -98,13 +96,9 @@ class WebController {
     private String mailSupportDest; // W
 
     @Autowired
-    private InteractionResourceService interactionResourceService;
-
-    @Autowired
     private InteractorResourceService interactorResourceService;
 
     private Map<Long, InteractorResource> interactorResourceMap = new HashMap<>();
-    private Map<Long, InteractionResource> interactionResourceMap = new HashMap<>();
 
     /**
      * Method for autocompletion
@@ -114,9 +108,8 @@ class WebController {
      * @throws SolrSearcherException
      */
     @RequestMapping(value = "/getTags", method = RequestMethod.GET)
-    public
     @ResponseBody
-    List<String> getTags(@RequestParam String tagName) throws SolrSearcherException {
+    public List<String> getTags(@RequestParam String tagName) throws SolrSearcherException {
         return searchService.getAutocompleteSuggestions(tagName);
     }
 
@@ -197,19 +190,17 @@ class WebController {
 //        model.addAttribute(TYPES, checkOutputIntegrity(types));
 //        model.addAttribute(COMPARTMENTS, checkOutputIntegrity(compartments));
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
-        cacheResources();
-
+        cacheInteractorResources();
 
         EnrichedEntry entry = searchService.getEntryById(id);
         if (entry != null) {
             model.addAttribute(ENTRY, entry);
             model.addAttribute(TITLE, entry.getName());
-            model.addAttribute(INTERACTION_RESOURCES_MAP, interactionResourceMap);
-            model.addAttribute(INTERACTOR_RESOURCES_MAP, interactorResourceMap);
+            model.addAttribute(INTERACTOR_RESOURCES_MAP, interactorResourceMap); // interactor URL
+            model.addAttribute(EVIDENCES_URL_MAP, prepareEvidencesURLs(entry.getInteractionList())); // evidencesURL
 
             return PAGE_DETAIL;
         } else {
-
             autoFillDetailsPage(model, id);
 
             return PAGE_NODETAILSFOUND;
@@ -221,7 +212,6 @@ class WebController {
      * Shows detailed information of an entry
      *
      * @param id    StId or DbId
-     *              //     * @param q,species,types,compartments,keywords parameters to save existing query and facets
      * @param model SpringModel
      * @return Detailed page
      * @throws EnricherException
@@ -229,15 +219,14 @@ class WebController {
      */
     @RequestMapping(value = "/detail/interactor/{id:.*}", method = RequestMethod.GET)
     public String interactorDetail(@PathVariable String id,
-                         ModelMap model) throws EnricherException, SolrSearcherException {
+                                   ModelMap model) throws EnricherException, SolrSearcherException {
 
-        InteractorEntry entry = searchService.getIntactDetail(id);
+        InteractorEntry entry = searchService.getInteractionDetail(id);
         if (entry != null) {
             model.addAttribute(ENTRY, entry);
             model.addAttribute(TITLE, entry.getName());
-            model.addAttribute(INTACT_URL, getIntactUrl());
 
-            return PAGE_INTACT;
+            return PAGE_INTERACTOR;
         } else {
 
             autoFillDetailsPage(model, id);
@@ -245,7 +234,6 @@ class WebController {
             return PAGE_NODETAILSFOUND;
         }
     }
-
 
 
 //    //    quick and ugly fix
@@ -347,13 +335,12 @@ class WebController {
     }
 
     @RequestMapping(value = "/contact", method = RequestMethod.POST)
-    public
     @ResponseBody
-    String contact(@RequestParam(required = true) String mailAddress,
-                   @RequestParam String message,
-                   @RequestParam String exception,
-                   @RequestParam String url,
-                   @RequestParam String source) throws Exception {
+    public String contact(@RequestParam(required = true) String mailAddress,
+                          @RequestParam String message,
+                          @RequestParam String exception,
+                          @RequestParam String url,
+                          @RequestParam String source) throws Exception {
 
         String to = mailSupportDest;
         if (source.equals("E")) {
@@ -417,7 +404,7 @@ class WebController {
 
     private List<String> checkOutputListIntegrity(List<String> list) {
         if (list != null && !list.isEmpty()) {
-            List<String> checkedList = new ArrayList<String>();
+            List<String> checkedList = new ArrayList<>();
             for (String output : list) {
                 checkedList.add(checkOutputIntegrity(output));
             }
@@ -430,8 +417,9 @@ class WebController {
         this.searchService = searchService;
     }
 
-
     public void autoFillContactForm(ModelMap model, String search) {
+        final String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI have searched for \"%s\" and I could not find it.\n\nThank you.\n\n";
+
         model.addAttribute(Q, search);
 
         try {
@@ -454,22 +442,16 @@ class WebController {
     public void autoFillDetailsPage(ModelMap model, String search) {
         model.addAttribute("search", search);
         model.addAttribute(TITLE, "No details found for " + search);
-
     }
 
     /**
      * These resources are the same all the time.
      * In order to speed up the query result and less memory usage, I decided to keep the resource out of the query
      * and keep a cache with them. Thus we avoid having the same information for all result.
-     *
+     * <p>
      * This method set the map class attribute.
      */
-    private void cacheResources(){
-        cacheInteractionResources();
-        cacheInteractorResources();
-    }
-
-    private void cacheInteractorResources(){
+    private void cacheInteractorResources() {
         try {
             interactorResourceMap = interactorResourceService.getAllMappedById();
         } catch (SQLException e) {
@@ -477,20 +459,28 @@ class WebController {
         }
     }
 
-    private void cacheInteractionResources(){
-        try {
-            interactionResourceMap = interactionResourceService.getAllMappedById();
-        } catch (SQLException e) {
-            logger.error("An error has occurred while querying InteractionResource: " + e.getMessage(), e);
-        }
-    }
+    /**
+     * Prepare interaction evidences links.
+     * Gets all interaction evidences of a given interactor and build the URL
+     * Having all this logic in JSTL wouldn't be clear.
+     *
+     * @return map as accession and the URL
+     */
+    private Map<String, String> prepareEvidencesURLs(List<Interaction> interactions){
+        Map<String, String> evidencesUrlMap = new HashMap<>();
+        List<String> evidenceIds = new ArrayList<>();
+        if(interactions != null) {
+            for (Interaction interaction : interactions) {
+                List<InteractionDetails> evidences = interaction.getInteractionDetailsList();
+                for (InteractionDetails evidence : evidences) {
+                    evidenceIds.add(evidence.getInteractionAc());
+                }
 
-    private String getIntactUrl(){
-        try {
-            return interactionResourceService.getByName(InteractorConstant.STATIC).getUrl();
-        } catch (SQLException e) {
-            logger.error("An error has occurred while querying InteractionResource: " + e.getMessage(), e);
+                evidencesUrlMap.put(interaction.getInteractorB().getAcc(), Toolbox.getEvidencesURL(evidenceIds, InteractorConstant.STATIC));
+                evidenceIds.clear();
+            }
         }
-        return INTERACTION_DEFAULT_URL;
+
+        return evidencesUrlMap;
     }
 }

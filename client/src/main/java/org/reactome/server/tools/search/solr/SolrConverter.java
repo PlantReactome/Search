@@ -3,6 +3,7 @@ package org.reactome.server.tools.search.solr;
 import org.apache.solr.client.solrj.response.*;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.reactome.server.tools.interactors.util.InteractorConstant;
 import org.reactome.server.tools.interactors.util.Toolbox;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.SolrSearcherException;
@@ -126,7 +127,7 @@ public class SolrConverter implements ISolrConverter {
         return getFacetMap(solrCore.getFacetingInformation(queryObject), queryObject);
     }
 
-    public InteractorEntry getIntactDetail(String accession) throws SolrSearcherException {
+    public InteractorEntry getInteractionDetail(String accession) throws SolrSearcherException {
         if (accession != null && !accession.isEmpty()) {
             QueryResponse response = solrCore.intactDetail(accession);
             List<SolrDocument> solrDocuments = response.getResults();
@@ -134,6 +135,7 @@ public class SolrConverter implements ISolrConverter {
                 return buildInteractorEntry(solrDocuments.get(0));
             }
         }
+
         logger.warn("no Entry found for this id" + accession);
         return null;
     }
@@ -295,12 +297,15 @@ public class SolrConverter implements ISolrConverter {
             List<Object> interactionIds = (List<Object>)solrDocument.getFieldValues("interactionsIds");
             List<Object> accessions = (List<Object>)solrDocument.getFieldValues("interactorAccessions");
 
-
-            List<Interaction> interactionList = new ArrayList<>(interactionIds.size());
+            List<Interactor> interactionList = new ArrayList<>(interactionIds.size());
             for(int i = 0; i < interactionIds.size(); i++) {
-                Interaction interaction = new Interaction();
-                interaction.setInteractionId((String) interactionIds.get(i));
+                Interactor interaction = new Interactor();
+
+                String[] interactionsEvidencesArray = ((String)interactionIds.get(i)).split("#");
+                interaction.setInteractionEvidences(Arrays.asList(interactionsEvidencesArray));
+                interaction.setEvidencesURL(Toolbox.getEvidencesURL(interaction.getInteractionEvidences(), InteractorConstant.STATIC));
                 interaction.setScore(Double.parseDouble((String) scores.get(i)));
+
                 String accessionB = (String) accessions.get(i);
                 interaction.setAccession((String) accessions.get(i));
                 String[] reactomeNames = ((String)reactomeInteractorNames.get(i)).split("#");
@@ -310,7 +315,7 @@ public class SolrConverter implements ISolrConverter {
                     reactomeEntries.add(new InteractorReactomeEntry(reactomeIds[j], reactomeNames[j]));
                 }
                 interaction.setInteractorReactomeEntries(reactomeEntries);
-                interaction.setUrl(Toolbox.getAccessionUrl(accessionB));
+                interaction.setAccessionURL(Toolbox.getAccessionURL(accessionB, InteractorConstant.STATIC));
                 interactionList.add(interaction);
             }
 
@@ -321,7 +326,6 @@ public class SolrConverter implements ISolrConverter {
 
         return null;
     }
-
 
     /**
      * Method for the construction of an entry from a SolrDocument, taking into account available highlighting information

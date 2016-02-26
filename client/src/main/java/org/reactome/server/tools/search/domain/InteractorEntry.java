@@ -12,7 +12,7 @@ public class InteractorEntry {
     private String name;
     private String url;
 
-    private List<Interaction> interactions;
+    private List<Interactor> interactions;
 
     public String getAccession() {
         return accession;
@@ -30,11 +30,11 @@ public class InteractorEntry {
         this.name = name;
     }
 
-    public List<Interaction> getInteractions() {
+    public List<Interactor> getInteractions() {
         return interactions;
     }
 
-    public void setInteractions(List<Interaction> interactions) {
+    public void setInteractions(List<Interactor> interactions) {
         this.interactions = interactions;
     }
 

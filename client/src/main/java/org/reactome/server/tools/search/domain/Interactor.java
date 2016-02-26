@@ -6,13 +6,14 @@ import java.util.List;
  * @author Guilherme S Viteri <gviteri@ebi.ac.uk>
  */
 
-public class Interaction implements Comparable<Interaction> {
+public class Interactor implements Comparable<Interactor> {
 
     private List<InteractorReactomeEntry> interactorReactomeEntries;
     private Double score;
-    private String interactionId;
+    private List<String> interactionEvidences;
     private String accession;
-    private String url;
+    private String accessionURL;
+    private String evidencesURL;
 
     public List<InteractorReactomeEntry> getInteractorReactomeEntries() {
         return interactorReactomeEntries;
@@ -30,12 +31,12 @@ public class Interaction implements Comparable<Interaction> {
         this.score = score;
     }
 
-    public String getInteractionId() {
-        return interactionId;
+    public List<String> getInteractionEvidences() {
+        return interactionEvidences;
     }
 
-    public void setInteractionId(String interactionId) {
-        this.interactionId = interactionId;
+    public void setInteractionEvidences(List<String> interactionEvidences) {
+        this.interactionEvidences = interactionEvidences;
     }
 
     public String getAccession() {
@@ -46,16 +47,24 @@ public class Interaction implements Comparable<Interaction> {
         this.accession = accession;
     }
 
-    public String getUrl() {
-        return url;
+    public String getAccessionURL() {
+        return accessionURL;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setAccessionURL(String accessionURL) {
+        this.accessionURL = accessionURL;
+    }
+
+    public String getEvidencesURL() {
+        return evidencesURL;
+    }
+
+    public void setEvidencesURL(String evidencesURL) {
+        this.evidencesURL = evidencesURL;
     }
 
     @Override
-    public int compareTo(Interaction otherInteraction) {
+    public int compareTo(Interactor otherInteraction) {
         return this.score.compareTo(otherInteraction.getScore());
     }
 }

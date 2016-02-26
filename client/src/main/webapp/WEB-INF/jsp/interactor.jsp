@@ -6,11 +6,7 @@
 <div class="ebi-content" >
 
   <div class="grid_23 padding">
-    <h3>${entry.name}
-      <%--<c:if test="${not empty entry.accession}">--%>
-        <%--<span> (${entry.accession})</span>--%>
-      <%--</c:if>--%>
-    </h3>
+    <h3>${entry.name}</h3>
   </div>
 
   <div class="grid_23  padding">
@@ -22,10 +18,10 @@
             <table class="fixedTable">
               <thead>
               <tr class="tableHead">
-                <td style="width: 6%">Interaction Score</td>
-                <td style="width: 6%">Interaction ID</td>
+                <td style="width: 6%">Confidence Score</td>
                 <td style="width: 6%">Interactor Accession</td>
                 <td>Reactome Entry</td>
+                <td style="width: 6%">Evidences</td>
               </tr>
               </thead>
             </table>
@@ -34,13 +30,7 @@
                 <c:forEach var="interaction" items="${entry.interactions}">
                   <tr>
                     <td  style="width: 6%">${interaction.score}</td>
-
-                    <td style="width: 6%">
-                      <a href="${fn:replace(intactUrl, '##ID##', interaction.interactionId)}"
-                         title="Show ${interaction.interactionId}"
-                         rel="nofollow">${interaction.interactionId}</a>
-                      </td>
-                    <td style="width: 6%"><a href="${interaction.url}" class="" title="Show ${interaction.accession}" rel="nofollow">${interaction.accession}</a></td>
+                    <td style="width: 6%"><a href="${interaction.accessionURL}" class="" title="Show ${interaction.accession}" rel="nofollow">${interaction.accession}</a></td>
                     <td>
                       <c:forEach var="reactomeEntry" items="${interaction.interactorReactomeEntries}">
                         <ul  class="list overflowList">
@@ -49,6 +39,9 @@
                           </li>
                         </ul>
                       </c:forEach>
+                    </td>
+                    <td style="width: 6%">
+                      <a href="${interaction.evidencesURL}" title="Open evidences" rel="nofollow" target="_blank">${fn:length(interaction.interactionEvidences)}</a>
                     </td>
                   </tr>
                 </c:forEach>

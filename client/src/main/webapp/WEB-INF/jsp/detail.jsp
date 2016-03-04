@@ -97,8 +97,9 @@
         <div class="grid_23  padding  margin">
             <h5>Other forms of this molecule</h5>
 
-            <div style="height: 120px; overflow:scroll;" class="paddingleft">
+            <div style="height: auto; max-height: 120px; overflow:auto;" class="paddingleft">
                 <table border="0" width="100%" style="border: 0px;">
+                    <tbody>
                     <tr>
                     <c:forEach var="derivedEwas" items="${entry.referenceEntity.derivedEwas}" varStatus="loop">
                         <c:if test="${not loop.first and loop.index % 3 == 0}">
@@ -109,6 +110,7 @@
                             <a href="../detail/${derivedEwas.stId}" title="Open ${derivedEwas.name} (${derivedEwas.compartment})" rel="nofollow">${derivedEwas.name} (${derivedEwas.compartment})</a>
                          </td>
                     </c:forEach>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -179,7 +181,7 @@
                         <tr>
                             <td><strong>Other Identifiers</strong></td>
                             <td style="padding: 0px;">
-                                <div style="height: 120px; overflow:scroll; padding-top: 1px; padding-left: 2px;">
+                                <div style="height: auto; max-height: 120px; overflow: auto; padding-top: 1px; padding-left: 2px;">
                                     <table border="0" width="100%" style="border: 0px;">
                                         <tr>
                                             <c:forEach var="otherIdentifier" items="${entry.referenceEntity.otherIdentifier}" varStatus="loop">

@@ -343,16 +343,16 @@ public class Indexer {
          * Just assigning the acc in the name which is required here
          */
         if(interactorA.getAlias() != null) {
-            document.setName(interactorA.getAlias());
+            document.setName(interactorA.getAliasWithoutSpecies(false));
         }else {
             document.setName(interactorA.getAcc());
         }
 
         document.setType("Interactor");
         document.setExactType("Interactor");
-        List<String> referenceIdentifiersList = new ArrayList<>(1);
-        referenceIdentifiersList.add(interactorA.getAcc());
-        document.setReferenceIdentifiers(referenceIdentifiersList);
+
+        document.setSynonyms(Collections.singletonList(interactorA.getAlias()));
+        document.setReferenceIdentifiers(Collections.singletonList(interactorA.getAcc()));
         document.setReferenceURL(Toolbox.getAccessionURL(interactorA.getAcc(), InteractorConstant.STATIC));
         document.setDatabaseName(Toolbox.getDatabaseName(interactorA.getAcc()));
 
@@ -375,7 +375,7 @@ public class Indexer {
             reactomeNames.add(parseList(interactorSummary.getReactomeSummary().getReactomeName()));
 
             interactionIds.add(parseList(interactorSummary.getInteractionEvidences()));
-            //interactionIds.add(interactorSummary.getInteractionId());
+
             scores.add(interactorSummary.getScore());
             accessions.add(interactorSummary.getAccession());
         }

@@ -14,6 +14,8 @@ $(document).ready(function() {
         },
         onSelect: function(value, data){$("#search_form").submit()}
     });
+
+
 });
 
 $('ul.term-list').each(function(){
@@ -59,4 +61,70 @@ $(".plus").click(function () {
             return $plus.find(".image").attr("src", "../resources/images/plus.png");
         }
     });
+});
+
+$('#availableSpeciesSel').ready(function() {
+    var DEFAULT_SPECIES = 'Homo sapiens';
+
+    /** Check if hash is present in the URL **/
+    var hash = decodeURIComponent(window.location.hash);
+    var defaulLoaded = false;
+    if(hash == "") {
+        $("div[class*=tplSpe_]").each(function (index, value) {
+            var item = $(value).attr("class");
+            if (item == "tplSpe_" + DEFAULT_SPECIES.replace(" ", "_")) {
+                $("#availableSpeciesSel").val(DEFAULT_SPECIES.replace(" ", "_"));
+                $("." + item).show();
+
+                //change url
+                if($("#availableSpeciesSel").val() != null) {
+                    window.location.hash = "#" + encodeURIComponent(DEFAULT_SPECIES);
+                }
+
+                defaulLoaded = true;
+            }else {
+                $("." + item).css("display", "none");
+            }
+        });
+
+        if(!defaulLoaded){
+            $("div[class*=tplSpe_]").css("display", "block");
+        }
+    }else {
+        hash = hash.replace("#", "").replace(" ", "_");
+
+        // hash has been change manually into a non-existing value. Pick the first one which is human
+        if ($(".tplSpe_" + hash).val() == null) {
+
+            $("#availableSpeciesSel > option").each(function (index, value) {
+                var item = $(value).attr("value");
+
+                $("#availableSpeciesSel").val(item);
+
+                $(".tplSpe_" + item).show();
+                window.location.hash = "#" + encodeURIComponent(item.replace("_", " "));
+
+                return false;
+            });
+        } else {
+            $("#availableSpeciesSel").val(hash);
+            $(".tplSpe_" + hash).show();
+        }
+    }
+});
+
+$('#availableSpeciesSel').on('change', function() {
+    var selectedSpecies = this.value;
+
+    // hide everything
+    $("div[class*=tplSpe_]").each(function( index, element ){
+        $(element).hide();
+    });
+
+    // show div related to the species
+    $(".tplSpe_" + selectedSpecies).show();
+
+    // change anchor in the URL
+    window.location.hash = "#"+encodeURIComponent(selectedSpecies.replace("_", " "));
+
 });

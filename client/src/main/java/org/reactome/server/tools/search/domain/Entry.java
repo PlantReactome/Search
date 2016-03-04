@@ -13,6 +13,8 @@ public class Entry {
     private String stId;
     private String id;
     private String name;
+    private String type; // translated type from SchemaClass enum
+    private String instanceTypeExplanation;
     private String exactType;
     private String species;
     private String summation;
@@ -155,8 +157,6 @@ public class Entry {
         this.referenceName = referenceName;
     }
 
-
-
     public String getReferenceIdentifier() {
         return referenceIdentifier;
     }
@@ -165,5 +165,19 @@ public class Entry {
         this.referenceIdentifier = referenceIdentifier;
     }
 
+    public String getType() {
+        return type;
+    }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getInstanceTypeExplanation() {
+        return instanceTypeExplanation;
+    }
+
+    public void setInstanceTypeExplanation(String instanceTypeExplanation) {
+        this.instanceTypeExplanation = instanceTypeExplanation;
+    }
 }

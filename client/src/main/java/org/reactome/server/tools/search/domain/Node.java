@@ -123,6 +123,9 @@ public class Node implements Comparable<Node> {
 
     @Override
     public int compareTo(Node node) {
-        return this.name.compareTo(node.name);
+        // If stId is not present we set it as the dbId
+        return this.stId.compareTo(node.stId);
     }
+
+
 }

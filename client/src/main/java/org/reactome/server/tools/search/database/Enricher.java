@@ -84,7 +84,7 @@ public class Enricher implements IEnricher  {
         if (hasValues(instance, fieldName)){
             try {
                 if (map == null) {
-                    map = new HashMap<String, List<CrossReference>>();
+                    map = new HashMap<>();
                 }
                 List<?> crossReferenceInstanceList = instance.getAttributeValuesList(fieldName);
                 for (Object crossReferenceInstance : crossReferenceInstanceList) {
@@ -96,7 +96,7 @@ public class Enricher implements IEnricher  {
                         if (map.containsKey(database.getName())) {
                             map.get(database.getName()).add(crossReference);
                         } else {
-                            List<CrossReference> list = new ArrayList<CrossReference>();
+                            List<CrossReference> list = new ArrayList<>();
                             list.add(crossReference);
                             map.put(database.getName(), list);
                         }
@@ -130,7 +130,7 @@ public class Enricher implements IEnricher  {
     protected List<EntityReference> getEntityReferences(GKInstance instance, String fieldName) throws EnricherException {
         if(hasValues(instance, fieldName)) {
             try {
-                List<EntityReference> entityReferenceList = new ArrayList<EntityReference>();
+                List<EntityReference> entityReferenceList = new ArrayList<>();
                 List<?> componentsList = instance.getAttributeValuesList(fieldName);
                 for (Object gkInstance : componentsList) {
                     entityReferenceList.add(getEntityReferenceHelper((GKInstance) gkInstance));
@@ -203,7 +203,7 @@ public class Enricher implements IEnricher  {
         try {
             Collection<?> derivedInstanceList = instance.getReferers(ReactomeJavaConstants.referenceEntity);
             if (derivedInstanceList != null && !derivedInstanceList.isEmpty()) {
-                List<EntityReference> entityReferenceList = new ArrayList<EntityReference>();
+                List<EntityReference> entityReferenceList = new ArrayList<>();
                 for (Object derivedObject : derivedInstanceList) {
                     GKInstance derivedInstance = (GKInstance) derivedObject;
                     if (!dbID.equals(derivedInstance.getDBID())) {
@@ -229,7 +229,7 @@ public class Enricher implements IEnricher  {
      */
     protected List<GoTerm> getGoTerms (GKInstance instance, String fieldName) throws EnricherException {
         if (hasValues(instance, fieldName)) {
-            List<GoTerm> goTermList = new ArrayList<GoTerm>();
+            List<GoTerm> goTermList = new ArrayList<>();
             try {
                 List<?> goTermInstanceList = instance.getAttributeValuesList(fieldName);
                 for (Object goTermInstance : goTermInstanceList) {
@@ -313,7 +313,7 @@ public class Enricher implements IEnricher  {
         if (hasValues(instance, fieldName)) {
             try {
                 List<?> list = instance.getAttributeValuesList(fieldName);
-                List<String> attributes = new ArrayList<String>();
+                List<String> attributes = new ArrayList<>();
                 for (Object object : list) {
                     attributes.add(object.toString());
                 }
@@ -400,7 +400,7 @@ public class Enricher implements IEnricher  {
     protected List<String> getAttributesDisplayNames(GKInstance instance, String fieldName) throws EnricherException {
         if (hasValues(instance, fieldName)) {
             try {
-                List<String> list = new ArrayList<String>();
+                List<String> list = new ArrayList<>();
                 List<?> instanceList = instance.getAttributeValuesList(fieldName);
                 for (Object attributeObject : instanceList) {
                     if(attributeObject instanceof GKInstance) {
@@ -451,7 +451,7 @@ public class Enricher implements IEnricher  {
     protected Map<String,List<Regulation>> getRegulations(GKInstance instance, String fieldName) throws EnricherException {
         if (instance != null && fieldName!=null) {
             try {
-                Map<String,List<Regulation>> map = new HashMap<String, List<Regulation>>();
+                Map<String,List<Regulation>> map = new HashMap<>();
                 Collection<?> regulationInstanceList = instance.getReferers(fieldName);
                 if (regulationInstanceList!=null && !regulationInstanceList.isEmpty()) {
                     for (Object regulationObject : regulationInstanceList) {
@@ -459,7 +459,7 @@ public class Enricher implements IEnricher  {
                         if (map.containsKey(regulation.getRegulationType())){
                             map.get(regulation.getRegulationType()).add(regulation);
                         } else {
-                            List<Regulation> list = new ArrayList<Regulation>();
+                            List<Regulation> list = new ArrayList<>();
                             list.add(regulation);
                             map.put(regulation.getRegulationType(), list);
                         }

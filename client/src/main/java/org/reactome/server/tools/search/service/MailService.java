@@ -21,11 +21,16 @@ public class MailService {
     private MailSender mailSender; // MailSender interface defines a strategy
     // for sending simple mails
 
-    public void send(String toAddress, String fromAddress, String subject, String msgBody) throws Exception {
+    public void send(String toAddress, String fromAddress, String subject, String msgBody, Boolean sendEmailCopy) throws Exception {
         try {
             SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
             simpleMailMessage.setFrom(fromAddress);
             simpleMailMessage.setTo(toAddress);
+
+            if (sendEmailCopy){
+                simpleMailMessage.setBcc(fromAddress);
+            }
+
             simpleMailMessage.setSubject(subject);
             simpleMailMessage.setText(msgBody);
 

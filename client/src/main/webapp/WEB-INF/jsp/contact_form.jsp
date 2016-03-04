@@ -9,13 +9,18 @@
         <input type="hidden" name="url" id="url" value="${url}"/>
 
         <div class="field">
+            <label for="contactName"><p>Name*:</p></label>
+            <input type="text" id="contactName" name="contactName" size="80" class="search" placeholder="your name"/>
+            <span id="contact-name-req"></span>
+        </div>
+        <div class="field">
             <label for="mailAddress"><p>From*:</p></label>
             <input type="email" id="mailAddress" name="mailAddress" size="80" class="search" placeholder="your-mail@domain.com"/>
             <span id="mail-req"></span>
         </div>
         <div class="field">
             <label for="to"><p>To:</p></label>
-            <input type="to" id="to" name="to" size="80" class="search" value="Reactome Helpdesk" readonly>
+            <input type="text" id="to" name="to" size="80" class="search" value="Reactome Helpdesk" readonly>
         </div>
         <div class="field">
             <label for="subject"><p>Subject:</p></label>
@@ -43,6 +48,10 @@
             </c:choose>
             <span id="message-req"></span>
         </div>
+        <div style="margin-top: 7px; padding-left: 20px;">
+            <input type="checkbox" id="sendEmailCopy" name="sendEmailCopy" checked />
+            <span>Send me a copy</span>
+        </div>
         <div class="button-send">
             <p>
                 <input type="button" class="submit" value="Send" id="send"/>
@@ -57,6 +66,13 @@
         $('#send').click(function () {
             var email = $('#mailAddress').val();
             var ok = true;
+            if($('#contactName').val() == "" ) {
+                $("#contact-name-req").replaceWith("<span id='contact-name-req'>Your name is required</span>");
+                $("#contact-name-req").addClass("contact-msg-error");
+                ok = false;
+            }else {
+                $("#contact-name-req").replaceWith("<span id='contact-name-req'></span>");
+            }
             if(email == "" ) {
                 $("#mail-req").replaceWith("<span id='mail-req'>Email Address is required</span>");
                 $("#mail-req").addClass("contact-msg-error");
@@ -77,6 +93,7 @@
             }
 
             if(ok){
+                $("#contact-name-req").replaceWith("<span id='contact-name-req'></span>");
                 $("#mail-req").replaceWith("<span id='mail-req'></span>");
                 $("#message-req").replaceWith("<span id='message-req'></span>");
 

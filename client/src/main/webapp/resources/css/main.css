@@ -493,3 +493,43 @@ select {
 .wrap .inner_table_div table td{
     width: 20%;
 }
+
+.pathway_location_section {
+    padding: 6px;
+}
+
+div#one {
+    width: 34%;
+    float: left;
+}
+
+div#two {
+    margin-top: 9px;
+    height: 28px;
+}
+
+.margin {
+    margin-top: 15px;
+}
+
+.overme_3c {
+    width: 200px;
+    max-width: 200px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #05194C;
+    border: 0px;
+    padding: 0px;
+}
+
+.overme_5c {
+    width: 120px;
+    max-width: 120px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #05194C;
+    border: 0px;
+    padding: 0px;
+}

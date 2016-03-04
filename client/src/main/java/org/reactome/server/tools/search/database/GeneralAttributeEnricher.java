@@ -4,12 +4,16 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.reactome.server.tools.search.domain.Disease;
 import org.reactome.server.tools.search.domain.EnrichedEntry;
-import org.reactome.server.tools.search.domain.EntityReference;
 import org.reactome.server.tools.search.domain.Literature;
+import org.reactome.server.tools.search.domain.Node;
 import org.reactome.server.tools.search.exception.EnricherException;
+import org.reactome.server.tools.search.util.InstanceTypeExplanation;
+import org.reactome.server.tools.search.util.SchemaClass;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Queries the MySql database and converts entry to a local object
@@ -22,8 +26,6 @@ public class GeneralAttributeEnricher extends Enricher {
     private static final String PUBMED_URL = "http://www.ncbi.nlm.nih.gov/pubmed/";
 
     public void setGeneralAttributes(GKInstance instance, EnrichedEntry enrichedEntry) throws EnricherException {
-
-
         try {
             List<String> names = getAttributes(instance, ReactomeJavaConstants.name);
             if (names != null && !names.isEmpty()) {
@@ -41,7 +43,7 @@ public class GeneralAttributeEnricher extends Enricher {
             }
             enrichedEntry.setSpecies(getAttributeDisplayName(instance, ReactomeJavaConstants.species));
             List<?> summationInstances = instance.getAttributeValuesList(ReactomeJavaConstants.summation);
-            List<String> summations = new ArrayList<String>();
+            List<String> summations = new ArrayList<>();
             for (Object summationInstance : summationInstances) {
                 GKInstance summation = (GKInstance) summationInstance;
                 summations.add((String) summation.getAttributeValue(ReactomeJavaConstants.text));
@@ -54,16 +56,56 @@ public class GeneralAttributeEnricher extends Enricher {
             enrichedEntry.setDiseases(getDiseases(instance));
             enrichedEntry.setLiterature(setLiteratureReferences(instance));
 
-            List<List<EntityReference>> list = new ArrayList<List<EntityReference>>();
-            List<EntityReference> path = new ArrayList<EntityReference>();
-            PathwayBrowserTreeGenerator pathwayBrowserTreeGenerator = new PathwayBrowserTreeGenerator();
-            enrichedEntry.setLocationsPathwayBrowser(pathwayBrowserTreeGenerator.generateGraphForGivenGkInstance(instance));
+            if(hasValue(instance, ReactomeJavaConstants.referenceEntity)){
+                GKInstance referenceEntity = (GKInstance) instance.getAttributeValue(ReactomeJavaConstants.referenceEntity);
+                enrichedEntry.setExactType(referenceEntity.getSchemClass().getName());
+            }else {
+                enrichedEntry.setExactType(instance.getSchemClass().getName());
+            }
 
+            SchemaClass schemaClass = SchemaClass.getSchemaClass(enrichedEntry.getExactType());
+            enrichedEntry.setType(schemaClass.name);
+            enrichedEntry.setInstanceTypeExplanation(InstanceTypeExplanation.getExplanation(schemaClass));
+
+            enrichedEntry.setIsDisease(enrichedEntry.getDiseases() != null);
+
+            PathwayBrowserTreeGenerator pathwayBrowserTreeGenerator = new PathwayBrowserTreeGenerator();
+            Set<Node> graph = pathwayBrowserTreeGenerator.generateGraphForGivenGkInstance(instance);
+
+            enrichedEntry.setLocationsPathwayBrowser(graph);
+            enrichedEntry.setAvailableSpecies(getAvailableSpecies(graph));
 
         } catch (Exception e) {
             logger.error("Error occurred when trying to set general Attributes", e);
             throw new EnricherException("Error occurred when trying to set general Attributes", e);
         }
+    }
+
+    /**
+     * If the entry is available in more the one species,
+     * we show all present species and then the user can choose
+     * them in a dropddown list.
+     * This method just prepare the species list where the HomoSapiens is the first
+     * and the following species sorted without the HomoSapiens.
+     */
+    private List<String> getAvailableSpecies(Set<Node> graph) {
+        Set<String> availableSpecies = new TreeSet<>();
+        for(Node n : graph){
+            availableSpecies.add(n.getSpecies());
+        }
+
+        final String DEFAULT_SPECIES = "Homo sapiens";
+        List<String> newAvailableSpecies = new ArrayList<>();
+        if(availableSpecies.contains(DEFAULT_SPECIES)){
+            newAvailableSpecies.add(DEFAULT_SPECIES);
+            availableSpecies.remove(DEFAULT_SPECIES);
+        }
+
+        for (String species : availableSpecies) {
+            newAvailableSpecies.add(species);
+        }
+
+        return newAvailableSpecies;
     }
 
     /**
@@ -75,7 +117,7 @@ public class GeneralAttributeEnricher extends Enricher {
      */
     private List<Literature> setLiteratureReferences(GKInstance instance) throws EnricherException {
         if (hasValues(instance, ReactomeJavaConstants.literatureReference)) {
-            List<Literature> literatureList = new ArrayList<Literature>();
+            List<Literature> literatureList = new ArrayList<>();
             try {
                 List<?> literatureInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.literatureReference);
                 for (Object literatureObject : literatureInstanceList) {
@@ -109,7 +151,7 @@ public class GeneralAttributeEnricher extends Enricher {
     private List<Disease> getDiseases(GKInstance instance) throws EnricherException {
         if (hasValues(instance, ReactomeJavaConstants.disease)) {
             try {
-                List<Disease> diseases = new ArrayList<Disease>();
+                List<Disease> diseases = new ArrayList<>();
                 List<?> diseaseInstanceList = instance.getAttributeValuesList(ReactomeJavaConstants.disease);
                 for (Object diseaseObject : diseaseInstanceList) {
                     Disease disease = new Disease();

@@ -336,7 +336,9 @@ class WebController {
 
     @RequestMapping(value = "/contact", method = RequestMethod.POST)
     @ResponseBody
-    public String contact(@RequestParam(required = true) String mailAddress,
+    public String contact(@RequestParam(required = true) String contactName,
+                          @RequestParam(required = true) String mailAddress,
+                          @RequestParam(required = false, defaultValue = "false") Boolean sendEmailCopy,
                           @RequestParam String message,
                           @RequestParam String exception,
                           @RequestParam String url,
@@ -353,8 +355,10 @@ class WebController {
         }
 
 
+        message = message.concat("--\n").concat(contactName);
+
         // Call email service.
-        mailService.send(to, mailAddress, defaultSubject, message);
+        mailService.send(to, mailAddress, defaultSubject, message, sendEmailCopy);
 
         return "success";
 
@@ -418,7 +422,7 @@ class WebController {
     }
 
     public void autoFillContactForm(ModelMap model, String search) {
-        final String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI have searched for \"%s\" and I could not find it.\n\nThank you.\n\n";
+        final String MAIL_MESSAGE_PLACEHOLDER = "Dear Helpdesk,\n\nI've searched for \"%s\" and couldn't find it.\n\nThank you.\n\n";
 
         model.addAttribute(Q, search);
 
@@ -466,10 +470,10 @@ class WebController {
      *
      * @return map as accession and the URL
      */
-    private Map<String, String> prepareEvidencesURLs(List<Interaction> interactions){
+    private Map<String, String> prepareEvidencesURLs(List<Interaction> interactions) {
         Map<String, String> evidencesUrlMap = new HashMap<>();
         List<String> evidenceIds = new ArrayList<>();
-        if(interactions != null) {
+        if (interactions != null) {
             for (Interaction interaction : interactions) {
                 List<InteractionDetails> evidences = interaction.getInteractionDetailsList();
                 for (InteractionDetails evidence : evidences) {

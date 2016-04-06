@@ -269,12 +269,18 @@ class WebController {
                 page = 1;
             }
 
-            model.addAttribute(Q, checkOutputIntegrity(q));
+            q = checkOutputIntegrity(q);
+            species = checkOutputListIntegrity(species);
+            types = checkOutputListIntegrity(types);
+            keywords = checkOutputListIntegrity(keywords);
+            compartments = checkOutputListIntegrity(compartments);
+
+            model.addAttribute(Q, q);
             model.addAttribute(TITLE, "Search results for " + q);
-            model.addAttribute(SPECIES, checkOutputListIntegrity(species));
-            model.addAttribute(TYPES, checkOutputListIntegrity(types));
-            model.addAttribute(COMPARTMENTS, checkOutputListIntegrity(compartments));
-            model.addAttribute(KEYWORDS, checkOutputListIntegrity(keywords));
+            model.addAttribute(SPECIES, species);
+            model.addAttribute(TYPES, types);
+            model.addAttribute(COMPARTMENTS, compartments);
+            model.addAttribute(KEYWORDS, keywords);
             model.addAttribute(CLUSTER, cluster);
             Query queryObject = new Query(q, species, types, compartments, keywords);
             model.addAttribute(PAGE, page);
@@ -397,10 +403,10 @@ class WebController {
 
     private String checkOutputIntegrity(String output) {
         if (output != null && !output.isEmpty()) {
-            output = output.replaceAll("<", "<").replaceAll(">", ">");
-            output = output.replaceAll("eval\\((.*)\\)", "");
-            output = output.replaceAll("[\\\"\\\'][\\s]*((?i)javascript):(.*)[\\\"\\\']", "\"\"");
-            output = output.replaceAll("((?i)script)", "");
+//            output = output.replaceAll("<", "<").replaceAll(">", ">");
+//            output = output.replaceAll("eval\\((.*)\\)", "");
+//            output = output.replaceAll("[\\\"\\\'][\\s]*((?i)javascript):(.*)[\\\"\\\']", "\"\"");
+//            output = output.replaceAll("((?i)script)", "");
             return Jsoup.clean(output, Whitelist.basic());
         }
         return null;

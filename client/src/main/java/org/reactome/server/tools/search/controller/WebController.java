@@ -1,5 +1,6 @@
 package org.reactome.server.tools.search.controller;
 
+import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 import org.reactome.server.tools.interactors.model.Interaction;
@@ -360,8 +361,9 @@ class WebController {
             defaultSubject = "Unexpected error occurred.";
         }
 
-
-        message = message.concat("--\n").concat(contactName);
+        if(StringUtils.isNotEmpty(contactName)) {
+            message = message.concat("--\n").concat(contactName);
+        }
 
         // Call email service.
         mailService.send(to, mailAddress, defaultSubject, message, sendEmailCopy);

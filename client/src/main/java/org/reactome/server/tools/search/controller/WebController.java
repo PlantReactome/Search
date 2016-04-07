@@ -361,8 +361,8 @@ class WebController {
             defaultSubject = "Unexpected error occurred.";
         }
 
-        if(StringUtils.isNotEmpty(contactName)) {
-            message = message.concat("--\n").concat(contactName);
+        if(StringUtils.isNotBlank(contactName)) {
+            message = message.concat("--\n").concat(contactName.trim());
         }
 
         // Call email service.

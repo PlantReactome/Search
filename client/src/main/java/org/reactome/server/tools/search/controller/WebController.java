@@ -362,11 +362,12 @@ class WebController {
         }
 
         if(StringUtils.isNotBlank(contactName)) {
+            contactName = contactName.trim();
             message = message.concat("--\n").concat(contactName.trim());
         }
 
         // Call email service.
-        mailService.send(to, mailAddress, defaultSubject, message, sendEmailCopy);
+        mailService.send(to, mailAddress, defaultSubject, message, sendEmailCopy, contactName);
 
         return "success";
 

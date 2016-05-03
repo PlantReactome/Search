@@ -40,13 +40,6 @@ class RestController {
          return searchService.getEntryById(id);
     }
 
-    @RequestMapping(value="/detail/v{version}/{id:.*}", method = RequestMethod.GET)
-    @ResponseBody
-    public EnrichedEntry getEntryByVersion(@PathVariable String id,
-                                                         @PathVariable Integer version) throws Exception {
-        return searchService.getEntryById(version, id);
-    }
-
     @RequestMapping(value = "/spellcheck", method = RequestMethod.GET)
     @ResponseBody
     public List<String> spellcheckSuggestions(@RequestParam ( required = true ) String query) throws SolrSearcherException {

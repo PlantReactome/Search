@@ -5,7 +5,6 @@ import org.reactome.server.tools.interactors.model.Interaction;
 import org.reactome.server.tools.interactors.service.InteractionService;
 import org.reactome.server.tools.interactors.util.InteractorConstant;
 import org.reactome.server.tools.search.database.Enricher;
-import org.reactome.server.tools.search.database.IEnricher;
 import org.reactome.server.tools.search.domain.*;
 import org.reactome.server.tools.search.exception.EnricherException;
 import org.reactome.server.tools.search.exception.SearchServiceException;
@@ -36,6 +35,8 @@ public class SearchService {
     @Autowired
     private ISolrConverter solrConverter;
 
+    private Enricher enricher;
+
     private static String host;
     private static String database;
     private static String currentDatabase;
@@ -53,6 +54,11 @@ public class SearchService {
      */
     public SearchService() throws SearchServiceException {
         loadProperties();
+        try {
+            this.enricher = new Enricher(host, database, user, password, port);
+        } catch (EnricherException e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadProperties() throws SearchServiceException {
@@ -197,7 +203,6 @@ public class SearchService {
      */
     public EnrichedEntry getEntryById(String id, Boolean interactor) throws EnricherException, SolrSearcherException {
         if (id != null && !id.isEmpty()) {
-            IEnricher enricher = new Enricher(host, currentDatabase, user, password, port);
             EnrichedEntry enrichedEntry = enricher.enrichEntry(id, interactor);
 
             ReferenceEntity referenceEntity = enrichedEntry.getReferenceEntity();
@@ -217,20 +222,6 @@ public class SearchService {
             return enrichedEntry;
         }
 
-        return null;
-    }
-
-    /**
-     * Returns one specific Entry by DbId
-     *
-     * @param id StId or DbId
-     * @return Entry Object
-     */
-    public EnrichedEntry getEntryById(Integer version, String id) throws EnricherException, SolrSearcherException {
-        if (id != null && !id.isEmpty()) {
-            IEnricher enricher = new Enricher(host, database + version, user, password, port);
-            return enricher.enrichEntry(id, false);
-        }
         return null;
     }
 

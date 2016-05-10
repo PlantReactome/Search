@@ -186,9 +186,19 @@ public class SearchService {
      * @return Entry Object
      */
     public EnrichedEntry getEntryById(String id) throws EnricherException, SolrSearcherException {
+        return getEntryById(id, false);
+    }
+
+    /**
+     * Returns one specific Entry by DbId
+     *
+     * @param id StId or DbId
+     * @return Entry Object
+     */
+    public EnrichedEntry getEntryById(String id, Boolean interactor) throws EnricherException, SolrSearcherException {
         if (id != null && !id.isEmpty()) {
             IEnricher enricher = new Enricher(host, currentDatabase, user, password, port);
-            EnrichedEntry enrichedEntry = enricher.enrichEntry(id);
+            EnrichedEntry enrichedEntry = enricher.enrichEntry(id, interactor);
 
             ReferenceEntity referenceEntity = enrichedEntry.getReferenceEntity();
             if(referenceEntity != null) {
@@ -219,7 +229,7 @@ public class SearchService {
     public EnrichedEntry getEntryById(Integer version, String id) throws EnricherException, SolrSearcherException {
         if (id != null && !id.isEmpty()) {
             IEnricher enricher = new Enricher(host, database + version, user, password, port);
-            return enricher.enrichEntry(id);
+            return enricher.enrichEntry(id, false);
         }
         return null;
     }

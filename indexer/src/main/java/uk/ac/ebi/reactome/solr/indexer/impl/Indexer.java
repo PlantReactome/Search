@@ -253,7 +253,6 @@ public class Indexer {
         fieldReferers.add(ReactomeJavaConstants.input);
         fieldReferers.add(ReactomeJavaConstants.output);
         fieldReferers.add(ReactomeJavaConstants.regulator);
-        fieldReferers.add(ReactomeJavaConstants.activeUnit);
         fieldReferers.add(ReactomeJavaConstants.physicalEntity);
 
         /** To be discussed, I added but the number of interactor wasn't changed at the end. **/

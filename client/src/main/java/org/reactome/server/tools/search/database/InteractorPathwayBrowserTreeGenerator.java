@@ -34,7 +34,7 @@ public class InteractorPathwayBrowserTreeGenerator extends PathwayBrowserTreeGen
             nodeFromReference(instance, node, ReactomeJavaConstants.hasEvent);
             nodeFromReference(instance, node, ReactomeJavaConstants.catalystActivity);
             skipNodes(instance, node, ReactomeJavaConstants.regulator);
-            skipNodes(instance, node, ReactomeJavaConstants.activeUnit);
+            skipNodes(instance, node, ReactomeJavaConstants.physicalEntity);
             nodeFromAttributes(instance, node, ReactomeJavaConstants.regulatedEntity);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

@@ -79,7 +79,7 @@ class WebController {
     private static final String EVIDENCES_URL_MAP = "evidencesUrlMap";
 
 
-    private static String defaultSubject;
+    //private static String defaultSubject;
 
     // PAGES REDIRECT
     private static final String PAGE_DETAIL = "detail";
@@ -349,6 +349,7 @@ class WebController {
                           @RequestParam String message,
                           @RequestParam String exception,
                           @RequestParam String url,
+                          @RequestParam String subject,
                           @RequestParam String source) throws Exception {
 
         String to = mailSupportDest;
@@ -358,7 +359,7 @@ class WebController {
             message = message.concat("\n\n URL: " + url);
             message = message.concat("\n\n Exception: " + exception);
 
-            defaultSubject = "Unexpected error occurred.";
+            subject = "Unexpected error occurred.";
         }
 
         if(StringUtils.isNotBlank(contactName)) {
@@ -367,7 +368,7 @@ class WebController {
         }
 
         // Call email service.
-        mailService.send(to, mailAddress, defaultSubject, message, sendEmailCopy, contactName);
+        mailService.send(to, mailAddress, subject, message, sendEmailCopy, contactName);
 
         return "success";
 
@@ -443,8 +444,8 @@ class WebController {
             logger.error("Error building suggestions on autoFillContactForm.");
         }
 
-        defaultSubject = MAIL_SUBJECT_PLACEHOLDER + search;
-        model.addAttribute(MAIL_SUBJECT, defaultSubject);
+        //defaultSubject = ;
+        model.addAttribute(MAIL_SUBJECT, MAIL_SUBJECT_PLACEHOLDER + search);
 
         model.addAttribute(MAIL_MESSAGE, String.format(MAIL_MESSAGE_PLACEHOLDER, search));
 

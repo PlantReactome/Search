@@ -39,7 +39,6 @@ public class SearchService {
 
     private static String host;
     private static String database;
-    private static String currentDatabase;
     private static String user;
     private static String password;
     private static Integer port;
@@ -67,7 +66,6 @@ public class SearchService {
             databaseProperties.load(getClass().getResourceAsStream("/web.properties"));
             host = databaseProperties.getProperty("database_host");
             database = databaseProperties.getProperty("database_name");
-            currentDatabase = databaseProperties.getProperty("database_currentDatabase");
             user = databaseProperties.getProperty("database_user");
             password = databaseProperties.getProperty("database_password");
             port = Integer.valueOf(databaseProperties.getProperty("database_port"));

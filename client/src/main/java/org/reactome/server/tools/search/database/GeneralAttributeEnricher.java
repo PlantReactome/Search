@@ -25,7 +25,7 @@ public class GeneralAttributeEnricher extends Enricher {
 
     private static final String PUBMED_URL = "http://www.ncbi.nlm.nih.gov/pubmed/";
 
-    public void setGeneralAttributes(GKInstance instance, EnrichedEntry enrichedEntry) throws EnricherException {
+    public void setGeneralAttributes(GKInstance instance, EnrichedEntry enrichedEntry, boolean basedOnInteractor) throws EnricherException {
         try {
             List<String> names = getAttributes(instance, ReactomeJavaConstants.name);
             if (names != null && !names.isEmpty()) {
@@ -69,8 +69,17 @@ public class GeneralAttributeEnricher extends Enricher {
 
             enrichedEntry.setIsDisease(enrichedEntry.getDiseases() != null);
 
-            PathwayBrowserTreeGenerator pathwayBrowserTreeGenerator = new PathwayBrowserTreeGenerator();
-            Set<Node> graph = pathwayBrowserTreeGenerator.generateGraphForGivenGkInstance(instance);
+            Set<Node> graph;
+            if (basedOnInteractor) {
+                /**
+                 * Create the tree coming from interactors intermediate page, it means, we are
+                 * going to show only those proteins directly associated to a reaction
+                 */
+                graph = new InteractorPathwayBrowserTreeGenerator().generateGraphForGivenGkInstance(instance);
+            } else {
+                /** Create the normal tree **/
+                graph = new PathwayBrowserTreeGenerator().generateGraphForGivenGkInstance(instance);
+            }
 
             enrichedEntry.setLocationsPathwayBrowser(graph);
             enrichedEntry.setAvailableSpecies(getAvailableSpecies(graph));

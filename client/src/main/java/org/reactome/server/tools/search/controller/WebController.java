@@ -149,6 +149,7 @@ class WebController {
 //                         @RequestParam ( required = false ) String types,
 //                         @RequestParam ( required = false ) String compartments,
 //                         @RequestParam ( required = false ) String keywords,
+                         @RequestParam(required = false, defaultValue = "") String interactor,
                          ModelMap model) throws EnricherException, SolrSearcherException {
 //        model.addAttribute(Q, checkOutputIntegrity(q));
 //        model.addAttribute(SPECIES, checkOutputIntegrity(species));
@@ -157,7 +158,9 @@ class WebController {
 //        model.addAttribute(KEYWORDS, checkOutputIntegrity(keywords));
         cacheInteractorResources();
 
-        EnrichedEntry entry = searchService.getEntryById(id);
+        boolean dgm = StringUtils.isNotEmpty(interactor);
+
+        EnrichedEntry entry = searchService.getEntryById(id, dgm);
         if (entry != null) {
             model.addAttribute(ENTRY, entry);
             model.addAttribute(TITLE, entry.getName());

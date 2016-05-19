@@ -86,7 +86,7 @@ public class PathwayBrowserTreeGenerator extends Enricher {
      * @param node current Node
      * @throws EnricherException
      */
-    private void recursion(GKInstance instance, Node node) throws EnricherException {
+    protected void recursion(GKInstance instance, Node node) throws EnricherException {
         try {
             nodeFromReference(instance, node, ReactomeJavaConstants.hasComponent);
             nodeFromReference(instance, node, ReactomeJavaConstants.repeatedUnit);
@@ -114,7 +114,7 @@ public class PathwayBrowserTreeGenerator extends Enricher {
      * @param fieldName ReactomeJavaConstant
      * @throws Exception
      */
-    private void nodeFromReference(GKInstance instance, Node node, String fieldName) throws Exception {
+    void nodeFromReference(GKInstance instance, Node node, String fieldName) throws Exception {
         Collection<?> components = instance.getReferers(fieldName);
         if (components != null && !components.isEmpty()) {
             for (Object entryObject : components) {
@@ -134,7 +134,7 @@ public class PathwayBrowserTreeGenerator extends Enricher {
      * @param fieldName ReactomeJavaConstant
      * @throws Exception
      */
-    private void nodeFromAttributes(GKInstance instance, Node node, String fieldName) throws Exception {
+     void nodeFromAttributes(GKInstance instance, Node node, String fieldName) throws Exception {
         if (hasValues(instance, fieldName)) {
             GKInstance regulatedEntityInstance = (GKInstance) instance.getAttributeValue(fieldName);
             if (regulatedEntityInstance != null) {
@@ -158,7 +158,7 @@ public class PathwayBrowserTreeGenerator extends Enricher {
      * @param fieldName ReactomeJavaConstant
      * @throws Exception
      */
-    private void skipNodes(GKInstance instance, Node node, String fieldName) throws Exception {
+     void skipNodes(GKInstance instance, Node node, String fieldName) throws Exception {
         Collection<?> regulator = instance.getReferers(fieldName);
         if (regulator != null && !regulator.isEmpty()) {
             for (Object entryObject : regulator) {

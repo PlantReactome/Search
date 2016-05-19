@@ -49,12 +49,12 @@ public class Enricher implements IEnricher  {
      * @throws EnricherException
      */
     @Override
-    public EnrichedEntry enrichEntry(String id) throws EnricherException {
+    public EnrichedEntry enrichEntry(String id, boolean interactor) throws EnricherException {
         try {
             GKInstance instance = getInstance(id);
             if (instance != null) {
                 EnrichedEntry enrichedEntry = new EnrichedEntry();
-                new GeneralAttributeEnricher().setGeneralAttributes(instance, enrichedEntry);
+                new GeneralAttributeEnricher().setGeneralAttributes(instance, enrichedEntry, interactor);
                 if (instance.getSchemClass().isa(ReactomeJavaConstants.Event)) {
                     new EventAttributeEnricher().setEventAttributes(instance, enrichedEntry);
                 } else if (instance.getSchemClass().isa(ReactomeJavaConstants.PhysicalEntity)) {

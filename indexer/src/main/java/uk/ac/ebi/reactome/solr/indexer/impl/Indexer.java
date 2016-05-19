@@ -151,8 +151,10 @@ public class Indexer {
     }
 
     /**
-     * This method is populating the global attribute accessionMap.
+     * Queries gk_instance and create a list of accessions that are not in reactome (accessionsNoReactome) and
+     * also a map with the accession +information (stIds,names) in reactome (accessionMap).
      *
+     * @param accessionList all unique accessions from Interactors Database excluding those that start with EBI-. They are provided by IntAct but does not have accession.
      * @throws IndexerException
      */
     private void createAccessionSet(List<String> accessionList) throws IndexerException {
@@ -166,6 +168,11 @@ public class Indexer {
 
         Collection<?> instances;
         try {
+
+            /**
+             * Get all ReferenceEntities in Reactome Database. We have around 350000. These are the objects where we have the accession.
+             * Then we check if the given ref. identifier is in the accessionList (which has all the accessions from intact).
+             */
             instances = dba.fetchInstancesByClass(ReactomeJavaConstants.ReferenceEntity);
             logger.info("Retrieving accessions from Reactome -- Accession list has [" + accessionList.size() + "] entries and [" + instances.size() + "] ReferenceEntities");
             for (Object object : instances) {
@@ -185,25 +192,42 @@ public class Indexer {
                 if (!accessionList.contains(identifier)) continue;
 
                 /**
-                 * removing the identifier that exists in Reactome.
+                 * Removing the identifier that exists in Reactome.
+                 * Remember, the final collection will hold those accessions that are not present in Reactome.
+                 * At, we are going to get the Interactions using the accessions that are not in reactome.
                  */
                 accessionsNoReactome.remove(identifier);
 
+                /** Get the referenceEntity in the referers, this instance has the accession we are interested in **/
                 Collection<?> referenceEntity = instance.getReferers(ReactomeJavaConstants.referenceEntity);
                 if (referenceEntity == null) continue;
 
                 for (Object o : referenceEntity) {
                     GKInstance gkInstance = (GKInstance)o;
 
-                    if (accessionMap.containsKey(identifier)) {
-                        ReactomeSummary summary = accessionMap.get(identifier);
-                        summary.addId(getReactomeId(gkInstance));
-                        summary.addName(gkInstance.getDisplayName());
-                    } else {
-                        ReactomeSummary summary = new ReactomeSummary();
-                        summary.addId(getReactomeId(gkInstance));
-                        summary.addName(gkInstance.getDisplayName());
-                        accessionMap.put(identifier, summary);
+                    if (isDirectlyAssociatedTo(gkInstance)) {
+                        /**
+                         * accessionMap is a map that has the accession as the Key
+                         * and ReactomeSummary as the value. ReactomeSummary holds a list
+                         * of ids (StId) and names that are refer to the accession.
+                         */
+                        if (accessionMap.containsKey(identifier)) {
+                            /**
+                             * If the accession is in the map, we get it and add the Id and Name into the list
+                             */
+                            ReactomeSummary summary = accessionMap.get(identifier);
+                            summary.addId(getReactomeId(gkInstance));
+                            summary.addName(gkInstance.getDisplayName());
+                        } else {
+                            /**
+                             * Otherwise create a new one and add to the map
+                             */
+                            ReactomeSummary summary = new ReactomeSummary();
+                            summary.addId(getReactomeId(gkInstance));
+                            summary.addName(gkInstance.getDisplayName());
+                            accessionMap.put(identifier, summary);
+                        }
+
                     }
                 }
             }
@@ -215,6 +239,46 @@ public class Indexer {
             throw new IndexerException("Fetching Instances by ClassName from the Database caused an error", e);
         }
 
+    }
+
+    /**
+     * Check if the instance is referred to a Reaction.
+     *
+     * @return true if is associated
+     * @throws Exception
+     */
+    private boolean isDirectlyAssociatedTo(GKInstance gkInstance) throws Exception {
+
+        List<String> fieldReferers = new ArrayList<>();
+        fieldReferers.add(ReactomeJavaConstants.input);
+        fieldReferers.add(ReactomeJavaConstants.output);
+        fieldReferers.add(ReactomeJavaConstants.regulator);
+        fieldReferers.add(ReactomeJavaConstants.physicalEntity);
+
+        /** To be discussed, I added but the number of interactor wasn't changed at the end. **/
+        //fieldReferers.add(ReactomeJavaConstants.entityFunctionalStatus);
+
+        for (String field : fieldReferers) {
+            Collection<?> collection = gkInstance.getReferers(field);
+
+            if (collection != null && !collection.isEmpty()) {
+                for (Object entryObject : collection) {
+                    GKInstance entry = (GKInstance) entryObject;
+
+                    if(entry.getSchemClass().isa(ReactomeJavaConstants.Reaction)
+                            || entry.getSchemClass().isa(ReactomeJavaConstants.CatalystActivity)
+                            || entry.getSchemClass().isa(ReactomeJavaConstants.BlackBoxEvent)
+                            || entry.getSchemClass().isa(ReactomeJavaConstants.Depolymerisation)
+                            || entry.getSchemClass().isa(ReactomeJavaConstants.FailedReaction)
+                            || entry.getSchemClass().isa(ReactomeJavaConstants.Polymerisation)
+                            || entry.getSchemClass().isa(ReactomeJavaConstants.ReactionlikeEvent)){
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -251,11 +315,19 @@ public class Indexer {
                 }
             }
 
+            /**
+             * Queries gk_instance and create a list of accessions that are not in reactome and
+             * also a map with the accession +information (stIds,names) in reactome
+             */
             createAccessionSet(accessionsList);
 
             /**
-             * Get Interactions for all accessions that are not in Reactome.
+             * Get Interactions for all accessions that are NOT in Reactome.
              * Keep in mind that we are only saving interactions having score higher than InteractorConstant.MINIMUM_VALID_SCORE
+             *
+             * The result of this query is Map having the accession as the key and a list of interactions. Take into account the
+             * Interaction domain has InteractorA and InteractorB where interactorA is ALWAYS the same as the map key.
+             * e.g map K=q13501, interactorA=q13501, interactorB=p12345 (this is the interaction)
              */
             Map<String, List<Interaction>> interactions = interactionService.getInteractions(accessionsNoReactome, InteractorConstant.STATIC);
 
@@ -273,6 +345,7 @@ public class Indexer {
                      */
                     if (accessionMap.containsKey(interaction.getInteractorB().getAcc())) {
                         InteractorSummary summary = new InteractorSummary();
+                        /** get reactome information from the map based on interactor B. Interactor A is the one we are creating the document **/
                         summary.setReactomeSummary(accessionMap.get(interaction.getInteractorB().getAcc()));
                         summary.setAccession(interaction.getInteractorB().getAcc());
                         summary.setScore(interaction.getIntactScore());
@@ -286,6 +359,9 @@ public class Indexer {
                 }
 
                 if (!interactorSummarySet.isEmpty()) {
+                    /**
+                     * Create index document based on interactor A and the summary based on Interactor B.
+                     */
                     IndexDocument indexDocument = createDocument(interactions.get(accKey).get(0).getInteractorA(), interactorSummarySet);
                     collection.add(indexDocument);
 
@@ -314,6 +390,9 @@ public class Indexer {
         return numberOfDocuments;
     }
 
+    /**
+     * Get all species available in Reactome and add them to taxonomy map
+     */
     private void createTaxonomyMap() {
 
         Collection<?> instances;
@@ -331,7 +410,8 @@ public class Indexer {
     }
 
     /**
-     * Creating interactor document
+     * Creating interactor document, where the Interactor A is the base and the B is the interactor which has
+     * the reactome information.
      */
     private IndexDocument createDocument(Interactor interactorA, Set<InteractorSummary> interactorSummarySet) {
 
@@ -360,7 +440,7 @@ public class Indexer {
         if (taxonomyMap.containsKey(interactorA.getTaxid())) {
             species = taxonomyMap.get(interactorA.getTaxid());
         } else {
-            species = getTaxonomyLineage(interactorA.getTaxid(), interactorA.getTaxid());
+            species = getTaxonomyLineage(interactorA.getTaxid());
         }
         document.setSpecies(species);
 
@@ -390,7 +470,16 @@ public class Indexer {
 
     }
 
-    public String getTaxonomyLineage(Integer taxId, Integer original){
+    /**
+     * Query Ensembl REST API in order to get the taxonomy lineage
+     * and then get the parent.
+     *
+     * Once we found the species we add it to the global map, it will
+     * reduce the amount of queries to an external resource.
+     *
+     * @return the species
+     */
+    private String getTaxonomyLineage(Integer taxId){
         if(taxId == 1 || taxId == 0 || taxId == -1){
             return "Entries without species";
         }
@@ -409,9 +498,8 @@ public class Indexer {
             int parentTaxid = jsonObject.getJSONObject("parent").getInt("id");
 
             if (taxonomyMap.containsKey(parentTaxid)){
-
                 String species = taxonomyMap.get(parentTaxid);
-                taxonomyMap.put(original, species);
+                taxonomyMap.put(taxId, species);
                 return species;
             }
 
@@ -505,7 +593,7 @@ public class Indexer {
                         logger.error("Document DBID: " + document.getDbId() + " Name " + document.getName());
                     }
                 }
-                logger.error("Could not add documenst", e);
+                logger.error("Could not add document", e);
             }
         } else {
             logger.error("Solr Documents are null or empty");
@@ -531,7 +619,7 @@ public class Indexer {
     /**
      * Closes connection to Solr Server
      */
-    public static void closeSolrServer() {
+    private static void closeSolrServer() {
         try {
             solrClient.close();
             logger.info("SolrServer shutdown");

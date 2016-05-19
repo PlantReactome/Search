@@ -47,7 +47,7 @@
 
     <c:if test="${not empty entry.locationsPathwayBrowser}">
         <div class="grid_23  padding">
-            <h5>Locations in the PathwayBrowser</h5>
+            <h5>Locations in the PathwayBrowser <c:if test="${not empty param['interactor']}"> for interactor ${param['interactor']}</c:if></h5>
             <c:if test="${fn:length(entry.availableSpecies) gt 1}">
                 <div class="padding">
                     <select name="availableSpecies" id="availableSpeciesSel" style="height: 1.5em;">

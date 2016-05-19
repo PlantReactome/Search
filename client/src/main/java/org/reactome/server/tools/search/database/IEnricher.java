@@ -11,6 +11,6 @@ import org.reactome.server.tools.search.exception.EnricherException;
  */
 public interface IEnricher {
 
-    public EnrichedEntry enrichEntry(String dbId) throws EnricherException;
+    public EnrichedEntry enrichEntry(String dbId, boolean interactor) throws EnricherException;
 
 }

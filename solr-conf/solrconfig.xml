@@ -203,8 +203,10 @@
             <!-- default query field -->
             <str name="tie">0.1</str>
             <!-- tiebreaker if fields have the same exact score-->
-            <str name="bq">species:"Homo sapiens"^0.8</str>
-            <!-- boost query to ensure human entries rank higher than the corresponding computationally inferred entries-->
+            <str name="bq">species:"Oryza sativa"^0.8</str>  <!-- boost query to ensure rice entries rank higher than the corresponding computationally inferred entries-->
+            <str name="bq">*.* -species:"Homo sapiens"^2000000</str>  <!-- minimize query to ensure human entries rank lower than the corresponding computationally inferred entries-->
+            <str name="bq">*.* -species:"Entries without species"^2000000</str>
+            <!-- boost query to ensure rice entries rank higher than the corresponding computationally inferred entries-->
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
                 oldStId^100.0
@@ -328,7 +330,9 @@
 
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
-            <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <str name="bq">species_facet:"Oryza sativa"^0.8</str>
+            <str name="bq">*.* -species_facet:"Homo sapiens"^2000000</str>  <!-- minimize query to ensure human entries rank lower than the corresponding computationally inferred entries-->
+            <str name="bq">*.* -species_facet:"Entries without species"^2000000</str>
 
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0
@@ -403,7 +407,9 @@
 
             <!-- scoring parameters-->
             <str name="tie">0.1</str>
-            <str name="bq">species_facet:"Homo sapiens"^0.8</str>
+            <str name="bq">species_facet:"Oryza sativa"^0.8</str>
+            <str name="bq">*.* -species_facet:"Homo sapiens"^2000000</str>  <!-- minimize query to ensure human entries rank lower than the corresponding computationally inferred entries-->
+            <str name="bq">*.* -species_facet:"Entries without species"^2000000</str>
 
             <str name="qf">  <!-- query fields: all fields to query in and their individual boosts-->
                 dbId^100.0

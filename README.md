@@ -1,3 +1,5 @@
+Archived. No longer used. Please see [search-core](https://github.com/PlantReactome/search-core) and [search-indexer](https://github.com/PlantReactome/search-indexer) for current repos.
+
 # Search
 #### What is Reactome Search ?
 Reactome Search is a project that optimizes the 'searches' in Reactome Website. Based on Apache Lucene, reactome database is fully indexed by Apache Solr. SolR is versatil, so it's configured and parametrized to face our needs and requirements, deliverying a high performance result list.
